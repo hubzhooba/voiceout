@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,7 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
   const { toast } = useToast()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const [workspace, setWorkspace] = useState<any>(null)
   
   const [formData, setFormData] = useState({
     invoice_number: '',
@@ -36,7 +37,7 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
     service_date: format(new Date(), 'yyyy-MM-dd'),
     amount: '',
     tax_amount: '0',
-    withholding_tax: '0',
+    withholding_tax_percent: '0', // Store as percentage
     notes: '',
   })
 
@@ -44,13 +45,48 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
     { description: '', quantity: '1', unit_price: '0', amount: '0' }
   ])
 
+  // Fetch workspace settings for defaults
+  useEffect(() => {
+    const fetchWorkspaceSettings = async () => {
+      const { data } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('id', workspaceId)
+        .single()
+      
+      if (data) {
+        setWorkspace(data)
+        // Apply workspace defaults
+        setFormData(prev => ({
+          ...prev,
+          client_address: data.business_address || prev.client_address,
+          client_tin: data.business_tin || prev.client_tin,
+          withholding_tax_percent: data.default_withholding_tax?.toString() || '0',
+          notes: data.invoice_notes || prev.notes,
+          invoice_number: data.invoice_prefix ? `${data.invoice_prefix}${Date.now().toString().slice(-6)}` : prev.invoice_number
+        }))
+      }
+    }
+    
+    fetchWorkspaceSettings()
+  }, [workspaceId, supabase])
+
   const calculateTotal = () => {
     const subtotal = items.reduce((sum, item) => {
       return sum + (parseFloat(item.amount) || 0)
     }, 0)
     const tax = parseFloat(formData.tax_amount) || 0
-    const withholdingTax = parseFloat(formData.withholding_tax) || 0
-    return (subtotal + tax - withholdingTax).toFixed(2)
+    const withholdingTaxPercent = parseFloat(formData.withholding_tax_percent) || 0
+    const withholdingTaxAmount = (subtotal * withholdingTaxPercent) / 100
+    return (subtotal + tax - withholdingTaxAmount).toFixed(2)
+  }
+  
+  const calculateWithholdingTaxAmount = () => {
+    const subtotal = items.reduce((sum, item) => {
+      return sum + (parseFloat(item.amount) || 0)
+    }, 0)
+    const withholdingTaxPercent = parseFloat(formData.withholding_tax_percent) || 0
+    return (subtotal * withholdingTaxPercent) / 100
   }
 
   const handleItemChange = (index: number, field: string, value: string) => {
@@ -103,11 +139,12 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
         ...formData,
         amount: parseFloat(formData.amount) || 0,
         tax_amount: parseFloat(formData.tax_amount) || 0,
-        withholding_tax: parseFloat(formData.withholding_tax) || 0,
+        withholding_tax: calculateWithholdingTaxAmount(), // Convert percentage to amount
         total_amount: parseFloat(calculateTotal()),
         status: submitStatus,
         submitted_by: user.id,
         submitted_at: submitStatus === 'submitted' ? new Date().toISOString() : null,
+        withholding_tax_percent: undefined, // Remove from data sent to DB
       }
 
       const { data: invoice, error: invoiceError } = await supabase
@@ -353,18 +390,26 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="withholding_tax">
-                  Less: Withholding Tax (₱)
+                <Label htmlFor="withholding_tax_percent">
+                  Withholding Tax (%)
                   <span className="text-xs text-muted-foreground ml-1">(if applicable)</span>
                 </Label>
-                <Input
-                  id="withholding_tax"
-                  type="number"
-                  value={formData.withholding_tax}
-                  onChange={(e) => setFormData({...formData, withholding_tax: e.target.value})}
-                  min="0"
-                  step="0.01"
-                />
+                <div className="flex gap-2 items-center">
+                  <Input
+                    id="withholding_tax_percent"
+                    type="number"
+                    value={formData.withholding_tax_percent}
+                    onChange={(e) => setFormData({...formData, withholding_tax_percent: e.target.value})}
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    className="flex-1"
+                  />
+                  <span className="text-sm font-medium">%</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Amount: ₱{calculateWithholdingTaxAmount().toFixed(2)}
+                </p>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t">

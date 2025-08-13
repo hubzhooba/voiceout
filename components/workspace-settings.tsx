@@ -24,6 +24,11 @@ interface WorkspaceSettingsProps {
 export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSettingsProps) {
   const [name, setName] = useState(workspace.name)
   const [description, setDescription] = useState(workspace.description || '')
+  const [businessAddress, setBusinessAddress] = useState(workspace.business_address || '')
+  const [businessTin, setBusinessTin] = useState(workspace.business_tin || '')
+  const [defaultWithholdingTax, setDefaultWithholdingTax] = useState(workspace.default_withholding_tax?.toString() || '0')
+  const [invoicePrefix, setInvoicePrefix] = useState(workspace.invoice_prefix || '')
+  const [invoiceNotes, setInvoiceNotes] = useState(workspace.invoice_notes || '')
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
@@ -39,6 +44,11 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
       .update({
         name,
         description,
+        business_address: businessAddress,
+        business_tin: businessTin,
+        default_withholding_tax: parseFloat(defaultWithholdingTax) || 0,
+        invoice_prefix: invoicePrefix,
+        invoice_notes: invoiceNotes,
         updated_at: new Date().toISOString(),
       })
       .eq('id', workspace.id)
@@ -130,16 +140,38 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
               disabled 
             />
           </div>
-          {canEditSettings && (
-            <Button 
-              onClick={updateWorkspace} 
-              disabled={loading || !name}
-              className="w-full sm:w-auto"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Business Information</CardTitle>
+          <CardDescription>
+            Default business details for invoices
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="business-address">Business Address</Label>
+            <Textarea
+              id="business-address"
+              value={businessAddress}
+              onChange={(e) => setBusinessAddress(e.target.value)}
+              disabled={!canEditSettings}
+              placeholder="Enter your business address"
+              rows={2}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="business-tin">Business TIN</Label>
+            <Input
+              id="business-tin"
+              value={businessTin}
+              onChange={(e) => setBusinessTin(e.target.value)}
+              disabled={!canEditSettings}
+              placeholder="XXX-XXX-XXX-XXX"
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -147,7 +179,7 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
         <CardHeader>
           <CardTitle>Invoice Settings</CardTitle>
           <CardDescription>
-            Configure invoice defaults and numbering
+            Default settings for new invoices
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -155,39 +187,61 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
             <Label htmlFor="invoice-prefix">Invoice Number Prefix</Label>
             <Input
               id="invoice-prefix"
-              placeholder="INV-"
+              value={invoicePrefix}
+              onChange={(e) => setInvoicePrefix(e.target.value)}
               disabled={!canEditSettings}
+              placeholder="e.g., INV-, 2024-"
             />
+            <p className="text-sm text-muted-foreground">
+              This prefix will be added to all invoice numbers
+            </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="tax-rate">Default Tax Rate (%)</Label>
-            <Input
-              id="tax-rate"
-              type="number"
-              placeholder="10"
-              disabled={!canEditSettings}
-            />
+            <Label htmlFor="default-withholding">Default Withholding Tax (%)</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="default-withholding"
+                type="number"
+                value={defaultWithholdingTax}
+                onChange={(e) => setDefaultWithholdingTax(e.target.value)}
+                disabled={!canEditSettings}
+                min="0"
+                max="100"
+                step="0.1"
+                className="max-w-32"
+              />
+              <span className="text-sm font-medium">%</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Default withholding tax percentage for new invoices
+            </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="currency">Currency</Label>
-            <Input
-              id="currency"
-              placeholder="USD"
+            <Label htmlFor="invoice-notes">Default Invoice Notes</Label>
+            <Textarea
+              id="invoice-notes"
+              value={invoiceNotes}
+              onChange={(e) => setInvoiceNotes(e.target.value)}
               disabled={!canEditSettings}
+              placeholder="Notes to include on all invoices..."
+              rows={3}
             />
           </div>
-          {canEditSettings && (
-            <Button 
-              variant="outline"
-              disabled={loading}
-              className="w-full sm:w-auto"
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Save Invoice Settings
-            </Button>
-          )}
         </CardContent>
       </Card>
+
+      {canEditSettings && (
+        <div className="flex justify-end">
+          <Button 
+            onClick={updateWorkspace} 
+            disabled={loading || !name}
+            size="lg"
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {loading ? 'Saving...' : 'Save All Changes'}
+          </Button>
+        </div>
+      )}
 
       {canEditSettings && (
         <Card className="border-destructive">
