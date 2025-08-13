@@ -95,7 +95,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
       // Track admin status separately for settings access
       setIsAdmin(data.role === 'admin')
       
-      console.log('User role set to:', effectiveRole, '(primary:', data.primary_role, 'role:', data.role, ')')
+      console.log('User roles - Primary (workflow):', effectiveRole, '| Admin (management):', data.role === 'admin')
       
       // Set view mode based on primary role
       if (effectiveRole === 'manager') {
@@ -275,14 +275,20 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                   <Receipt className="mr-2 h-4 w-4" />
                   Cash Receipts
                 </TabsTrigger>
-                <TabsTrigger value="team">
-                  <Users className="mr-2 h-4 w-4" />
-                  Team
-                </TabsTrigger>
-                <TabsTrigger value="settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </TabsTrigger>
+                {/* Team tab only visible to admins */}
+                {isAdmin && (
+                  <TabsTrigger value="team">
+                    <Users className="mr-2 h-4 w-4" />
+                    Team
+                  </TabsTrigger>
+                )}
+                {/* Settings tab visible to admins and managers */}
+                {(isAdmin || userRole === 'manager') && (
+                  <TabsTrigger value="settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
 

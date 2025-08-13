@@ -35,22 +35,31 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
   const supabase = createClient()
 
   const canEditSettings = userRole === 'admin'
+  const canEditDescription = userRole === 'admin' || userRole === 'manager'
 
   const updateWorkspace = async () => {
     setLoading(true)
 
+    // Managers can only update description
+    const updateData = userRole === 'manager' 
+      ? {
+          description,
+          updated_at: new Date().toISOString(),
+        }
+      : {
+          name,
+          description,
+          business_address: businessAddress,
+          business_tin: businessTin,
+          default_withholding_tax: parseFloat(defaultWithholdingTax) || 0,
+          invoice_prefix: invoicePrefix,
+          invoice_notes: invoiceNotes,
+          updated_at: new Date().toISOString(),
+        }
+
     const { data, error } = await supabase
       .from('workspaces')
-      .update({
-        name,
-        description,
-        business_address: businessAddress,
-        business_tin: businessTin,
-        default_withholding_tax: parseFloat(defaultWithholdingTax) || 0,
-        invoice_prefix: invoicePrefix,
-        invoice_notes: invoiceNotes,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', workspace.id)
       .select()
       .single()
@@ -122,9 +131,14 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
               id="workspace-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              disabled={!canEditSettings}
+              disabled={!canEditDescription}
               rows={3}
             />
+            {userRole === 'manager' && (
+              <p className="text-xs text-muted-foreground">
+                As a manager, you can update the workspace description
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Workspace ID</Label>
@@ -143,6 +157,7 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
         </CardContent>
       </Card>
 
+      {canEditSettings && (
       <Card>
         <CardHeader>
           <CardTitle>Business Information</CardTitle>
@@ -174,7 +189,9 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
           </div>
         </CardContent>
       </Card>
+      )}
 
+      {canEditSettings && (
       <Card>
         <CardHeader>
           <CardTitle>Invoice Settings</CardTitle>
@@ -229,16 +246,17 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
           </div>
         </CardContent>
       </Card>
+      )}
 
-      {canEditSettings && (
+      {canEditDescription && (
         <div className="flex justify-end">
           <Button 
             onClick={updateWorkspace} 
-            disabled={loading || !name}
+            disabled={loading || (userRole === 'admin' && !name)}
             size="lg"
           >
             <Save className="mr-2 h-4 w-4" />
-            {loading ? 'Saving...' : 'Save All Changes'}
+            {loading ? 'Saving...' : userRole === 'manager' ? 'Save Description' : 'Save All Changes'}
           </Button>
         </div>
       )}
