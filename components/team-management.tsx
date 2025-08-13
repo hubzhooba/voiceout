@@ -9,9 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { UserPlus, Mail, UserX, Shield, User, UserCog } from 'lucide-react'
+import { UserPlus, Mail, UserX, Shield, User, UserCog, X } from 'lucide-react'
 import { Database } from '@/types/database'
 
 type WorkspaceMember = Database['public']['Tables']['workspace_members']['Row'] & {
@@ -345,7 +346,7 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Invited</TableHead>
-                  <TableHead>Actions</TableHead>
+                  {userRole === 'admin' && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -365,15 +366,37 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
                     <TableCell>
                       {new Date(invitation.created_at).toLocaleDateString()}
                     </TableCell>
+                    {userRole === 'admin' ? (
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => cancelInvitation(invitation.id)}
-                      >
-                        Cancel
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <X className="mr-1 h-3 w-3" />
+                            Cancel
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Cancel Invitation?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to cancel the invitation to {invitation.email}?
+                              They will no longer be able to join the workspace with this invitation.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep Invitation</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => cancelInvitation(invitation.id)}>
+                              Cancel Invitation
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
+                    ) : null}
                   </TableRow>
                 ))}
               </TableBody>

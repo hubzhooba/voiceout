@@ -5,10 +5,11 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useReactToPrint } from 'react-to-print'
-import { Download, Printer, FileText, History } from 'lucide-react'
+import { Download, Printer, FileText, History, Trash2 } from 'lucide-react'
 import { Database } from '@/types/database'
 import { ServiceInvoiceTemplate } from './service-invoice-template'
 import { InvoiceApprovalFlow } from './invoice-approval-flow'
@@ -140,6 +141,25 @@ export function InvoiceDetailEnhanced({
     linkElement.setAttribute('href', dataUri)
     linkElement.setAttribute('download', exportFileDefaultName)
     linkElement.click()
+  }
+
+  const handleDeleteInvoice = async () => {
+    // Delete invoice items first
+    await supabase
+      .from('invoice_items')
+      .delete()
+      .eq('invoice_id', invoice.id)
+
+    // Then delete the invoice
+    const { error } = await supabase
+      .from('invoices')
+      .delete()
+      .eq('id', invoice.id)
+
+    if (!error) {
+      onUpdate()
+      onClose()
+    }
   }
 
   const getStatusColor = (status: Invoice['status']) => {
@@ -290,7 +310,35 @@ export function InvoiceDetailEnhanced({
           </TabsContent>
         </Tabs>
 
-        <DialogFooter>
+        <DialogFooter className="flex justify-between">
+          <div>
+            {/* Only show delete for draft or rejected invoices and only for the owner */}
+            {isOwner && (invoice.status === 'draft' || invoice.status === 'rejected') && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Invoice
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the invoice
+                      "{invoice.invoice_number}" and all associated data.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteInvoice}>
+                      Delete Invoice
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
           <Button variant="outline" onClick={onClose}>Close</Button>
         </DialogFooter>
       </DialogContent>
