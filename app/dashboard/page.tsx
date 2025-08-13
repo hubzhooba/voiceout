@@ -2,7 +2,11 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardContent } from './dashboard-content'
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams
+}: {
+  searchParams: { workspace?: string }
+}) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -45,20 +49,45 @@ export default async function DashboardPage() {
     )
   }
 
-  // Fetch workspaces with error handling
-  const { data: workspaces } = await supabase
-    .from('workspaces')
+  // Fetch all workspaces user belongs to
+  const { data: workspaceMembers } = await supabase
+    .from('workspace_members')
     .select(`
-      *,
-      workspace_members!inner(*)
+      role,
+      primary_role,
+      workspace:workspaces (*)
     `)
-    .eq('workspace_members.user_id', user.id)
+    .eq('user_id', user.id)
+
+  const workspaces = workspaceMembers?.map(wm => wm.workspace).filter(Boolean) || []
+
+  // If no workspaces, redirect to workspace selector
+  if (workspaces.length === 0) {
+    redirect('/workspaces')
+  }
+
+  // If specific workspace requested, validate it exists
+  let selectedWorkspaceId = searchParams.workspace
+  if (selectedWorkspaceId) {
+    const workspaceExists = workspaces.some(w => w.id === selectedWorkspaceId)
+    if (!workspaceExists) {
+      redirect('/workspaces')
+    }
+  } else {
+    // No workspace specified, use first one or redirect to selector
+    if (workspaces.length === 1) {
+      selectedWorkspaceId = workspaces[0].id
+    } else {
+      redirect('/workspaces')
+    }
+  }
 
   return (
     <DashboardContent 
       user={user} 
       profile={profile}
-      workspaces={workspaces || []}
+      workspaces={workspaces}
+      selectedWorkspaceId={selectedWorkspaceId}
     />
   )
 }

@@ -24,7 +24,15 @@ import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { User } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
-import { FileText, Plus, Settings, Users, LogOut, Receipt, ToggleLeft, UserCircle, Briefcase } from 'lucide-react'
+import { FileText, Plus, Settings, Users, LogOut, Receipt, ToggleLeft, UserCircle, Briefcase, Building2, ChevronDown, Home } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type Workspace = Database['public']['Tables']['workspaces']['Row']
@@ -35,16 +43,19 @@ interface DashboardContentProps {
   user: User
   profile: Profile | null
   workspaces: Workspace[]
+  selectedWorkspaceId?: string
 }
 
-export function DashboardContent({ user, profile, workspaces: initialWorkspaces }: DashboardContentProps) {
+export function DashboardContent({ user, profile, workspaces: initialWorkspaces, selectedWorkspaceId }: DashboardContentProps) {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
   
   const [workspaces, setWorkspaces] = useState(initialWorkspaces)
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
-    workspaces.length > 0 ? workspaces[0] : null
+    selectedWorkspaceId 
+      ? workspaces.find(w => w.id === selectedWorkspaceId) || workspaces[0]
+      : workspaces.length > 0 ? workspaces[0] : null
   )
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -219,12 +230,52 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push('/workspaces')}
+                title="Back to workspaces"
+              >
+                <Home className="h-5 w-5" />
+              </Button>
               <h1 className="text-2xl font-bold">VoiceOut</h1>
               {selectedWorkspace && (
                 <>
-                  <Badge variant="outline" className="ml-4">
-                    {selectedWorkspace.name}
-                  </Badge>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="ml-4">
+                        <Building2 className="mr-2 h-4 w-4" />
+                        {selectedWorkspace.name}
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuLabel>Switch Workspace</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {workspaces.map((workspace) => (
+                        <DropdownMenuItem
+                          key={workspace.id}
+                          onClick={() => {
+                            router.push(`/dashboard?workspace=${workspace.id}`)
+                            setSelectedWorkspace(workspace)
+                          }}
+                          className={workspace.id === selectedWorkspace.id ? 'bg-accent' : ''}
+                        >
+                          <Building2 className="mr-2 h-4 w-4" />
+                          {workspace.name}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => router.push('/workspaces')}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create New Workspace
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push('/workspaces')}>
+                        <Home className="mr-2 h-4 w-4" />
+                        All Workspaces
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   {userRole === 'admin' && (
                     <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-muted rounded-lg">
                       <UserCircle className="h-4 w-4" />
@@ -261,54 +312,18 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {workspaces.length === 0 ? (
+        {!selectedWorkspace ? (
           <Card>
             <CardHeader>
-              <CardTitle>Welcome to VoiceOut!</CardTitle>
+              <CardTitle>No Workspace Selected</CardTitle>
               <CardDescription>
-                Create your first workspace to start managing invoices
+                Please select or create a workspace to continue
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Dialog open={showCreateWorkspace} onOpenChange={setShowCreateWorkspace}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Workspace
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Workspace</DialogTitle>
-                    <DialogDescription>
-                      A workspace is where you and your team manage invoices together
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="workspace-name">Workspace Name</Label>
-                      <Input
-                        id="workspace-name"
-                        value={workspaceName}
-                        onChange={(e) => setWorkspaceName(e.target.value)}
-                        placeholder="My Business"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="workspace-description">Description (Optional)</Label>
-                      <Input
-                        id="workspace-description"
-                        value={workspaceDescription}
-                        onChange={(e) => setWorkspaceDescription(e.target.value)}
-                        placeholder="Brief description of your workspace"
-                      />
-                    </div>
-                    <Button onClick={createWorkspace} disabled={!workspaceName || loading}>
-                      {loading ? 'Creating...' : 'Create Workspace'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button onClick={() => router.push('/workspaces')}>
+                Go to Workspaces
+              </Button>
             </CardContent>
           </Card>
         ) : (

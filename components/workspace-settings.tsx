@@ -81,7 +81,7 @@ export function WorkspaceSettings({ workspace, userRole, onUpdate }: WorkspaceSe
         title: "Success",
         description: "Workspace deleted successfully",
       })
-      router.push('/dashboard')
+      router.push('/workspaces')
     }
 
     setLoading(false)
