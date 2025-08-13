@@ -10,11 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useReactToPrint } from 'react-to-print'
 import { Download, Printer, FileText, History } from 'lucide-react'
 import { Database } from '@/types/database'
-import { InvoiceTemplate } from './invoice-template'
+import { ServiceInvoiceTemplate } from './service-invoice-template'
 import { InvoiceApprovalFlow } from './invoice-approval-flow'
 
 type Invoice = Database['public']['Tables']['invoices']['Row']
 type InvoiceItem = Database['public']['Tables']['invoice_items']['Row']
+type Workspace = Database['public']['Tables']['workspaces']['Row']
 
 interface InvoiceDetailEnhancedProps {
   invoice: Invoice
@@ -32,6 +33,7 @@ export function InvoiceDetailEnhanced({
   onClose 
 }: InvoiceDetailEnhancedProps) {
   const [items, setItems] = useState<InvoiceItem[]>([])
+  const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [activityLog, setActivityLog] = useState<Array<{
     id: string
     action: string
@@ -51,6 +53,7 @@ export function InvoiceDetailEnhanced({
   useEffect(() => {
     fetchInvoiceItems()
     fetchActivityLog()
+    fetchWorkspace()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoice.id])
 
@@ -63,6 +66,18 @@ export function InvoiceDetailEnhanced({
 
     if (!error && data) {
       setItems(data)
+    }
+  }
+
+  const fetchWorkspace = async () => {
+    const { data } = await supabase
+      .from('workspaces')
+      .select('*')
+      .eq('id', invoice.workspace_id)
+      .single()
+    
+    if (data) {
+      setWorkspace(data)
     }
   }
 
@@ -178,10 +193,13 @@ export function InvoiceDetailEnhanced({
             </div>
             
             <div ref={componentRef}>
-              <InvoiceTemplate
-                invoice={invoice}
-                items={items}
-              />
+              {workspace && (
+                <ServiceInvoiceTemplate
+                  invoice={invoice}
+                  items={items}
+                  workspace={workspace}
+                />
+              )}
             </div>
           </TabsContent>
 

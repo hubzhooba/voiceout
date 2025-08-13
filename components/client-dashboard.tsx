@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { InvoiceForm } from '@/components/invoice-form'
+import { InvoiceFormEnhanced } from '@/components/invoice-form-enhanced'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -124,7 +124,7 @@ export function ClientDashboard({
                 <DialogHeader>
                   <DialogTitle>Create New Invoice</DialogTitle>
                 </DialogHeader>
-                <InvoiceForm 
+                <InvoiceFormEnhanced 
                   workspaceId={workspace.id}
                   onSuccess={() => {
                     setShowInvoiceForm(false)

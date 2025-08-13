@@ -90,13 +90,16 @@ export type Database = {
           workspace_id: string
           invoice_number: string
           client_name: string
+          client_tin: string | null
           client_email: string | null
           client_phone: string | null
           client_address: string | null
+          is_cash_sale: boolean
           service_description: string
           service_date: string
           amount: number
           tax_amount: number
+          withholding_tax: number
           total_amount: number
           status: 'draft' | 'submitted' | 'awaiting_approval' | 'approved' | 'processing' | 'completed' | 'rejected'
           notes: string | null
@@ -113,13 +116,16 @@ export type Database = {
           workspace_id: string
           invoice_number: string
           client_name: string
+          client_tin?: string | null
           client_email?: string | null
           client_phone?: string | null
           client_address?: string | null
+          is_cash_sale?: boolean
           service_description: string
           service_date: string
           amount: number
           tax_amount?: number
+          withholding_tax?: number
           total_amount: number
           status?: 'draft' | 'submitted' | 'awaiting_approval' | 'approved' | 'processing' | 'completed' | 'rejected'
           notes?: string | null
@@ -136,13 +142,16 @@ export type Database = {
           workspace_id?: string
           invoice_number?: string
           client_name?: string
+          client_tin?: string | null
           client_email?: string | null
           client_phone?: string | null
           client_address?: string | null
+          is_cash_sale?: boolean
           service_description?: string
           service_date?: string
           amount?: number
           tax_amount?: number
+          withholding_tax?: number
           total_amount?: number
           status?: 'draft' | 'submitted' | 'awaiting_approval' | 'approved' | 'processing' | 'completed' | 'rejected'
           notes?: string | null
