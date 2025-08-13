@@ -37,9 +37,10 @@ interface DashboardContentProps {
   profile: Profile | null
   workspaces: Workspace[]
   selectedWorkspaceId?: string
+  isNewWorkspace?: boolean
 }
 
-export function DashboardContent({ user, profile, workspaces: initialWorkspaces, selectedWorkspaceId }: DashboardContentProps) {
+export function DashboardContent({ user, profile, workspaces: initialWorkspaces, selectedWorkspaceId, isNewWorkspace: isNewWorkspaceProp = false }: DashboardContentProps) {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
@@ -56,8 +57,8 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
   const [userRole, setUserRole] = useState<'user' | 'manager' | 'admin'>('user')
   const [isAdmin, setIsAdmin] = useState(false)
   const [viewMode, setViewMode] = useState<'client' | 'manager' | 'admin'>('client')
-  const [showRoleSelection, setShowRoleSelection] = useState(false)
-  const [isNewWorkspace, setIsNewWorkspace] = useState(false)
+  const [showRoleSelection, setShowRoleSelection] = useState(isNewWorkspaceProp)
+  const [isNewWorkspace, setIsNewWorkspace] = useState(isNewWorkspaceProp)
 
   useEffect(() => {
     if (selectedWorkspace) {
@@ -81,6 +82,12 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
     console.log('User role fetch:', { data, error, userId: user.id, workspaceId: selectedWorkspace.id })
 
     if (data) {
+      // Check if user needs to select a role (admin without primary_role)
+      if (data.role === 'admin' && !data.primary_role) {
+        setShowRoleSelection(true)
+        setIsNewWorkspace(true)
+      }
+      
       // Use primary_role for invoice operations
       const effectiveRole = data.primary_role || (data.role === 'admin' ? 'user' : data.role)
       setUserRole(effectiveRole)

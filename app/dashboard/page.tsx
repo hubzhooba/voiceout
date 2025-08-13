@@ -5,7 +5,7 @@ import { DashboardContent } from './dashboard-content'
 export default async function DashboardPage({
   searchParams
 }: {
-  searchParams: Promise<{ workspace?: string }>
+  searchParams: Promise<{ workspace?: string; new?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -136,6 +136,7 @@ export default async function DashboardPage({
       profile={profile}
       workspaces={workspaces}
       selectedWorkspaceId={selectedWorkspaceId}
+      isNewWorkspace={params.new === 'true'}
     />
   )
 }

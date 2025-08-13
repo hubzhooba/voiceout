@@ -114,8 +114,8 @@ export function WorkspaceSelector({ user, profile, workspaces: initialWorkspaces
             title: "Success",
             description: "Workspace created successfully!",
           })
-          // Navigate to the new workspace
-          router.push(`/dashboard?workspace=${workspace.id}`)
+          // Navigate to the new workspace with flag to show role selection
+          router.push(`/dashboard?workspace=${workspace.id}&new=true`)
         }
       }
     } catch (error) {
