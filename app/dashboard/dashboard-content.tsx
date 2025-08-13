@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { InvoiceDetail } from '@/components/invoice-detail'
+import { InvoiceDetailEnhanced } from '@/components/invoice-detail-enhanced'
 import { TeamManagement } from '@/components/team-management'
 import { WorkspaceSettings } from '@/components/workspace-settings'
 import { NotificationsDropdown } from '@/components/notifications-dropdown'
@@ -322,9 +322,10 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
         )}
 
         {selectedInvoice && (
-          <InvoiceDetail 
+          <InvoiceDetailEnhanced 
             invoice={selectedInvoice}
             userRole={userRole}
+            currentUserId={user.id}
             onUpdate={() => {
               fetchInvoices()
               setSelectedInvoice(null)

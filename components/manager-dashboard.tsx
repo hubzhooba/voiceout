@@ -24,6 +24,8 @@ export function ManagerDashboard({
 }: ManagerDashboardProps) {
 
   const pendingInvoices = invoices.filter(i => i.status === 'submitted')
+  const awaitingApproval = invoices.filter(i => i.status === 'awaiting_approval')
+  const approvedInvoices = invoices.filter(i => i.status === 'approved')
   const processingInvoices = invoices.filter(i => i.status === 'processing')
   const completedToday = invoices.filter(i => 
     i.status === 'completed' && 
@@ -42,9 +44,11 @@ export function ManagerDashboard({
   const getStatusColor = (status: Invoice['status']) => {
     switch (status) {
       case 'draft': return 'secondary'
-      case 'submitted': return 'warning'
+      case 'submitted': return 'default'
+      case 'awaiting_approval': return 'outline'
+      case 'approved': return 'default'
       case 'processing': return 'default'
-      case 'completed': return 'success'
+      case 'completed': return 'default'
       case 'rejected': return 'destructive'
       default: return 'secondary'
     }

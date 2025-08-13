@@ -44,8 +44,10 @@ export function ClientDashboard({
     switch (status) {
       case 'draft': return 'secondary'
       case 'submitted': return 'default'
+      case 'awaiting_approval': return 'outline'
+      case 'approved': return 'default'
       case 'processing': return 'outline'
-      case 'completed': return 'success'
+      case 'completed': return 'default'
       case 'rejected': return 'destructive'
       default: return 'secondary'
     }

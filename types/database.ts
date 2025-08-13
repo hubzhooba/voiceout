@@ -98,7 +98,7 @@ export type Database = {
           amount: number
           tax_amount: number
           total_amount: number
-          status: 'draft' | 'submitted' | 'processing' | 'completed' | 'rejected'
+          status: 'draft' | 'submitted' | 'awaiting_approval' | 'approved' | 'processing' | 'completed' | 'rejected'
           notes: string | null
           submitted_by: string | null
           processed_by: string | null
@@ -121,7 +121,7 @@ export type Database = {
           amount: number
           tax_amount?: number
           total_amount: number
-          status?: 'draft' | 'submitted' | 'processing' | 'completed' | 'rejected'
+          status?: 'draft' | 'submitted' | 'awaiting_approval' | 'approved' | 'processing' | 'completed' | 'rejected'
           notes?: string | null
           submitted_by?: string | null
           processed_by?: string | null
@@ -144,7 +144,7 @@ export type Database = {
           amount?: number
           tax_amount?: number
           total_amount?: number
-          status?: 'draft' | 'submitted' | 'processing' | 'completed' | 'rejected'
+          status?: 'draft' | 'submitted' | 'awaiting_approval' | 'approved' | 'processing' | 'completed' | 'rejected'
           notes?: string | null
           submitted_by?: string | null
           processed_by?: string | null
