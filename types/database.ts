@@ -238,35 +238,38 @@ export type Database = {
         Row: {
           id: string
           workspace_id: string
-          email: string
+          email: string | null
           role: 'user' | 'manager' | 'admin'
+          invited_by: string
+          status: 'pending' | 'accepted' | 'rejected' | 'expired'
           token: string
-          invited_by: string | null
           expires_at: string
-          accepted_at: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
           workspace_id: string
-          email: string
-          role?: 'user' | 'manager' | 'admin'
-          token: string
-          invited_by?: string | null
-          expires_at: string
-          accepted_at?: string | null
+          email?: string | null
+          role: 'user' | 'manager' | 'admin'
+          invited_by: string
+          status?: 'pending' | 'accepted' | 'rejected' | 'expired'
+          token?: string
+          expires_at?: string
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
           workspace_id?: string
-          email?: string
+          email?: string | null
           role?: 'user' | 'manager' | 'admin'
+          invited_by?: string
+          status?: 'pending' | 'accepted' | 'rejected' | 'expired'
           token?: string
-          invited_by?: string | null
           expires_at?: string
-          accepted_at?: string | null
           created_at?: string
+          updated_at?: string
         }
       }
       cash_receipts: {
