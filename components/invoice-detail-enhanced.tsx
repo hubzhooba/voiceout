@@ -38,11 +38,9 @@ export function InvoiceDetailEnhanced({
     id: string
     action: string
     created_at: string
-    user?: {
+    profiles?: {
       email: string
-      profiles?: {
-        full_name: string | null
-      }
+      full_name: string | null
     }
   }>>([])
   const componentRef = useRef<HTMLDivElement>(null)
@@ -87,18 +85,34 @@ export function InvoiceDetailEnhanced({
       .from('invoice_activity')
       .select(`
         *,
-        user:user_id (
+        profiles!user_id (
           email,
-          profiles (full_name)
+          full_name
         )
       `)
       .eq('invoice_id', invoice.id)
       .order('created_at', { ascending: false })
 
-    // Handle missing table gracefully
-    if (error && error.message?.includes('relation') && error.message?.includes('does not exist')) {
-      console.log('Activity table not yet created. Run create-activity-table.sql in Supabase.')
-      setActivityLog([])
+    // Handle errors gracefully
+    if (error) {
+      console.log('Error fetching activity log:', error.message)
+      // Try simpler query without joins as fallback
+      const { data: simpleData } = await supabase
+        .from('invoice_activity')
+        .select('*')
+        .eq('invoice_id', invoice.id)
+        .order('created_at', { ascending: false })
+      
+      if (simpleData) {
+        // Map the data to include placeholder user info
+        const mappedData = simpleData.map(activity => ({
+          ...activity,
+          profiles: { email: 'User', full_name: null }
+        }))
+        setActivityLog(mappedData)
+      } else {
+        setActivityLog([])
+      }
     } else if (data) {
       setActivityLog(data)
     }
@@ -234,7 +248,7 @@ export function InvoiceDetailEnhanced({
                         <div className="flex-shrink-0 w-2 h-2 mt-1.5 bg-gray-400 rounded-full"></div>
                         <div className="flex-1">
                           <p className="font-medium">
-                            {activity.user?.profiles?.full_name || activity.user?.email || 'System'}
+                            {activity.profiles?.full_name || activity.profiles?.email || 'System'}
                           </p>
                           <p className="text-muted-foreground">{activity.action}</p>
                           <p className="text-xs text-muted-foreground">
