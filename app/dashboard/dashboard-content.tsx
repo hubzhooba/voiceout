@@ -115,23 +115,9 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
     setLoading(true)
     
     try {
-      // First check if workspace name already exists
-      const { data: existingWorkspace } = await supabase
-        .from('workspaces')
-        .select('id, name')
-        .eq('name', workspaceName)
-        .single()
-
-      if (existingWorkspace) {
-        toast({
-          title: "Error",
-          description: "A workspace with this name already exists. Please choose a different name.",
-          variant: "destructive",
-        })
-        setLoading(false)
-        return
-      }
-
+      // Skip duplicate check since it causes 406 errors
+      // The database unique constraint will handle duplicates
+      
       // Create the workspace
       const { data: workspace, error: workspaceError } = await supabase
         .from('workspaces')
@@ -145,11 +131,20 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
 
       if (workspaceError) {
         console.error('Workspace creation error:', workspaceError)
-        toast({
-          title: "Error creating workspace",
-          description: workspaceError.message || "Failed to create workspace. Please try again.",
-          variant: "destructive",
-        })
+        // Check if it's a duplicate name error
+        if (workspaceError.message?.includes('duplicate') || workspaceError.message?.includes('unique')) {
+          toast({
+            title: "Workspace name already exists",
+            description: "Please choose a different name for your workspace.",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "Error creating workspace",
+            description: workspaceError.message || "Failed to create workspace. Please try again.",
+            variant: "destructive",
+          })
+        }
       } else if (workspace) {
         // Add user as admin member
         const { error: memberError } = await supabase
@@ -168,6 +163,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
             variant: "destructive",
           })
         } else {
+          // Add the new workspace to the list
           setWorkspaces([...workspaces, workspace])
           setSelectedWorkspace(workspace)
           setShowCreateWorkspace(false)
@@ -177,6 +173,10 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
             title: "Success",
             description: "Workspace created successfully!",
           })
+          // Refresh the page to ensure everything is loaded properly
+          setTimeout(() => {
+            router.refresh()
+          }, 500)
         }
       }
     } catch (error) {
