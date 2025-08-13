@@ -236,6 +236,7 @@ export function InvoiceDetailEnhanced({
             )}
             
             {/* Manager actions for submitted invoices */}
+            {console.log('Invoice detail - userRole:', userRole, 'status:', invoice.status)}
             {userRole === 'manager' && invoice.status === 'submitted' && (
               <ManagerInvoiceActions
                 invoice={invoice}

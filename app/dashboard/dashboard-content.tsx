@@ -70,15 +70,28 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
   const fetchUserRole = async () => {
     if (!selectedWorkspace) return
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('workspace_members')
       .select('role')
       .eq('workspace_id', selectedWorkspace.id)
       .eq('user_id', user.id)
       .single()
 
+    console.log('User role fetch:', { data, error, userId: user.id, workspaceId: selectedWorkspace.id })
+
     if (data) {
       setUserRole(data.role)
+      console.log('User role set to:', data.role)
+      
+      // Set view mode based on role
+      if (data.role === 'manager') {
+        setViewMode('manager')
+      } else if (data.role === 'admin') {
+        // Admin can toggle, default to client view
+        setViewMode('client')
+      } else {
+        setViewMode('client')
+      }
     }
   }
 
@@ -176,14 +189,18 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  {userRole === 'admin' && (
+                  {(userRole === 'admin' || userRole === 'manager') && (
                     <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-muted rounded-lg">
                       <UserCircle className="h-4 w-4" />
                       <span className="text-sm">Client View</span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setViewMode(viewMode === 'client' ? 'manager' : 'client')}
+                        onClick={() => {
+                          const newMode = viewMode === 'client' ? 'manager' : 'client'
+                          setViewMode(newMode)
+                          console.log('View mode changed to:', newMode)
+                        }}
                         className="ml-2"
                       >
                         <ToggleLeft className={`h-4 w-4 transition-transform ${viewMode === 'manager' ? 'rotate-180' : ''}`} />

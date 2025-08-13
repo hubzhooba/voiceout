@@ -216,8 +216,11 @@ export function ManagerInvoiceActions({
 
   // Only show actions for submitted invoices
   if (invoice.status !== 'submitted') {
+    console.log('Manager actions hidden - invoice status is:', invoice.status)
     return null
   }
+
+  console.log('Manager actions rendering for invoice:', invoice.invoice_number)
 
   return (
     <div className="space-y-4">
