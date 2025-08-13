@@ -40,12 +40,13 @@ export function WorkspaceRoleSelection({
     setSelectedRole(role)
     onRoleSelected(role)
     
-    // Update user's primary role in workspace_members
+    // Update user's primary role in workspace_members (keep role as admin)
+    const primaryRole = role === 'manager' ? 'manager' : 'user'
     const { error } = await supabase
       .from('workspace_members')
       .update({ 
-        role: role === 'manager' ? 'manager' : 'user',
-        primary_role: role 
+        primary_role: primaryRole
+        // Don't update 'role' - keep it as 'admin' for workspace owner
       })
       .eq('workspace_id', workspace.id)
       .eq('user_id', userId)
@@ -115,7 +116,8 @@ export function WorkspaceRoleSelection({
   }
 
   const handleSkip = () => {
-    onRoleSelected('admin')
+    // Skip role selection - user remains admin without primary role
+    // This means they can't perform invoice operations
     onComplete()
   }
 

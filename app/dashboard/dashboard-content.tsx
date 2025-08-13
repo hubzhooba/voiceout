@@ -254,10 +254,9 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                 workspace={selectedWorkspace}
                 userId={user.id}
                 onRoleSelected={(role) => {
-                  setViewMode(role === 'admin' ? 'client' : role)
-                  if (role !== 'admin') {
-                    setUserRole(role === 'manager' ? 'manager' : 'user')
-                  }
+                  // Role selection updates primary_role in database
+                  // Just refresh to get the updated role
+                  fetchUserRole()
                 }}
                 onComplete={() => {
                   setShowRoleSelection(false)
