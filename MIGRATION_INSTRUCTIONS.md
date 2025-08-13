@@ -1,6 +1,19 @@
 # 🚨 IMPORTANT: Database Migration Required
 
-You're getting the error because your Supabase database doesn't have the new columns yet. Follow these steps to fix it:
+## QUICK FIX FOR STATUS ENUM ERROR
+
+If you're getting: `invalid input value for enum invoice_status: "awaiting_approval"`
+
+**Run this first:**
+1. Go to SQL Editor in Supabase
+2. Run the contents of: `supabase/simple-status-fix.sql`
+3. This converts the status column to TEXT and adds all new statuses
+
+---
+
+## Full Migration Instructions
+
+You're getting errors because your Supabase database doesn't have the new columns yet. Follow these steps to fix it:
 
 ## Quick Fix Instructions
 
