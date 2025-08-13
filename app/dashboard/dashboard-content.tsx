@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { User } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
-import { FileText, Plus, Settings, Users, LogOut, Receipt, ToggleLeft, UserCircle, Briefcase, Building2, ChevronDown, Home } from 'lucide-react'
+import { FileText, Plus, Settings, Users, LogOut, Receipt, UserCircle, Briefcase, Building2, ChevronDown, Home } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,13 +83,11 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
       setUserRole(data.role)
       console.log('User role set to:', data.role)
       
-      // Set view mode based on role
+      // Set view mode based on role - no toggling
       if (data.role === 'manager') {
         setViewMode('manager')
-      } else if (data.role === 'admin') {
-        // Admin can toggle, default to client view
-        setViewMode('client')
       } else {
+        // Admin and regular users stay in client view
         setViewMode('client')
       }
     }
@@ -189,24 +187,16 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  {(userRole === 'admin' || userRole === 'manager') && (
+                  {userRole === 'manager' && (
+                    <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-muted rounded-lg">
+                      <Briefcase className="h-4 w-4" />
+                      <span className="text-sm font-medium">Manager View</span>
+                    </div>
+                  )}
+                  {userRole === 'admin' && (
                     <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-muted rounded-lg">
                       <UserCircle className="h-4 w-4" />
-                      <span className="text-sm">Client View</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const newMode = viewMode === 'client' ? 'manager' : 'client'
-                          setViewMode(newMode)
-                          console.log('View mode changed to:', newMode)
-                        }}
-                        className="ml-2"
-                      >
-                        <ToggleLeft className={`h-4 w-4 transition-transform ${viewMode === 'manager' ? 'rotate-180' : ''}`} />
-                      </Button>
-                      <Briefcase className="h-4 w-4" />
-                      <span className="text-sm">Manager View</span>
+                      <span className="text-sm font-medium">Workspace Admin</span>
                     </div>
                   )}
                 </>
@@ -284,17 +274,17 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
             </div>
 
             <TabsContent value="invoices" className="space-y-4">
-              {viewMode === 'client' || (viewMode === 'admin' && userRole !== 'manager') ? (
+              {userRole === 'manager' ? (
+                <ManagerDashboard
+                  workspace={selectedWorkspace!}
+                  invoices={invoices}
+                  onInvoiceClick={setSelectedInvoice}
+                />
+              ) : (
                 <ClientDashboard
                   workspace={selectedWorkspace!}
                   invoices={invoices}
                   onInvoiceCreated={fetchInvoices}
-                  onInvoiceClick={setSelectedInvoice}
-                />
-              ) : (
-                <ManagerDashboard
-                  workspace={selectedWorkspace!}
-                  invoices={invoices}
                   onInvoiceClick={setSelectedInvoice}
                 />
               )}
