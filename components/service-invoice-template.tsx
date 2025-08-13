@@ -146,13 +146,27 @@ export function ServiceInvoiceTemplate({
         </div>
       </div>
 
-      {/* Footer - Optional */}
+      {/* Footer - Signature Section */}
       <div className="mt-12 pt-8 border-t border-gray-200">
         <div className="grid grid-cols-2 gap-8">
           <div>
             <p className="text-xs text-gray-500 mb-4">Prepared By:</p>
-            <div className="border-b border-gray-400 w-48"></div>
-            <p className="text-xs text-gray-500 mt-1">Signature over Printed Name</p>
+            {invoice.prepared_by_name ? (
+              <div>
+                <p className="font-semibold text-sm italic">{invoice.prepared_by_name}</p>
+                <div className="border-b border-gray-400 w-48 mt-1"></div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {invoice.prepared_by_date 
+                    ? format(new Date(invoice.prepared_by_date), 'MMM dd, yyyy')
+                    : 'Signature over Printed Name'}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="border-b border-gray-400 w-48"></div>
+                <p className="text-xs text-gray-500 mt-1">Signature over Printed Name</p>
+              </>
+            )}
           </div>
           <div>
             <p className="text-xs text-gray-500 mb-4">Received By:</p>

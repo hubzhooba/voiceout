@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,6 +12,7 @@ import { Download, Printer, FileText, History } from 'lucide-react'
 import { Database } from '@/types/database'
 import { ServiceInvoiceTemplate } from './service-invoice-template'
 import { InvoiceApprovalFlow } from './invoice-approval-flow'
+import { ManagerInvoiceActions } from './manager-invoice-actions'
 
 type Invoice = Database['public']['Tables']['invoices']['Row']
 type InvoiceItem = Database['public']['Tables']['invoice_items']['Row']
@@ -222,6 +223,30 @@ export function InvoiceDetailEnhanced({
           </TabsContent>
 
           <TabsContent value="workflow" className="space-y-4">
+            {/* Show internal notes if they exist */}
+            {invoice.notes && (
+              <Card className="mb-4">
+                <CardHeader>
+                  <CardTitle>Internal Notes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">{invoice.notes}</p>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Manager actions for submitted invoices */}
+            {userRole === 'manager' && invoice.status === 'submitted' && (
+              <ManagerInvoiceActions
+                invoice={invoice}
+                onUpdate={() => {
+                  onUpdate()
+                  fetchActivityLog()
+                }}
+              />
+            )}
+            
+            {/* Regular approval flow */}
             <InvoiceApprovalFlow
               invoice={invoice}
               userRole={userRole}

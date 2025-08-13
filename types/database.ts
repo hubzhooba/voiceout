@@ -108,6 +108,8 @@ export type Database = {
           scanned_invoice_url: string | null
           submitted_at: string | null
           processed_at: string | null
+          prepared_by_name: string | null
+          prepared_by_date: string | null
           created_at: string
           updated_at: string
         }
@@ -134,6 +136,8 @@ export type Database = {
           scanned_invoice_url?: string | null
           submitted_at?: string | null
           processed_at?: string | null
+          prepared_by_name?: string | null
+          prepared_by_date?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -160,6 +164,8 @@ export type Database = {
           scanned_invoice_url?: string | null
           submitted_at?: string | null
           processed_at?: string | null
+          prepared_by_name?: string | null
+          prepared_by_date?: string | null
           created_at?: string
           updated_at?: string
         }
