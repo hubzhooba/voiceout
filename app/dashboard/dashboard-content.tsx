@@ -56,7 +56,8 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [userRole, setUserRole] = useState<'user' | 'manager' | 'admin'>('user')
   const [isAdmin, setIsAdmin] = useState(false)
-  const [viewMode, setViewMode] = useState<'client' | 'manager' | 'admin'>('client')
+  // viewMode is set but used implicitly through userRole
+  const [, setViewMode] = useState<'client' | 'manager' | 'admin'>('client')
   const [showRoleSelection, setShowRoleSelection] = useState(isNewWorkspaceProp)
   const [isNewWorkspace, setIsNewWorkspace] = useState(isNewWorkspaceProp)
 
@@ -253,7 +254,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
               <WorkspaceRoleSelection
                 workspace={selectedWorkspace}
                 userId={user.id}
-                onRoleSelected={(role) => {
+                onRoleSelected={() => {
                   // Role selection updates primary_role in database
                   // Just refresh to get the updated role
                   fetchUserRole()

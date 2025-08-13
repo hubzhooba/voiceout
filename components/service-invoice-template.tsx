@@ -102,7 +102,7 @@ export function ServiceInvoiceTemplate({
             </tr>
           </thead>
           <tbody>
-            {items.map((item, index) => (
+            {items.map((item) => (
               <tr key={item.id} className="border-b border-gray-200">
                 <td className="py-2 text-sm">{item.description}</td>
                 <td className="text-center py-2 text-sm">{item.quantity}</td>
@@ -111,8 +111,8 @@ export function ServiceInvoiceTemplate({
               </tr>
             ))}
             {/* Add empty rows to maintain form structure */}
-            {items.length < 5 && Array.from({ length: 5 - items.length }).map((_, index) => (
-              <tr key={`empty-${index}`} className="border-b border-gray-200">
+            {items.length < 5 && Array.from({ length: 5 - items.length }).map(() => (
+              <tr key={`empty-${Math.random()}`} className="border-b border-gray-200">
                 <td className="py-2 text-sm">&nbsp;</td>
                 <td className="text-center py-2 text-sm">&nbsp;</td>
                 <td className="text-right py-2 text-sm">&nbsp;</td>

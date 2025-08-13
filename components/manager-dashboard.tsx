@@ -24,8 +24,8 @@ export function ManagerDashboard({
 }: ManagerDashboardProps) {
 
   const pendingInvoices = invoices.filter(i => i.status === 'submitted')
-  const awaitingApproval = invoices.filter(i => i.status === 'awaiting_approval')
-  const approvedInvoices = invoices.filter(i => i.status === 'approved')
+  // const awaitingApproval = invoices.filter(i => i.status === 'awaiting_approval')
+  // const approvedInvoices = invoices.filter(i => i.status === 'approved')
   const processingInvoices = invoices.filter(i => i.status === 'processing')
   const completedToday = invoices.filter(i => 
     i.status === 'completed' && 

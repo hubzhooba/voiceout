@@ -12,6 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { Info } from 'lucide-react'
+import { Database } from '@/types/database'
+
+type Workspace = Database['public']['Tables']['workspaces']['Row']
 
 interface InvoiceFormEnhancedProps {
   workspaceId: string
@@ -23,7 +26,8 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
   const { toast } = useToast()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
-  const [workspace, setWorkspace] = useState<any>(null)
+  // Workspace is fetched but only used for setting defaults
+  const [, setWorkspace] = useState<Workspace | null>(null)
   
   const [formData, setFormData] = useState({
     invoice_number: '',

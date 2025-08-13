@@ -66,6 +66,11 @@ export default async function DashboardPage({
     name: string
     description: string | null
     owner_id: string
+    business_address: string | null
+    business_tin: string | null
+    default_withholding_tax: number
+    invoice_prefix: string | null
+    invoice_notes: string | null
     created_at: string
     updated_at: string
   }

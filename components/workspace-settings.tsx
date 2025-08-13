@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
-import { Settings, Trash2, Save } from 'lucide-react'
+import { Trash2, Save } from 'lucide-react'
 import { Database } from '@/types/database'
 
 type Workspace = Database['public']['Tables']['workspaces']['Row']

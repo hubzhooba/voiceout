@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
@@ -256,7 +256,6 @@ export function InvoiceDetailEnhanced({
             )}
             
             {/* Manager actions for submitted invoices - only available for manager role */}
-            {console.log('Invoice detail - userRole:', userRole, 'status:', invoice.status)}
             {userRole === 'manager' && invoice.status === 'submitted' && (
               <ManagerInvoiceActions
                 invoice={invoice}
@@ -326,7 +325,7 @@ export function InvoiceDetailEnhanced({
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete the invoice
-                      "{invoice.invoice_number}" and all associated data.
+                      &quot;{invoice.invoice_number}&quot; and all associated data.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
