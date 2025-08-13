@@ -15,7 +15,6 @@ import {
   Building2, 
   Plus, 
   Users, 
-  FileText, 
   LogOut, 
   ArrowRight,
   Calendar,
@@ -23,6 +22,7 @@ import {
   Briefcase,
   Shield
 } from 'lucide-react'
+import { DebugWorkspaces } from '@/components/debug-workspaces'
 
 interface WorkspaceWithRole {
   id: string
@@ -36,7 +36,13 @@ interface WorkspaceWithRole {
 
 interface WorkspaceSelectorProps {
   user: User
-  profile: any
+  profile: {
+    id: string
+    email: string
+    full_name: string | null
+    created_at: string
+    updated_at: string
+  } | null
   workspaces: WorkspaceWithRole[]
 }
 
@@ -45,7 +51,7 @@ export function WorkspaceSelector({ user, profile, workspaces: initialWorkspaces
   const { toast } = useToast()
   const supabase = createClient()
   
-  const [workspaces, setWorkspaces] = useState(initialWorkspaces)
+  const [workspaces] = useState(initialWorkspaces)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [workspaceName, setWorkspaceName] = useState('')
   const [workspaceDescription, setWorkspaceDescription] = useState('')
@@ -265,7 +271,7 @@ export function WorkspaceSelector({ user, profile, workspaces: initialWorkspaces
                           )}
                         </div>
                         <Badge 
-                          variant={getRoleColor(workspace.userRole) as any}
+                          variant={getRoleColor(workspace.userRole) as 'default' | 'secondary' | 'destructive' | 'outline'}
                           className="ml-2"
                         >
                           {getRoleIcon(workspace.userRole)}
@@ -365,6 +371,9 @@ export function WorkspaceSelector({ user, profile, workspaces: initialWorkspaces
               </Dialog>
             </>
           )}
+          
+          {/* Debug Component - Remove in production */}
+          <DebugWorkspaces />
         </div>
       </div>
     </div>

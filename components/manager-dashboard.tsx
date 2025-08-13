@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { format } from 'date-fns'
-import { FileText, Clock, CheckCircle, AlertTriangle, TrendingUp, Users, DollarSign } from 'lucide-react'
+import { FileText, Clock, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react'
 import { Database } from '@/types/database'
 
 type Invoice = Database['public']['Tables']['invoices']['Row']
@@ -19,7 +19,6 @@ interface ManagerDashboardProps {
 }
 
 export function ManagerDashboard({ 
-  workspace, 
   invoices,
   onInvoiceClick 
 }: ManagerDashboardProps) {
@@ -284,7 +283,7 @@ export function ManagerDashboard({
                       </TableCell>
                       <TableCell>${invoice.total_amount.toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusColor(invoice.status) as any}>
+                        <Badge variant={getStatusColor(invoice.status) as 'default' | 'secondary' | 'destructive' | 'outline'}>
                           {invoice.status}
                         </Badge>
                       </TableCell>

@@ -5,8 +5,9 @@ import { DashboardContent } from './dashboard-content'
 export default async function DashboardPage({
   searchParams
 }: {
-  searchParams: { workspace?: string }
+  searchParams: Promise<{ workspace?: string }>
 }) {
+  const params = await searchParams
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -55,11 +56,58 @@ export default async function DashboardPage({
     .select(`
       role,
       primary_role,
-      workspace:workspaces (*)
+      workspace_id,
+      workspace:workspace_id (*)
     `)
     .eq('user_id', user.id)
 
-  const workspaces = workspaceMembers?.map(wm => wm.workspace).filter(Boolean) || []
+  interface WorkspaceData {
+    id: string
+    name: string
+    description: string | null
+    owner_id: string
+    created_at: string
+    updated_at: string
+  }
+  
+  let workspaces: WorkspaceData[] = []
+  
+  if (workspaceMembers) {
+    workspaces = workspaceMembers
+      .map(wm => {
+        // Handle the case where workspace might be an array due to incorrect relation
+        const workspace = Array.isArray(wm.workspace) ? wm.workspace[0] : wm.workspace
+        return workspace as WorkspaceData
+      })
+      .filter((w): w is WorkspaceData => w !== null && typeof w === 'object' && 'id' in w)
+  }
+  
+  // If join didn't work, fetch workspaces directly
+  if (workspaceMembers && workspaceMembers.length > 0 && workspaces.length === 0) {
+    const workspaceIds = workspaceMembers.map(wm => wm.workspace_id).filter(Boolean)
+    if (workspaceIds.length > 0) {
+      const { data: directWorkspaces } = await supabase
+        .from('workspaces')
+        .select('*')
+        .in('id', workspaceIds)
+      
+      workspaces = directWorkspaces || []
+    }
+  }
+  
+  // Also check owned workspaces
+  const { data: ownedWorkspaces } = await supabase
+    .from('workspaces')
+    .select('*')
+    .eq('owner_id', user.id)
+  
+  if (ownedWorkspaces) {
+    ownedWorkspaces.forEach(ow => {
+      if (!workspaces.find(w => w.id === ow.id)) {
+        workspaces.push(ow)
+      }
+    })
+  }
 
   // If no workspaces, redirect to workspace selector
   if (workspaces.length === 0) {
@@ -67,7 +115,7 @@ export default async function DashboardPage({
   }
 
   // If specific workspace requested, validate it exists
-  let selectedWorkspaceId = searchParams.workspace
+  let selectedWorkspaceId = params.workspace
   if (selectedWorkspaceId) {
     const workspaceExists = workspaces.some(w => w.id === selectedWorkspaceId)
     if (!workspaceExists) {

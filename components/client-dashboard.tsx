@@ -173,7 +173,7 @@ export function ClientDashboard({
                     <TableCell>${invoice.total_amount.toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge 
-                        variant={getStatusColor(invoice.status) as any}
+                        variant={getStatusColor(invoice.status) as 'default' | 'secondary' | 'destructive' | 'outline'}
                         className="gap-1"
                       >
                         {getStatusIcon(invoice.status)}
