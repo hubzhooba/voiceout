@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy:vercel": "vercel",
+    "deploy:railway": "railway up",
+    "docker:build": "DOCKER_BUILD=true docker build -t voiceout .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env.local voiceout"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
