@@ -158,7 +158,7 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
   const cancelInvitation = async (invitationId: string) => {
     const { error } = await supabase
       .from('workspace_invitations')
-      .update({ status: 'cancelled' })
+      .update({ status: 'rejected' })
       .eq('id', invitationId)
 
     if (error) {
