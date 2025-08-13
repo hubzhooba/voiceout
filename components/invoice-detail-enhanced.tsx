@@ -83,7 +83,7 @@ export function InvoiceDetailEnhanced({
 
   const fetchActivityLog = async () => {
     // Fetch activity/audit log for this invoice
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('invoice_activity')
       .select(`
         *,
@@ -95,7 +95,11 @@ export function InvoiceDetailEnhanced({
       .eq('invoice_id', invoice.id)
       .order('created_at', { ascending: false })
 
-    if (data) {
+    // Handle missing table gracefully
+    if (error && error.message?.includes('relation') && error.message?.includes('does not exist')) {
+      console.log('Activity table not yet created. Run create-activity-table.sql in Supabase.')
+      setActivityLog([])
+    } else if (data) {
       setActivityLog(data)
     }
   }
