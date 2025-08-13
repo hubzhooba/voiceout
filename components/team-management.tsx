@@ -186,6 +186,19 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
         return <User className="h-4 w-4" />
     }
   }
+  
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Admin'
+      case 'manager':
+        return 'Manager'
+      case 'user':
+        return 'Client'
+      default:
+        return role
+    }
+  }
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -244,13 +257,13 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="user">Client</SelectItem>
                           <SelectItem value="manager">Manager</SelectItem>
-                          {userRole === 'admin' && (
-                            <SelectItem value="admin">Admin</SelectItem>
-                          )}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Clients submit invoices, Managers review and approve them
+                      </p>
                     </div>
                     <Button 
                       onClick={sendInvitation} 
@@ -286,7 +299,7 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
                   <TableCell>
                     <Badge variant={getRoleColor(member.role)} className="gap-1">
                       {getRoleIcon(member.role)}
-                      {member.role}
+                      {getRoleLabel(member.role)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -296,20 +309,19 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
                     <TableCell>
                       {member.user_id !== currentUserId && (
                         <div className="flex items-center gap-2">
-                          {userRole === 'admin' && (
+                          {userRole === 'admin' && member.role !== 'admin' && (
                             <Select 
                               value={member.role} 
-                              onValueChange={(value: 'user' | 'manager' | 'admin') => 
-                                updateMemberRole(member.id, value)
+                              onValueChange={(value: 'user' | 'manager') => 
+                                updateMemberRole(member.id, value as 'user' | 'manager' | 'admin')
                               }
                             >
-                              <SelectTrigger className="w-28">
+                              <SelectTrigger className="w-32">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="user">User</SelectItem>
+                                <SelectItem value="user">Client</SelectItem>
                                 <SelectItem value="manager">Manager</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
                               </SelectContent>
                             </Select>
                           )}
@@ -360,7 +372,7 @@ export function TeamManagement({ workspaceId, currentUserId, userRole }: TeamMan
                     </TableCell>
                     <TableCell>
                       <Badge variant={getRoleColor(invitation.role)}>
-                        {invitation.role}
+                        {getRoleLabel(invitation.role)}
                       </Badge>
                     </TableCell>
                     <TableCell>
