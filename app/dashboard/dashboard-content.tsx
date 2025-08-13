@@ -54,6 +54,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [userRole, setUserRole] = useState<'user' | 'manager' | 'admin'>('user')
+  const [isAdmin, setIsAdmin] = useState(false)
   const [viewMode, setViewMode] = useState<'client' | 'manager' | 'admin'>('client')
   const [showRoleSelection, setShowRoleSelection] = useState(false)
   const [isNewWorkspace, setIsNewWorkspace] = useState(false)
@@ -72,7 +73,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
 
     const { data, error } = await supabase
       .from('workspace_members')
-      .select('role')
+      .select('role, primary_role')
       .eq('workspace_id', selectedWorkspace.id)
       .eq('user_id', user.id)
       .single()
@@ -80,14 +81,20 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
     console.log('User role fetch:', { data, error, userId: user.id, workspaceId: selectedWorkspace.id })
 
     if (data) {
-      setUserRole(data.role)
-      console.log('User role set to:', data.role)
+      // Use primary_role for invoice operations
+      const effectiveRole = data.primary_role || (data.role === 'admin' ? 'user' : data.role)
+      setUserRole(effectiveRole)
       
-      // Set view mode based on role - no toggling
-      if (data.role === 'manager') {
+      // Track admin status separately for settings access
+      setIsAdmin(data.role === 'admin')
+      
+      console.log('User role set to:', effectiveRole, '(primary:', data.primary_role, 'role:', data.role, ')')
+      
+      // Set view mode based on primary role
+      if (effectiveRole === 'manager') {
         setViewMode('manager')
       } else {
-        // Admin and regular users stay in client view
+        // Users stay in client view
         setViewMode('client')
       }
     }
@@ -193,7 +200,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                       <span className="text-sm font-medium">Manager View</span>
                     </div>
                   )}
-                  {userRole === 'admin' && (
+                  {isAdmin && (
                     <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-muted rounded-lg">
                       <UserCircle className="h-4 w-4" />
                       <span className="text-sm font-medium">Workspace Admin</span>
@@ -296,7 +303,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                 <TeamManagement 
                   workspaceId={selectedWorkspace.id}
                   currentUserId={user.id}
-                  userRole={userRole}
+                  userRole={isAdmin ? 'admin' : userRole}
                 />
               )}
             </TabsContent>
@@ -305,7 +312,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
               {selectedWorkspace && (
                 <WorkspaceSettings 
                   workspace={selectedWorkspace}
-                  userRole={userRole}
+                  userRole={isAdmin ? 'admin' : userRole}
                   onUpdate={(updated) => {
                     setSelectedWorkspace(updated)
                     setWorkspaces(workspaces.map(w => 
