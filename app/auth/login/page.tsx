@@ -22,7 +22,7 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
@@ -33,7 +33,22 @@ export default function LoginPage() {
         description: error.message,
         variant: "destructive",
       })
-    } else {
+    } else if (authData.user) {
+      // Ensure profile exists (in case trigger failed)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          email: authData.user.email!,
+          full_name: authData.user.user_metadata?.full_name || authData.user.email,
+        })
+        .select()
+        .single()
+      
+      if (profileError) {
+        console.error('Profile check error:', profileError)
+      }
+      
       router.push('/dashboard')
       router.refresh()
     }

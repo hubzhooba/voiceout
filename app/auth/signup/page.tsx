@@ -23,7 +23,7 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -39,7 +39,22 @@ export default function SignupPage() {
         description: error.message,
         variant: "destructive",
       })
-    } else {
+    } else if (authData.user) {
+      // Manually create profile if trigger doesn't exist
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          email: authData.user.email!,
+          full_name: fullName,
+        })
+        .select()
+        .single()
+      
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+      }
+      
       toast({
         title: "Success",
         description: "Please check your email to verify your account.",
