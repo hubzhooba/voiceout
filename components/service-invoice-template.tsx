@@ -123,6 +123,17 @@ export function ServiceInvoiceTemplate({
         </table>
       </div>
 
+      {/* Service Description Section */}
+      {invoice.service_description && (
+        <>
+          <Separator className="my-4" />
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-700 mb-2">SERVICE DESCRIPTION:</h3>
+            <p className="text-sm text-gray-700 ml-4">{invoice.service_description}</p>
+          </div>
+        </>
+      )}
+
       <Separator className="my-4" />
 
       {/* Totals Section */}
