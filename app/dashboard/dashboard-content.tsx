@@ -114,42 +114,78 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
   const createWorkspace = async () => {
     setLoading(true)
     
-    const { data: workspace, error: workspaceError } = await supabase
-      .from('workspaces')
-      .insert({
-        name: workspaceName,
-        description: workspaceDescription,
-        owner_id: user.id,
-      })
-      .select()
-      .single()
+    try {
+      // First check if workspace name already exists
+      const { data: existingWorkspace } = await supabase
+        .from('workspaces')
+        .select('id, name')
+        .eq('name', workspaceName)
+        .single()
 
-    if (workspaceError) {
+      if (existingWorkspace) {
+        toast({
+          title: "Error",
+          description: "A workspace with this name already exists. Please choose a different name.",
+          variant: "destructive",
+        })
+        setLoading(false)
+        return
+      }
+
+      // Create the workspace
+      const { data: workspace, error: workspaceError } = await supabase
+        .from('workspaces')
+        .insert({
+          name: workspaceName,
+          description: workspaceDescription,
+          owner_id: user.id,
+        })
+        .select()
+        .single()
+
+      if (workspaceError) {
+        console.error('Workspace creation error:', workspaceError)
+        toast({
+          title: "Error creating workspace",
+          description: workspaceError.message || "Failed to create workspace. Please try again.",
+          variant: "destructive",
+        })
+      } else if (workspace) {
+        // Add user as admin member
+        const { error: memberError } = await supabase
+          .from('workspace_members')
+          .insert({
+            workspace_id: workspace.id,
+            user_id: user.id,
+            role: 'admin',
+          })
+
+        if (memberError) {
+          console.error('Member creation error:', memberError)
+          toast({
+            title: "Warning",
+            description: "Workspace created but couldn't add you as member. Please refresh the page.",
+            variant: "destructive",
+          })
+        } else {
+          setWorkspaces([...workspaces, workspace])
+          setSelectedWorkspace(workspace)
+          setShowCreateWorkspace(false)
+          setWorkspaceName('')
+          setWorkspaceDescription('')
+          toast({
+            title: "Success",
+            description: "Workspace created successfully!",
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error)
       toast({
         title: "Error",
-        description: workspaceError.message,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       })
-    } else if (workspace) {
-      const { error: memberError } = await supabase
-        .from('workspace_members')
-        .insert({
-          workspace_id: workspace.id,
-          user_id: user.id,
-          role: 'admin',
-        })
-
-      if (!memberError) {
-        setWorkspaces([...workspaces, workspace])
-        setSelectedWorkspace(workspace)
-        setShowCreateWorkspace(false)
-        setWorkspaceName('')
-        setWorkspaceDescription('')
-        toast({
-          title: "Success",
-          description: "Workspace created successfully!",
-        })
-      }
     }
     
     setLoading(false)
