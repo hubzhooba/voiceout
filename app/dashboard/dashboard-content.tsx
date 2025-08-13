@@ -9,6 +9,9 @@ import { TeamManagement } from '@/components/team-management'
 import { WorkspaceSettings } from '@/components/workspace-settings'
 import { NotificationsDropdown } from '@/components/notifications-dropdown'
 import { CashReceiptBook } from '@/components/cash-receipt-book'
+import { WorkspaceRoleSelection } from '@/components/workspace-role-selection'
+import { ClientDashboard } from '@/components/client-dashboard'
+import { ManagerDashboard } from '@/components/manager-dashboard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -21,7 +24,7 @@ import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { User } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
-import { FileText, Plus, Settings, Users, LogOut, Receipt } from 'lucide-react'
+import { FileText, Plus, Settings, Users, LogOut, Receipt, ToggleLeft, UserCircle, Briefcase } from 'lucide-react'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type Workspace = Database['public']['Tables']['workspaces']['Row']
@@ -52,6 +55,9 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
   const [workspaceDescription, setWorkspaceDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [userRole, setUserRole] = useState<'user' | 'manager' | 'admin'>('user')
+  const [viewMode, setViewMode] = useState<'client' | 'manager' | 'admin'>('client')
+  const [showRoleSelection, setShowRoleSelection] = useState(false)
+  const [isNewWorkspace, setIsNewWorkspace] = useState(false)
 
   useEffect(() => {
     if (selectedWorkspace) {
@@ -173,10 +179,9 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
             title: "Success",
             description: "Workspace created successfully!",
           })
-          // Refresh the page to ensure everything is loaded properly
-          setTimeout(() => {
-            router.refresh()
-          }, 500)
+          // Show role selection for new workspace
+          setIsNewWorkspace(true)
+          setShowRoleSelection(true)
         }
       }
     } catch (error) {
@@ -216,9 +221,27 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold">VoiceOut</h1>
               {selectedWorkspace && (
-                <Badge variant="outline" className="ml-4">
-                  {selectedWorkspace.name}
-                </Badge>
+                <>
+                  <Badge variant="outline" className="ml-4">
+                    {selectedWorkspace.name}
+                  </Badge>
+                  {userRole === 'admin' && (
+                    <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-muted rounded-lg">
+                      <UserCircle className="h-4 w-4" />
+                      <span className="text-sm">Client View</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setViewMode(viewMode === 'client' ? 'manager' : 'client')}
+                        className="ml-2"
+                      >
+                        <ToggleLeft className={`h-4 w-4 transition-transform ${viewMode === 'manager' ? 'rotate-180' : ''}`} />
+                      </Button>
+                      <Briefcase className="h-4 w-4" />
+                      <span className="text-sm">Manager View</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div className="flex items-center space-x-4">
@@ -289,7 +312,24 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="invoices" className="space-y-4">
+          <>
+            {showRoleSelection && isNewWorkspace && selectedWorkspace && (
+              <WorkspaceRoleSelection
+                workspace={selectedWorkspace}
+                userId={user.id}
+                onRoleSelected={(role) => {
+                  setViewMode(role === 'admin' ? 'client' : role)
+                  if (role !== 'admin') {
+                    setUserRole(role === 'manager' ? 'manager' : 'user')
+                  }
+                }}
+                onComplete={() => {
+                  setShowRoleSelection(false)
+                  setIsNewWorkspace(false)
+                }}
+              />
+            )}
+            <Tabs defaultValue="invoices" className="space-y-4">
             <div className="flex items-center justify-between">
               <TabsList>
                 <TabsTrigger value="invoices">
@@ -309,141 +349,24 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
                   Settings
                 </TabsTrigger>
               </TabsList>
-              
-              <Dialog open={showInvoiceForm} onOpenChange={setShowInvoiceForm}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Invoice
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Create New Invoice</DialogTitle>
-                  </DialogHeader>
-                  {selectedWorkspace && (
-                    <InvoiceForm 
-                      workspaceId={selectedWorkspace.id}
-                      onSuccess={() => {
-                        setShowInvoiceForm(false)
-                        fetchInvoices()
-                      }}
-                    />
-                  )}
-                </DialogContent>
-              </Dialog>
             </div>
 
             <TabsContent value="invoices" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Invoices</CardTitle>
-                  <CardDescription>
-                    Manage and track all your service invoices
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {invoices.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">
-                      No invoices yet. Create your first invoice to get started.
-                    </p>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Invoice #</TableHead>
-                          <TableHead>Client</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {invoices.map((invoice) => (
-                          <TableRow key={invoice.id}>
-                            <TableCell className="font-medium">
-                              {invoice.invoice_number}
-                            </TableCell>
-                            <TableCell>{invoice.client_name}</TableCell>
-                            <TableCell>
-                              {format(new Date(invoice.service_date), 'MMM dd, yyyy')}
-                            </TableCell>
-                            <TableCell>${invoice.total_amount.toFixed(2)}</TableCell>
-                            <TableCell>
-                              <Badge variant={getStatusColor(invoice.status)}>
-                                {invoice.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => setSelectedInvoice(invoice)}
-                              >
-                                View
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-
-              {userRole !== 'user' && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Manager View</CardTitle>
-                    <CardDescription>
-                      Invoices requiring your attention
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Invoice #</TableHead>
-                          <TableHead>Submitted By</TableHead>
-                          <TableHead>Client</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {invoices
-                          .filter(inv => inv.status === 'submitted')
-                          .map((invoice) => (
-                            <TableRow key={invoice.id}>
-                              <TableCell className="font-medium">
-                                {invoice.invoice_number}
-                              </TableCell>
-                              <TableCell>{invoice.submitted_by}</TableCell>
-                              <TableCell>{invoice.client_name}</TableCell>
-                              <TableCell>${invoice.total_amount.toFixed(2)}</TableCell>
-                              <TableCell>
-                                <Badge variant={getStatusColor(invoice.status)}>
-                                  {invoice.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => setSelectedInvoice(invoice)}
-                                >
-                                  Process
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
+              {viewMode === 'client' || (viewMode === 'admin' && userRole !== 'manager') ? (
+                <ClientDashboard
+                  workspace={selectedWorkspace!}
+                  invoices={invoices}
+                  onInvoiceCreated={fetchInvoices}
+                  onInvoiceClick={setSelectedInvoice}
+                />
+              ) : (
+                <ManagerDashboard
+                  workspace={selectedWorkspace!}
+                  invoices={invoices}
+                  onInvoiceClick={setSelectedInvoice}
+                />
               )}
+
             </TabsContent>
 
             <TabsContent value="team" className="space-y-4">
@@ -480,6 +403,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces 
               )}
             </TabsContent>
           </Tabs>
+          </>
         )}
 
         {selectedInvoice && (
