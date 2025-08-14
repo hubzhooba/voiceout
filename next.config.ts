@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Standalone output for Docker deployments
-  output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
+  // Standalone output for deployments
+  output: 'standalone',
   
   // Optimize images
   images: {
