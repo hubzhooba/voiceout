@@ -41,5 +41,5 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
-# Use PORT from environment or default to 3000
-CMD ["sh", "-c", "PORT=${PORT:-3000} node server.js"]
+# Railway sets PORT automatically
+CMD ["node", "server.js"]
