@@ -40,6 +40,8 @@ export default function SignupPage() {
         variant: "destructive",
       })
     } else if (authData.user) {
+      console.log('User created:', authData.user.id, authData.user.email)
+      
       // Manually create profile if trigger doesn't exist
       // Don't use select() to avoid RLS issues
       const { error: profileError } = await supabase
@@ -52,6 +54,12 @@ export default function SignupPage() {
       
       if (profileError && profileError.code !== '23505') { // Ignore duplicate key errors
         console.error('Profile creation error:', profileError)
+        console.error('Attempted to insert:', {
+          id: authData.user.id,
+          email: authData.user.email,
+          full_name: fullName
+        })
+        // Continue anyway - profile might be created by trigger
       }
       
       toast({
