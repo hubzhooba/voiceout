@@ -9,9 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Tent, 
-  Users, 
   FileText, 
-  Plus, 
   LogIn,
   Copy,
   ExternalLink,
@@ -95,6 +93,7 @@ export function DashboardView({ userId }: { userId: string }) {
 
   useEffect(() => {
     fetchDashboardData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
   const fetchDashboardData = async () => {

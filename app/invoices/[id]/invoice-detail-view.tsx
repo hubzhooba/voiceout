@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -14,7 +14,6 @@ import {
   ArrowLeft,
   FileText,
   Calendar,
-  User,
   Building,
   Mail,
   Phone,
@@ -132,7 +131,7 @@ export function InvoiceDetailView({
       })
       
       router.refresh()
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to approve invoice',
@@ -174,7 +173,7 @@ export function InvoiceDetailView({
       
       setShowRejectDialog(false)
       router.refresh()
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to reject invoice',
@@ -203,7 +202,7 @@ export function InvoiceDetailView({
       })
       
       router.push(`/tents/${invoice.tent_id}`)
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to delete invoice',
@@ -303,7 +302,7 @@ export function InvoiceDetailView({
               <FileText className="h-5 w-5" />
               <CardTitle>{invoice.invoice_number}</CardTitle>
             </div>
-            <Badge variant={getStatusColor() as any} className="flex items-center gap-1">
+            <Badge variant={getStatusColor() as 'default' | 'destructive' | 'secondary' | 'outline'} className="flex items-center gap-1">
               {getStatusIcon()}
               <span className="capitalize">{invoice.status}</span>
             </Badge>
