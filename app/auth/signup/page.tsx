@@ -41,17 +41,16 @@ export default function SignupPage() {
       })
     } else if (authData.user) {
       // Manually create profile if trigger doesn't exist
+      // Don't use select() to avoid RLS issues
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({
+        .insert({
           id: authData.user.id,
           email: authData.user.email!,
           full_name: fullName,
         })
-        .select()
-        .single()
       
-      if (profileError) {
+      if (profileError && profileError.code !== '23505') { // Ignore duplicate key errors
         console.error('Profile creation error:', profileError)
       }
       

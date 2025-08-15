@@ -35,18 +35,33 @@ export default function LoginPage() {
       })
     } else if (authData.user) {
       // Ensure profile exists (in case trigger failed)
-      const { error: profileError } = await supabase
+      // First try to insert (for new profiles)
+      const { error: insertError } = await supabase
         .from('profiles')
-        .upsert({
+        .insert({
           id: authData.user.id,
           email: authData.user.email!,
           full_name: authData.user.user_metadata?.full_name || authData.user.email,
         })
-        .select()
-        .single()
       
-      if (profileError) {
-        console.error('Profile check error:', profileError)
+      // If insert fails due to duplicate (profile already exists), that's fine
+      if (insertError && insertError.code !== '23505') {
+        console.error('Profile insert error:', insertError)
+      }
+      
+      // If profile already exists, try to update it
+      if (insertError?.code === '23505') {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            email: authData.user.email!,
+            full_name: authData.user.user_metadata?.full_name || authData.user.email,
+          })
+          .eq('id', authData.user.id)
+        
+        if (updateError) {
+          console.error('Profile update error:', updateError)
+        }
       }
       
       router.push('/tents')
