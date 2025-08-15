@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { TentDashboard } from './tent-dashboard'
+import { GlassDashboard } from '@/components/dashboard/glass-dashboard'
 
 // Force dynamic rendering to avoid build-time Supabase errors
 export const dynamic = 'force-dynamic'
@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   }
 
   // Fetch profile
-  const { data: profile, error: profileError } = await supabase
+  const { error: profileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
@@ -25,10 +25,10 @@ export default async function DashboardPage() {
   if (profileError?.message?.includes('relation') || profileError?.message?.includes('does not exist')) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-2xl bg-card rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold mb-4">Database Setup Required</h1>
-          <p className="mb-4">The database tables haven&apos;t been created yet. Please follow these steps:</p>
-          <ol className="list-decimal list-inside space-y-2 mb-6">
+        <div className="glass-card max-w-2xl p-8">
+          <h1 className="text-2xl font-bold gradient-text mb-4">Database Setup Required</h1>
+          <p className="mb-4 text-gray-600">The database tables haven&apos;t been created yet. Please follow these steps:</p>
+          <ol className="list-decimal list-inside space-y-2 mb-6 text-gray-700">
             <li>Go to your Supabase Dashboard</li>
             <li>Navigate to the SQL Editor</li>
             <li>Run the migration scripts in the supabase/migrations folder</li>
@@ -38,7 +38,7 @@ export default async function DashboardPage() {
             href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90"
+            className="btn-primary inline-block"
           >
             Open Supabase Dashboard
           </a>
@@ -47,5 +47,5 @@ export default async function DashboardPage() {
     )
   }
 
-  return <TentDashboard user={user} profile={profile} />
+  return <GlassDashboard userId={user.id} />
 }
