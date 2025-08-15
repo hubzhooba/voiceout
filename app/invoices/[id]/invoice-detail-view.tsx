@@ -130,6 +130,8 @@ export function InvoiceDetailView({
         description: 'The invoice has been approved successfully.',
       })
       
+      // Navigate back to tent view with refresh
+      router.push(`/tents/${invoice.tent_id}`)
       router.refresh()
     } catch {
       toast({
@@ -172,6 +174,8 @@ export function InvoiceDetailView({
       })
       
       setShowRejectDialog(false)
+      // Navigate back to tent view with refresh
+      router.push(`/tents/${invoice.tent_id}`)
       router.refresh()
     } catch {
       toast({

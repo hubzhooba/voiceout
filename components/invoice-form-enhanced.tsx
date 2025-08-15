@@ -101,9 +101,11 @@ export function InvoiceFormEnhanced({ tentId, tentSettings, onSuccess, onCancel 
   
   const calculateWithholdingTaxAmount = () => {
     const subtotal = items.reduce((sum, item) => {
-      return sum + (parseFloat(item.amount) || 0)
+      const amount = parseFloat(item.amount) || 0
+      return sum + (isNaN(amount) ? 0 : amount)
     }, 0)
     const withholdingTaxPercent = parseFloat(formData.withholding_tax_percent) || 0
+    if (isNaN(withholdingTaxPercent) || withholdingTaxPercent < 0) return 0
     return (subtotal * withholdingTaxPercent) / 100
   }
 

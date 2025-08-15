@@ -60,7 +60,8 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
 
   const handleInvoiceCreated = () => {
     setShowInvoiceForm(false)
-    // Refresh the invoice list (handled by InvoiceList component)
+    // The invoice list will auto-refresh via real-time subscription
+    router.refresh()
   }
 
   return (

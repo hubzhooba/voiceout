@@ -93,6 +93,40 @@ export function DashboardView({ userId }: { userId: string }) {
 
   useEffect(() => {
     fetchDashboardData()
+    
+    // Set up real-time subscription for tent changes
+    const channel = supabase
+      .channel('dashboard-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tent_members',
+          filter: `user_id=eq.${userId}`
+        },
+        () => {
+          // Refresh dashboard when tent membership changes
+          fetchDashboardData()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'invoices'
+        },
+        () => {
+          // Refresh dashboard when invoices change
+          fetchDashboardData()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
@@ -156,10 +190,10 @@ export function DashboardView({ userId }: { userId: string }) {
         if (!invoicesError && invoicesData) {
           setRecentInvoices(invoicesData)
           
-          // Calculate stats
+          // Calculate stats with null safety
           const approved = invoicesData.filter(inv => inv.status === 'approved')
           const pending = invoicesData.filter(inv => inv.status === 'submitted')
-          const totalRevenue = approved.reduce((sum, inv) => sum + (inv.amount || 0), 0)
+          const totalRevenue = approved.reduce((sum, inv) => sum + (Number(inv.total_amount) || Number(inv.amount) || 0), 0)
           
           setStats({
             totalTents: tentIds.length,
@@ -244,12 +278,12 @@ export function DashboardView({ userId }: { userId: string }) {
   }
 
   const getUserRole = (tent: Tent) => {
-    const member = tent.tent_members.find(m => m.user_id === userId)
+    const member = tent.tent_members?.find(m => m.user_id === userId)
     return member?.tent_role || 'member'
   }
 
   const isAdmin = (tent: Tent) => {
-    const member = tent.tent_members.find(m => m.user_id === userId)
+    const member = tent.tent_members?.find(m => m.user_id === userId)
     return member?.is_admin || false
   }
 
@@ -413,7 +447,7 @@ export function DashboardView({ userId }: { userId: string }) {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Members</span>
                       <span className="font-medium">
-                        {tent.tent_members.length}/2
+                        {tent.tent_members?.length || 0}/2
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">

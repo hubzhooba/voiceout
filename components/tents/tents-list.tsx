@@ -169,8 +169,8 @@ export function TentsList() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tents.map((tent) => {
             const memberCount = tent.tent_members?.length || 0
-            const currentUserMember = tent.tent_members?.find(m => m.user_id === userId)
-            const otherMember = tent.tent_members?.find(m => m.user_id !== userId)
+            const currentUserMember = tent.tent_members?.find(m => m.user_id === userId) || null
+            const otherMember = tent.tent_members?.find(m => m.user_id !== userId) || null
             
             return (
               <Card key={tent.id} className="hover:shadow-lg transition-shadow cursor-pointer">

@@ -37,6 +37,28 @@ export function InvoiceList({ tentId, userRole }: InvoiceListProps) {
 
   useEffect(() => {
     fetchInvoices()
+    
+    // Set up real-time subscription for invoice updates
+    const channel = supabase
+      .channel(`invoices:${tentId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'invoices',
+          filter: `tent_id=eq.${tentId}`
+        },
+        () => {
+          // Refresh invoices when any change occurs
+          fetchInvoices()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tentId, filter])
 
