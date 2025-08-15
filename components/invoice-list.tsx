@@ -24,12 +24,11 @@ interface Invoice {
 }
 
 interface InvoiceListProps {
-  tentId?: string
-  workspaceId?: string
+  tentId: string
   userRole?: string
 }
 
-export function InvoiceList({ tentId, workspaceId, userRole }: InvoiceListProps) {
+export function InvoiceList({ tentId, userRole }: InvoiceListProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
@@ -38,20 +37,16 @@ export function InvoiceList({ tentId, workspaceId, userRole }: InvoiceListProps)
 
   useEffect(() => {
     fetchInvoices()
-  }, [tentId, workspaceId, filter])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tentId, filter])
 
   const fetchInvoices = async () => {
     try {
       let query = supabase
         .from('invoices')
         .select('*')
+        .eq('tent_id', tentId)
         .order('created_at', { ascending: false })
-
-      if (tentId) {
-        query = query.eq('tent_id', tentId)
-      } else if (workspaceId) {
-        query = query.eq('workspace_id', workspaceId)
-      }
 
       if (filter !== 'all') {
         query = query.eq('status', filter)
@@ -90,7 +85,7 @@ export function InvoiceList({ tentId, workspaceId, userRole }: InvoiceListProps)
       case 'submitted':
         return 'default'
       case 'approved':
-        return 'success'
+        return 'default' // Changed from 'success' to 'default'
       case 'rejected':
         return 'destructive'
       default:
@@ -181,7 +176,7 @@ export function InvoiceList({ tentId, workspaceId, userRole }: InvoiceListProps)
                       {invoice.client_name}
                     </p>
                   </div>
-                  <Badge variant={getStatusColor(invoice.status) as any}>
+                  <Badge variant={getStatusColor(invoice.status) as 'secondary' | 'default' | 'destructive' | 'outline'}>
                     {getStatusIcon(invoice.status)}
                     <span className="ml-1 capitalize">{invoice.status}</span>
                   </Badge>

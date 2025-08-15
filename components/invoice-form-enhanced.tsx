@@ -12,22 +12,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { Info } from 'lucide-react'
-import { Database } from '@/types/database'
-
-type Workspace = Database['public']['Tables']['workspaces']['Row']
 
 interface InvoiceFormEnhancedProps {
-  workspaceId: string
+  tentId: string
+  tentSettings?: {
+    business_address: string | null
+    business_tin: string | null
+    default_withholding_tax: number
+    invoice_prefix: string | null
+    invoice_notes: string | null
+  }
   onSuccess?: () => void
+  onCancel?: () => void
 }
 
-export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhancedProps) {
+export function InvoiceFormEnhanced({ tentId, tentSettings, onSuccess, onCancel }: InvoiceFormEnhancedProps) {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
-  // Workspace is fetched but only used for setting defaults
-  const [, setWorkspace] = useState<Workspace | null>(null)
   
   const [formData, setFormData] = useState({
     invoice_number: '',
@@ -51,29 +54,40 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
 
   // Fetch workspace settings for defaults
   useEffect(() => {
-    const fetchWorkspaceSettings = async () => {
-      const { data } = await supabase
-        .from('workspaces')
-        .select('*')
-        .eq('id', workspaceId)
-        .single()
-      
-      if (data) {
-        setWorkspace(data)
-        // Apply workspace defaults
-        setFormData(prev => ({
-          ...prev,
-          client_address: data.business_address || prev.client_address,
-          client_tin: data.business_tin || prev.client_tin,
-          withholding_tax_percent: data.default_withholding_tax?.toString() || '0',
-          notes: data.invoice_notes || prev.notes,
-          invoice_number: data.invoice_prefix ? `${data.invoice_prefix}${Date.now().toString().slice(-6)}` : prev.invoice_number
-        }))
+    // Apply tent settings if provided
+    if (tentSettings) {
+      setFormData(prev => ({
+        ...prev,
+        client_address: tentSettings.business_address || prev.client_address,
+        client_tin: tentSettings.business_tin || prev.client_tin,
+        withholding_tax_percent: tentSettings.default_withholding_tax?.toString() || '0',
+        notes: tentSettings.invoice_notes || prev.notes,
+        invoice_number: tentSettings.invoice_prefix ? `${tentSettings.invoice_prefix}${Date.now().toString().slice(-6)}` : prev.invoice_number
+      }))
+    } else {
+      // Fetch tent settings if not provided
+      const fetchTentSettings = async () => {
+        const { data } = await supabase
+          .from('tents')
+          .select('*')
+          .eq('id', tentId)
+          .single()
+        
+        if (data) {
+          setFormData(prev => ({
+            ...prev,
+            client_address: data.business_address || prev.client_address,
+            client_tin: data.business_tin || prev.client_tin,
+            withholding_tax_percent: data.default_withholding_tax?.toString() || '0',
+            notes: data.invoice_notes || prev.notes,
+            invoice_number: data.invoice_prefix ? `${data.invoice_prefix}${Date.now().toString().slice(-6)}` : prev.invoice_number
+          }))
+        }
       }
+      
+      fetchTentSettings()
     }
-    
-    fetchWorkspaceSettings()
-  }, [workspaceId, supabase])
+  }, [tentId, tentSettings, supabase])
 
   const calculateTotal = () => {
     const subtotal = items.reduce((sum, item) => {
@@ -153,18 +167,8 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
         withholding_tax_percent: undefined, // Remove from data sent to DB
       }
 
-      // Check if this is a room or workspace
-      const { data: roomCheck } = await supabase
-        .from('collaboration_rooms')
-        .select('id')
-        .eq('id', workspaceId)
-        .single()
-      
-      if (roomCheck) {
-        invoiceData.room_id = workspaceId
-      } else {
-        invoiceData.workspace_id = workspaceId
-      }
+      // Set tent ID for the invoice
+      invoiceData.tent_id = tentId
 
       const { data: invoice, error: invoiceError } = await supabase
         .from('invoices')
@@ -455,6 +459,11 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
           </div>
 
           <div className="flex gap-4">
+            {onCancel && (
+              <Button type="button" variant="ghost" onClick={onCancel} disabled={loading}>
+                Cancel
+              </Button>
+            )}
             <Button type="submit" variant="outline" disabled={loading}>
               Save as Draft
             </Button>

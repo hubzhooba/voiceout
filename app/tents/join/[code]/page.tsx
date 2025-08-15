@@ -53,7 +53,11 @@ export default async function JoinTentPage({
   }
 
   // Check if user is already a member
-  const isAlreadyMember = tent.tent_members?.some((m: any) => m.user_id === user.id)
+  interface TentMember {
+    user_id: string
+  }
+  
+  const isAlreadyMember = tent.tent_members?.some((m: TentMember) => m.user_id === user.id)
   
   if (isAlreadyMember) {
     redirect(`/tents/${tent.id}`)

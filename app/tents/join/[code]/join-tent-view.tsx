@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -10,16 +9,34 @@ import { Tent, Users, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 
+interface TentMember {
+  user_id: string
+  tent_role: string
+  is_admin: boolean
+  profiles: {
+    id: string
+    full_name: string | null
+    email: string
+  }
+}
+
+interface Tent {
+  id: string
+  name: string
+  description: string | null
+  invite_code: string
+  tent_members: TentMember[]
+}
+
 interface JoinTentViewProps {
-  tent: any
+  tent: Tent
   userId: string
 }
 
-export function JoinTentView({ tent, userId }: JoinTentViewProps) {
+export function JoinTentView({ tent }: JoinTentViewProps) {
   const [joining, setJoining] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-  const supabase = createClient()
 
   const handleJoin = async () => {
     setJoining(true)
@@ -43,11 +60,11 @@ export function JoinTentView({ tent, userId }: JoinTentViewProps) {
       })
 
       router.push(`/tents/${tent.id}`)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error joining tent:', error)
       toast({
         title: 'Error',
-        description: error.message || 'Failed to join tent',
+        description: error instanceof Error ? error.message : 'Failed to join tent',
         variant: 'destructive'
       })
       setJoining(false)

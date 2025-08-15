@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { InvoiceList } from '@/components/invoice-list'
 import { InvoiceFormEnhanced } from '@/components/invoice-form-enhanced'
@@ -12,8 +11,34 @@ import { ArrowLeft, FileText, Settings, Users, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
+interface TentMember {
+  user_id: string
+  tent_role: string
+  is_admin: boolean
+  profiles?: {
+    id: string
+    full_name: string | null
+    email: string
+  }
+}
+
+interface Tent {
+  id: string
+  name: string
+  description: string | null
+  business_address: string | null
+  business_tin: string | null
+  default_withholding_tax: number
+  invoice_prefix: string | null
+  invoice_notes: string | null
+  invite_code: string
+  is_locked: boolean
+  creator_role: string | null
+  tent_members: TentMember[]
+}
+
 interface TentViewProps {
-  tent: any
+  tent: Tent
   currentUserId: string
 }
 
@@ -23,11 +48,10 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
   const [userRole, setUserRole] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     // Set user role and admin status
-    const currentMember = tent.tent_members?.find((m: any) => m.user_id === currentUserId)
+    const currentMember = tent.tent_members?.find((m: TentMember) => m.user_id === currentUserId)
     if (currentMember) {
       setUserRole(currentMember.tent_role || '')
       setIsAdmin(currentMember.is_admin || false)

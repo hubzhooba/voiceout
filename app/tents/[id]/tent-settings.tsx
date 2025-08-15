@@ -10,8 +10,23 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { Settings, Save } from 'lucide-react'
 
+interface Tent {
+  id: string
+  name: string
+  description: string | null
+  business_address: string | null
+  business_tin: string | null
+  default_withholding_tax: number
+  invoice_prefix: string | null
+  invoice_notes: string | null
+  invite_code: string
+  is_locked: boolean
+  creator_role: string | null
+  tent_members?: unknown[]
+}
+
 interface TentSettingsProps {
-  tent: any
+  tent: Tent
 }
 
 export function TentSettings({ tent }: TentSettingsProps) {

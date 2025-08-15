@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -9,15 +7,34 @@ import { Badge } from '@/components/ui/badge'
 import { Copy, UserPlus, Shield } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
+interface TentMember {
+  user_id: string
+  tent_role: string
+  is_admin: boolean
+  profiles?: {
+    id: string
+    full_name: string | null
+    email: string
+  }
+}
+
+interface Tent {
+  id: string
+  name: string
+  invite_code: string
+  is_locked: boolean
+  creator_role: string | null
+  tent_members: TentMember[]
+}
+
 interface TentMembersProps {
-  tent: any
+  tent: Tent
   currentUserId: string
   isAdmin: boolean
 }
 
 export function TentMembers({ tent, currentUserId, isAdmin }: TentMembersProps) {
   const { toast } = useToast()
-  const supabase = createClient()
 
   const copyInviteCode = () => {
     navigator.clipboard.writeText(tent.invite_code)
@@ -95,7 +112,7 @@ export function TentMembers({ tent, currentUserId, isAdmin }: TentMembersProps) 
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {members.map((member: any) => {
+            {members.map((member: TentMember) => {
               const profile = member.profiles
               const isCurrentUser = member.user_id === currentUserId
               

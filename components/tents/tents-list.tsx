@@ -34,18 +34,22 @@ interface Tent {
 export function TentsList() {
   const [tents, setTents] = useState<Tent[]>([])
   const [loading, setLoading] = useState(true)
+  const [userId, setUserId] = useState<string | null>(null)
   const supabase = createClient()
   const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
     fetchTents()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchTents = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      
+      setUserId(user.id)
 
       const { data, error } = await supabase
         .from('tents')
@@ -121,8 +125,8 @@ export function TentsList() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tents.map((tent) => {
             const memberCount = tent.tent_members?.length || 0
-            const currentUserMember = tent.tent_members?.find(m => m.user_id === user?.id)
-            const otherMember = tent.tent_members?.find(m => m.user_id !== user?.id)
+            const currentUserMember = tent.tent_members?.find(m => m.user_id === userId)
+            const otherMember = tent.tent_members?.find(m => m.user_id !== userId)
             
             return (
               <Card key={tent.id} className="hover:shadow-lg transition-shadow cursor-pointer">
