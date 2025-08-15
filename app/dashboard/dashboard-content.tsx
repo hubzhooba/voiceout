@@ -12,13 +12,14 @@ import { WorkspaceRoleSelection } from '@/components/workspace-role-selection'
 import { ClientDashboard } from '@/components/client-dashboard'
 import { ManagerDashboard } from '@/components/manager-dashboard'
 import { RoomsList } from '@/components/collaboration/rooms-list'
+import { TentsList } from '@/components/tents/tents-list'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { User } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
-import { FileText, Plus, Settings, Users, LogOut, Receipt, UserCircle, Briefcase, Building2, ChevronDown, Home, Users2 } from 'lucide-react'
+import { FileText, Plus, Settings, Users, LogOut, Receipt, UserCircle, Briefcase, Building2, ChevronDown, Home, Users2, Tent } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -277,6 +278,10 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                   <Receipt className="mr-2 h-4 w-4" />
                   Cash Receipts
                 </TabsTrigger>
+                <TabsTrigger value="tents">
+                  <Tent className="mr-2 h-4 w-4" />
+                  Tents
+                </TabsTrigger>
                 <TabsTrigger value="collaboration">
                   <Users2 className="mr-2 h-4 w-4" />
                   Workspaces
@@ -348,6 +353,10 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                   userRole={userRole}
                 />
               )}
+            </TabsContent>
+
+            <TabsContent value="tents" className="space-y-4">
+              <TentsList />
             </TabsContent>
 
             <TabsContent value="collaboration" className="space-y-4">
