@@ -49,7 +49,7 @@ export default function LoginPage() {
         console.error('Profile check error:', profileError)
       }
       
-      router.push('/workspaces')
+      router.push('/tents')
       router.refresh()
     }
 
