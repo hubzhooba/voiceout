@@ -54,23 +54,23 @@
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen;
+    @apply bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 min-h-screen;
   }
 }
 
 @layer components {
   /* Glass morphism card styles */
   .glass-card {
-    @apply bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-glass;
+    @apply bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl shadow-glass;
   }
 
   .glass-card-hover {
-    @apply glass-card hover:bg-white/20 hover:shadow-2xl hover:shadow-primary-600/20 hover:-translate-y-1 transition-all duration-300;
+    @apply glass-card hover:bg-white/50 hover:shadow-2xl hover:shadow-primary-600/20 hover:-translate-y-1 transition-all duration-300;
   }
 
   /* Glossy overlay effect */
   .glossy {
-    @apply bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-2xl;
+    @apply bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-2xl;
   }
 
   /* Primary button with gradient */
@@ -83,16 +83,16 @@
 
   /* Secondary glass button */
   .btn-glass {
-    @apply px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30
-           rounded-xl hover:bg-white/20 transition-all duration-200
+    @apply px-6 py-3 bg-white/30 backdrop-blur-sm border border-white/50
+           rounded-xl hover:bg-white/40 transition-all duration-200
            hover:shadow-lg hover:shadow-white/20 font-medium;
   }
 
   /* Glass input field */
   .input-glass {
-    @apply w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30
+    @apply w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-white/60
            rounded-xl focus:ring-2 focus:ring-primary-600/50 focus:border-primary-600
-           focus:bg-white/20 placeholder-gray-500 transition-all duration-200;
+           focus:bg-white/60 placeholder-gray-500 transition-all duration-200;
   }
 
   /* Gradient text effect */
@@ -106,7 +106,7 @@
 
   /* Navigation bar glass effect */
   .nav-glass {
-    @apply bg-white/80 backdrop-blur-3xl border-b border-white/20 shadow-sm;
+    @apply bg-white/90 backdrop-blur-3xl border-b border-white/40 shadow-sm;
   }
 
   /* Floating animation elements */
@@ -116,8 +116,8 @@
 
   /* Badge variations */
   .badge-glass {
-    @apply px-3 py-1 text-xs font-medium bg-white/20 backdrop-blur-md 
-           border border-white/30 rounded-full;
+    @apply px-3 py-1 text-xs font-medium bg-white/40 backdrop-blur-md 
+           border border-white/50 rounded-full;
   }
 
   /* Loading shimmer effect */
@@ -132,12 +132,12 @@
 
   /* Modal content */
   .modal-content {
-    @apply relative glass-card max-w-2xl w-full mx-4 p-8 animate-slide-up z-50;
+    @apply relative bg-white/80 backdrop-blur-xl border border-white/70 rounded-2xl shadow-glass max-w-2xl w-full mx-4 p-8 animate-slide-up z-50;
   }
 
   /* Stats card */
   .stats-card {
-    @apply glass-card p-6 hover:shadow-glass transition-all duration-300;
+    @apply bg-white/60 backdrop-blur-xl border border-white/70 rounded-2xl shadow-glass p-6 hover:shadow-2xl hover:bg-white/70 transition-all duration-300;
   }
 
   /* Tab styles */
@@ -146,7 +146,7 @@
   }
 
   .tab-glass-active {
-    @apply bg-white/20 backdrop-blur-md shadow-glass-inset;
+    @apply bg-white/40 backdrop-blur-md shadow-glass-inset;
   }
 
   /* Divider with glass effect */

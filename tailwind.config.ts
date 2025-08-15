@@ -54,15 +54,15 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         glass: {
-          DEFAULT: 'rgba(255, 255, 255, 0.1)',
-          light: 'rgba(255, 255, 255, 0.05)',
-          medium: 'rgba(255, 255, 255, 0.15)',
-          dark: 'rgba(255, 255, 255, 0.25)',
+          DEFAULT: 'rgba(255, 255, 255, 0.4)',
+          light: 'rgba(255, 255, 255, 0.3)',
+          medium: 'rgba(255, 255, 255, 0.5)',
+          dark: 'rgba(255, 255, 255, 0.7)',
         }
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-mesh': 'linear-gradient(to bottom right, #dbeafe, #f3e8ff, #fce7f3)',
+        'gradient-mesh': 'linear-gradient(to bottom right, #f8fafc, #f1f5f9, #e2e8f0)',
         'gradient-glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
         'gradient-primary': 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
       },
