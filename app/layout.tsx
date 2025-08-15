@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "VoiceOut - Invoice Management System",
-  description: "Streamline your invoice management with VoiceOut",
+  title: "CreatorTent - Invoice Management Platform",
+  description: "Private two-party invoice management tents for seamless collaboration",
 };
 
 export default function RootLayout({

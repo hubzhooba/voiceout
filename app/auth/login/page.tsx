@@ -60,8 +60,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Login to VoiceOut</CardTitle>
-          <CardDescription>Enter your credentials to access your invoice dashboard</CardDescription>
+          <CardTitle>Login to CreatorTent</CardTitle>
+          <CardDescription>Enter your credentials to access your tents</CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
