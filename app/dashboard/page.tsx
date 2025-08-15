@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { TentDashboard } from './tent-dashboard'
 
+// Force dynamic rendering to avoid build-time Supabase errors
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   

@@ -1,5 +1,8 @@
 import { TentsList } from '@/components/tents/tents-list'
 
+// Force dynamic rendering to avoid build-time Supabase errors
+export const dynamic = 'force-dynamic'
+
 export default function TentsPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
