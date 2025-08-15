@@ -51,13 +51,27 @@ export function TentsList() {
       
       setUserId(user.id)
 
-      // First get tents the user is a member of
+      // Try a simpler query that avoids the recursive policy
+      // Just get tents without the nested members for now
       const { data: memberData, error: memberError } = await supabase
         .from('tent_members')
         .select('tent_id')
         .eq('user_id', user.id)
 
-      if (memberError) throw memberError
+      if (memberError) {
+        // If we get a recursion error, show a helpful message
+        if (memberError.message?.includes('infinite recursion')) {
+          console.error('Database policy error detected. Please contact support to fix the database policies.')
+          toast({
+            title: 'Database Configuration Issue',
+            description: 'There is a configuration issue with the database. Please run the fix_recursion.sql script in your Supabase SQL Editor.',
+            variant: 'destructive'
+          })
+          setTents([])
+          return
+        }
+        throw memberError
+      }
 
       const tentIds = memberData?.map(m => m.tent_id) || []
       
@@ -66,27 +80,40 @@ export function TentsList() {
         return
       }
 
-      // Then fetch those tents with their members
+      // Fetch tents without nested members to avoid recursion
       const { data, error } = await supabase
         .from('tents')
-        .select(`
-          *,
-          tent_members (
-            user_id,
-            tent_role,
-            is_admin,
-            profiles (
-              id,
-              full_name,
-              email
-            )
-          )
-        `)
+        .select('*')
         .in('id', tentIds)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setTents(data || [])
+      
+      // Now fetch members separately for each tent
+      const tentsWithMembers = await Promise.all(
+        (data || []).map(async (tent) => {
+          const { data: members } = await supabase
+            .from('tent_members')
+            .select(`
+              user_id,
+              tent_role,
+              is_admin,
+              profiles (
+                id,
+                full_name,
+                email
+              )
+            `)
+            .eq('tent_id', tent.id)
+          
+          return {
+            ...tent,
+            tent_members: members || []
+          }
+        })
+      )
+      
+      setTents(tentsWithMembers)
     } catch (error) {
       console.error('Error fetching tents:', error)
       toast({
