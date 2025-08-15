@@ -117,14 +117,14 @@ export function CreateRoomDialog({ workspaceId, onRoomCreated }: CreateRoomDialo
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Users className="mr-2 h-4 w-4" />
-          Create Collaboration Room
+          Create Workspace
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create Two-Party Collaboration Room</DialogTitle>
+          <DialogTitle>Create Two-Party Workspace</DialogTitle>
           <DialogDescription>
-            Create a private room for collaborating with one other person on invoices.
+            Create a private workspace for managing invoices with one partner.
           </DialogDescription>
         </DialogHeader>
 

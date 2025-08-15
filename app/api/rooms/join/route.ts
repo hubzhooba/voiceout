@@ -65,13 +65,14 @@ export async function POST(request: Request) {
       })
     }
 
-    // Add user as participant
+    // Add user as participant with user role by default
     const { error: participantError } = await supabase
       .from('room_participants')
       .insert({
         room_id: room.id,
         user_id: user.id,
-        role: 'participant'
+        role: 'participant',
+        workflow_role: 'user' // Joining participant is user by default
       })
 
     if (participantError) {

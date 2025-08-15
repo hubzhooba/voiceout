@@ -279,7 +279,7 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                 </TabsTrigger>
                 <TabsTrigger value="collaboration">
                   <Users2 className="mr-2 h-4 w-4" />
-                  Collaboration
+                  Workspaces
                 </TabsTrigger>
                 {/* Team tab only visible to admins */}
                 {isAdmin && (

@@ -68,13 +68,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // Add creator as first participant
+    // Add creator as first participant with manager role
     const { error: participantError } = await supabase
       .from('room_participants')
       .insert({
         room_id: room.id,
         user_id: user.id,
-        role: 'creator'
+        role: 'creator',
+        workflow_role: 'manager' // Creator is manager by default
       })
 
     if (participantError) {

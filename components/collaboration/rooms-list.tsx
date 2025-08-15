@@ -148,8 +148,8 @@ export function RoomsList({ workspaceId, userId }: RoomsListProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Collaboration Rooms</h2>
-          <p className="text-muted-foreground">Private two-party rooms for invoice collaboration</p>
+          <h2 className="text-2xl font-bold">Your Workspaces</h2>
+          <p className="text-muted-foreground">Private two-party workspaces for invoice management</p>
         </div>
         <div className="flex gap-2">
           <JoinRoomDialog onRoomJoined={handleRoomJoined} />
@@ -164,9 +164,9 @@ export function RoomsList({ workspaceId, userId }: RoomsListProps) {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Users className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No collaboration rooms yet</h3>
+            <h3 className="text-lg font-semibold mb-2">No workspaces yet</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Create a room to collaborate with one other person on invoices
+              Create a workspace to start managing invoices with a partner
             </p>
             <div className="flex gap-2">
               <JoinRoomDialog onRoomJoined={handleRoomJoined} />

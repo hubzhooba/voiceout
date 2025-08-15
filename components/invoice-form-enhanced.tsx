@@ -138,8 +138,10 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
         throw new Error('User not authenticated')
       }
 
-      const invoiceData = {
-        workspace_id: workspaceId,
+      // Check if workspaceId is actually a room ID (UUIDs are same format)
+      // We'll treat it as room_id for new invoices in collaboration rooms
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const invoiceData: Record<string, any> = {
         ...formData,
         amount: parseFloat(formData.amount) || 0,
         tax_amount: parseFloat(formData.tax_amount) || 0,
@@ -149,6 +151,19 @@ export function InvoiceFormEnhanced({ workspaceId, onSuccess }: InvoiceFormEnhan
         submitted_by: user.id,
         submitted_at: submitStatus === 'submitted' ? new Date().toISOString() : null,
         withholding_tax_percent: undefined, // Remove from data sent to DB
+      }
+
+      // Check if this is a room or workspace
+      const { data: roomCheck } = await supabase
+        .from('collaboration_rooms')
+        .select('id')
+        .eq('id', workspaceId)
+        .single()
+      
+      if (roomCheck) {
+        invoiceData.room_id = workspaceId
+      } else {
+        invoiceData.workspace_id = workspaceId
       }
 
       const { data: invoice, error: invoiceError } = await supabase

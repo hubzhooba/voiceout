@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { CollaborationRoomView } from './room-view'
+import { RoomWorkspaceView } from '@/components/room-workspace/room-workspace-view'
 
 export default async function RoomPage({
   params
@@ -28,7 +28,7 @@ export default async function RoomPage({
     redirect('/dashboard')
   }
 
-  // Fetch room details
+  // Fetch room details with enhanced fields
   const { data: room } = await supabase
     .from('collaboration_rooms')
     .select(`
@@ -36,6 +36,7 @@ export default async function RoomPage({
       room_participants (
         user_id,
         role,
+        workflow_role,
         profiles (
           id,
           email,
@@ -50,5 +51,5 @@ export default async function RoomPage({
     redirect('/dashboard')
   }
 
-  return <CollaborationRoomView room={room} currentUserId={user.id} />
+  return <RoomWorkspaceView room={room} currentUserId={user.id} />
 }
