@@ -28,9 +28,18 @@ export default function LoginPage() {
     })
 
     if (error) {
+      console.error('Login error:', error)
+      // Provide more specific error messages
+      let errorMessage = error.message
+      if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.'
+      } else if (error.status === 400) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.'
+      }
+      
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Login Failed",
+        description: errorMessage,
         variant: "destructive",
       })
     } else if (authData.user) {
