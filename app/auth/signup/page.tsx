@@ -23,6 +23,24 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
 
+    // First check if email already exists in profiles
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email)
+      .single()
+    
+    if (existingProfile) {
+      toast({
+        title: "Account Already Exists",
+        description: "An account with this email already exists. Please login instead.",
+        variant: "destructive",
+      })
+      setLoading(false)
+      router.push('/auth/login')
+      return
+    }
+
     const { data: authData, error } = await supabase.auth.signUp({
       email,
       password,
@@ -34,16 +52,25 @@ export default function SignupPage() {
     })
 
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      })
+      // Check for specific error messages
+      if (error.message.includes('already registered')) {
+        toast({
+          title: "Account Already Exists",
+          description: "This email is already registered. Please login instead.",
+          variant: "destructive",
+        })
+        router.push('/auth/login')
+      } else {
+        toast({
+          title: "Signup Error",
+          description: error.message,
+          variant: "destructive",
+        })
+      }
     } else if (authData.user) {
       console.log('User created:', authData.user.id, authData.user.email)
       
-      // Manually create profile if trigger doesn't exist
-      // Don't use select() to avoid RLS issues
+      // Try to create profile
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -52,14 +79,21 @@ export default function SignupPage() {
           full_name: fullName,
         })
       
-      if (profileError && profileError.code !== '23505') { // Ignore duplicate key errors
-        console.error('Profile creation error:', profileError)
-        console.error('Attempted to insert:', {
-          id: authData.user.id,
-          email: authData.user.email,
-          full_name: fullName
-        })
-        // Continue anyway - profile might be created by trigger
+      if (profileError) {
+        if (profileError.code === '23503') {
+          // Foreign key violation - this shouldn't happen but handle it
+          console.error('Critical error: User created but profile cannot be linked:', profileError)
+          toast({
+            title: "Account Setup Error",
+            description: "There was an issue setting up your account. Please try logging in or contact support.",
+            variant: "destructive",
+          })
+        } else if (profileError.code === '23505') {
+          // Duplicate key - profile already exists, that's fine
+          console.log('Profile already exists for user')
+        } else {
+          console.error('Profile creation error:', profileError)
+        }
       }
       
       toast({

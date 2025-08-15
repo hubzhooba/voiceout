@@ -34,34 +34,34 @@ export default function LoginPage() {
         variant: "destructive",
       })
     } else if (authData.user) {
-      // Ensure profile exists (in case trigger failed)
-      // First try to insert (for new profiles)
-      const { error: insertError } = await supabase
+      // Check if profile exists
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: authData.user.email!,
-          full_name: authData.user.user_metadata?.full_name || authData.user.email,
-        })
+        .select('id')
+        .eq('id', authData.user.id)
+        .single()
       
-      // If insert fails due to duplicate (profile already exists), that's fine
-      if (insertError && insertError.code !== '23505') {
-        console.error('Profile insert error:', insertError)
+      if (profileError && profileError.code !== 'PGRST116') { // PGRST116 = no rows found
+        console.error('Error checking profile:', profileError)
+        toast({
+          title: "Login Error",
+          description: "There was an issue accessing your account. Please try again or contact support.",
+          variant: "destructive",
+        })
+        setLoading(false)
+        return
       }
       
-      // If profile already exists, try to update it
-      if (insertError?.code === '23505') {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            email: authData.user.email!,
-            full_name: authData.user.user_metadata?.full_name || authData.user.email,
-          })
-          .eq('id', authData.user.id)
-        
-        if (updateError) {
-          console.error('Profile update error:', updateError)
-        }
+      if (!profile) {
+        // Profile doesn't exist - this shouldn't happen for login
+        console.error('Profile missing for user:', authData.user.id)
+        toast({
+          title: "Account Setup Incomplete",
+          description: "Your account setup is incomplete. Please contact support.",
+          variant: "destructive",
+        })
+        setLoading(false)
+        return
       }
       
       router.push('/tents')
