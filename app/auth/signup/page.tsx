@@ -24,11 +24,16 @@ export default function SignupPage() {
     setLoading(true)
 
     // First check if email already exists in profiles
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: checkError } = await supabase
       .from('profiles')
       .select('email')
       .eq('email', email)
-      .single()
+      .maybeSingle() // Use maybeSingle instead of single to avoid 406 errors
+    
+    // Ignore the error if it's just "no rows" but handle other errors
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing profile:', checkError)
+    }
     
     if (existingProfile) {
       toast({
