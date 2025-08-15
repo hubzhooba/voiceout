@@ -51,6 +51,22 @@ export function TentsList() {
       
       setUserId(user.id)
 
+      // First get tents the user is a member of
+      const { data: memberData, error: memberError } = await supabase
+        .from('tent_members')
+        .select('tent_id')
+        .eq('user_id', user.id)
+
+      if (memberError) throw memberError
+
+      const tentIds = memberData?.map(m => m.tent_id) || []
+      
+      if (tentIds.length === 0) {
+        setTents([])
+        return
+      }
+
+      // Then fetch those tents with their members
       const { data, error } = await supabase
         .from('tents')
         .select(`
@@ -66,6 +82,7 @@ export function TentsList() {
             )
           )
         `)
+        .in('id', tentIds)
         .order('created_at', { ascending: false })
 
       if (error) throw error
