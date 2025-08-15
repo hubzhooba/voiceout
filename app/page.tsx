@@ -12,7 +12,7 @@ export default async function Home() {
     } else {
       redirect('/auth/login')
     }
-  } catch (error) {
+  } catch {
     // If Supabase is not configured, redirect to login
     redirect('/auth/login')
   }

@@ -11,13 +11,14 @@ import { CashReceiptBook } from '@/components/cash-receipt-book'
 import { WorkspaceRoleSelection } from '@/components/workspace-role-selection'
 import { ClientDashboard } from '@/components/client-dashboard'
 import { ManagerDashboard } from '@/components/manager-dashboard'
+import { RoomsList } from '@/components/collaboration/rooms-list'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { User } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
-import { FileText, Plus, Settings, Users, LogOut, Receipt, UserCircle, Briefcase, Building2, ChevronDown, Home } from 'lucide-react'
+import { FileText, Plus, Settings, Users, LogOut, Receipt, UserCircle, Briefcase, Building2, ChevronDown, Home, Users2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -276,6 +277,10 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                   <Receipt className="mr-2 h-4 w-4" />
                   Cash Receipts
                 </TabsTrigger>
+                <TabsTrigger value="collaboration">
+                  <Users2 className="mr-2 h-4 w-4" />
+                  Collaboration
+                </TabsTrigger>
                 {/* Team tab only visible to admins */}
                 {isAdmin && (
                   <TabsTrigger value="team">
@@ -341,6 +346,15 @@ export function DashboardContent({ user, profile, workspaces: initialWorkspaces,
                 <CashReceiptBook 
                   workspaceId={selectedWorkspace.id}
                   userRole={userRole}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="collaboration" className="space-y-4">
+              {selectedWorkspace && (
+                <RoomsList 
+                  workspaceId={selectedWorkspace.id}
+                  userId={user.id}
                 />
               )}
             </TabsContent>
