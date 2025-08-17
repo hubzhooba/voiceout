@@ -21,10 +21,14 @@ import { Copy, Tent, Check, User, Briefcase } from 'lucide-react'
 
 interface CreateTentDialogProps {
   onTentCreated?: (tent: { id: string; name: string }) => void
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function CreateTentDialog({ onTentCreated }: CreateTentDialogProps) {
-  const [open, setOpen] = useState(false)
+export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenChange }: CreateTentDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = onOpenChange || setInternalOpen
   const [loading, setLoading] = useState(false)
   const [tentName, setTentName] = useState('')
   const [description, setDescription] = useState('')
@@ -131,12 +135,14 @@ export function CreateTentDialog({ onTentCreated }: CreateTentDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Tent className="mr-2 h-4 w-4" />
-          Create Tent
-        </Button>
-      </DialogTrigger>
+      {!controlledOpen && (
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Tent className="mr-2 h-4 w-4" />
+            Create Tent
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create Your Tent</DialogTitle>

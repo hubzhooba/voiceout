@@ -12,28 +12,23 @@ import { useOptimizedNavigation } from '@/hooks/use-optimized-navigation'
 import { CreateTentDialog } from '@/components/tents/create-tent-dialog'
 import {
   Tent,
-  TrendingUp,
   FileText,
   Clock,
   CheckCircle,
   XCircle,
   LogIn,
   Copy,
-  Sparkles,
   Zap,
   Target,
   Trophy,
   Star,
   Rocket,
-  PlusCircle,
   Search,
   Bell,
   Settings,
   User,
   BarChart3,
   DollarSign,
-  Users,
-  Briefcase,
   ChevronRight,
   Loader2,
   ArrowUpRight,
@@ -43,6 +38,7 @@ import {
   List,
   Moon,
   Sun,
+  PlusCircle,
 } from 'lucide-react'
 import {
   Dialog,
@@ -135,13 +131,23 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   })
   const [loading, setLoading] = useState(true)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
+  const [showCreateTentDialog, setShowCreateTentDialog] = useState(false)
   const [joinCode, setJoinCode] = useState('')
   const [joining, setJoining] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [userRole, setUserRole] = useState<'creator' | 'manager'>('creator')
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [notifications, setNotifications] = useState<Array<{
+    id: string
+    title: string
+    message: string
+    type: 'info' | 'success' | 'warning'
+    read: boolean
+    created_at: string
+  }>>([])
   
   const supabase = createClient()
   const { toast } = useToast()
@@ -374,21 +380,79 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
 
             <div className="flex items-center gap-4">
               {/* Quick Actions */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse" />
-              </Button>
+              <DropdownMenu open={showNotifications} onOpenChange={setShowNotifications}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative"
+                  >
+                    <Bell className="h-5 w-5" />
+                    {notifications.filter(n => !n.read).length > 0 && (
+                      <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-80" align="end">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold">Notifications</span>
+                      {notifications.filter(n => !n.read).length > 0 && (
+                        <Button variant="ghost" size="sm" className="h-auto p-1 text-xs">
+                          Mark all read
+                        </Button>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {notifications.length > 0 ? (
+                    notifications.slice(0, 5).map((notification) => (
+                      <DropdownMenuItem key={notification.id} className="flex flex-col items-start p-3">
+                        <div className="flex items-start gap-2 w-full">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full mt-1.5",
+                            !notification.read && "bg-blue-500"
+                          )} />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{notification.title}</p>
+                            <p className="text-xs text-gray-500 mt-1">{notification.message}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {new Date(notification.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center text-sm text-gray-500">
+                      <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      No notifications yet
+                    </div>
+                  )}
+                  {notifications.length > 5 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-center text-sm text-blue-600">
+                        View all notifications
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsDarkMode(!isDarkMode)}
+                onClick={() => {
+                  document.documentElement.classList.toggle('dark')
+                  toast({
+                    title: document.documentElement.classList.contains('dark') ? '🌙 Dark mode enabled' : '☀️ Light mode enabled',
+                    description: 'Your preference has been saved',
+                  })
+                }}
               >
-                {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                <Sun className="h-5 w-5 dark:hidden" />
+                <Moon className="h-5 w-5 hidden dark:block" />
               </Button>
 
               {/* User Menu */}
@@ -471,106 +535,51 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           </div>
         </motion.div>
 
-        {/* Action Cards - Role Specific */}
+        {/* Quick Actions Bar */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+          className="flex items-center gap-3 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          {userRole === 'creator' ? (
-            <>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative overflow-hidden"
+          <Card className="flex items-center gap-2 p-2 bg-white/80 backdrop-blur">
+            <CreateTentDialog onTentCreated={fetchDashboardData} />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowJoinDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">Join Tent</span>
+            </Button>
+            {userRole === 'manager' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-2"
               >
-                <Card className="p-6 cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
-                  <div className="relative z-10">
-                    <PlusCircle className="h-8 w-8 mb-3" />
-                    <h3 className="text-lg font-semibold mb-1">Create Invoice</h3>
-                    <p className="text-sm opacity-90">Start a new invoice quickly</p>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 opacity-10">
-                    <FileText className="h-32 w-32" />
-                  </div>
-                </Card>
-              </motion.div>
-
-              <CreateTentDialog onTentCreated={fetchDashboardData} />
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowJoinDialog(true)}
-                className="relative overflow-hidden"
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Analytics</span>
+              </Button>
+            )}
+          </Card>
+          
+          {userRole === 'manager' && stats.pendingInvoices > 0 && (
+            <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 border-yellow-200">
+              <Clock className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm font-medium text-yellow-800">
+                {stats.pendingInvoices} invoices awaiting review
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-yellow-700 hover:text-yellow-900"
               >
-                <Card className="p-6 cursor-pointer bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
-                  <div className="relative z-10">
-                    <LogIn className="h-8 w-8 mb-3" />
-                    <h3 className="text-lg font-semibold mb-1">Join Tent</h3>
-                    <p className="text-sm opacity-90">Enter an invite code</p>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 opacity-10">
-                    <Users className="h-32 w-32" />
-                  </div>
-                </Card>
-              </motion.div>
-            </>
-          ) : (
-            <>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative overflow-hidden"
-              >
-                <Card className="p-6 cursor-pointer bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
-                  <div className="relative z-10">
-                    <Clock className="h-8 w-8 mb-3" />
-                    <h3 className="text-lg font-semibold mb-1">Review Queue</h3>
-                    <p className="text-sm opacity-90">{stats.pendingInvoices} awaiting review</p>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 opacity-10">
-                    <CheckCircle className="h-32 w-32" />
-                  </div>
-                </Card>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative overflow-hidden"
-              >
-                <Card className="p-6 cursor-pointer bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
-                  <div className="relative z-10">
-                    <BarChart3 className="h-8 w-8 mb-3" />
-                    <h3 className="text-lg font-semibold mb-1">Analytics</h3>
-                    <p className="text-sm opacity-90">View performance metrics</p>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 opacity-10">
-                    <TrendingUp className="h-32 w-32" />
-                  </div>
-                </Card>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowJoinDialog(true)}
-                className="relative overflow-hidden"
-              >
-                <Card className="p-6 cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
-                  <div className="relative z-10">
-                    <Users className="h-8 w-8 mb-3" />
-                    <h3 className="text-lg font-semibold mb-1">Team Overview</h3>
-                    <p className="text-sm opacity-90">Manage your teams</p>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 opacity-10">
-                    <Briefcase className="h-32 w-32" />
-                  </div>
-                </Card>
-              </motion.div>
-            </>
+                Review Now
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Card>
           )}
         </motion.div>
 
@@ -894,6 +903,16 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
         </motion.div>
       </div>
 
+      {/* Create Tent Dialog */}
+      <CreateTentDialog 
+        open={showCreateTentDialog}
+        onOpenChange={setShowCreateTentDialog}
+        onTentCreated={() => {
+          setShowCreateTentDialog(false)
+          fetchDashboardData()
+        }} 
+      />
+
       {/* Join Tent Dialog */}
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
         <DialogContent className="sm:max-w-md">
@@ -956,11 +975,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>
-              <FileText className="mr-2 h-4 w-4" />
-              Create Invoice
-            </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowCreateTentDialog(true)}>
               <Tent className="mr-2 h-4 w-4" />
               Create Tent
             </DropdownMenuItem>
