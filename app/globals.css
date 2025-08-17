@@ -54,25 +54,29 @@
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 min-h-screen;
+    @apply bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 min-h-screen text-foreground;
+  }
+  
+  .dark body {
+    @apply bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800;
   }
 }
 
 @layer components {
   /* Glass morphism card styles - optimized for performance */
   .glass-card {
-    @apply bg-white/40 backdrop-blur-sm border border-white/50 rounded-2xl shadow-glass;
+    @apply bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border border-white/50 dark:border-gray-700/50 rounded-2xl shadow-glass;
     will-change: transform;
   }
 
   .glass-card-hover {
-    @apply glass-card hover:bg-white/50 hover:shadow-lg hover:shadow-primary-600/10 hover:-translate-y-0.5 transition-transform duration-150;
+    @apply glass-card hover:bg-white/50 dark:hover:bg-gray-800/50 hover:shadow-lg hover:shadow-primary-600/10 dark:hover:shadow-primary-400/10 hover:-translate-y-0.5 transition-transform duration-150;
     transform: translateZ(0); /* Enable GPU acceleration */
   }
 
   /* Glossy overlay effect */
   .glossy {
-    @apply bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-2xl;
+    @apply bg-gradient-to-br from-white/40 to-white/20 dark:from-gray-800/40 dark:to-gray-800/20 backdrop-blur-2xl;
   }
 
   /* Primary button with gradient - optimized */
@@ -86,17 +90,17 @@
 
   /* Secondary glass button - optimized */
   .btn-glass {
-    @apply px-6 py-3 bg-white/30 backdrop-blur-none border border-white/50
-           rounded-xl hover:bg-white/40 transition-colors duration-150
-           hover:shadow-md hover:shadow-white/10 font-medium;
+    @apply px-6 py-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-none border border-white/50 dark:border-gray-700/50
+           rounded-xl hover:bg-white/40 dark:hover:bg-gray-800/40 transition-colors duration-150
+           hover:shadow-md hover:shadow-white/10 dark:hover:shadow-gray-700/10 font-medium;
     transform: translateZ(0);
   }
 
   /* Glass input field */
   .input-glass {
-    @apply w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-white/60
-           rounded-xl focus:ring-2 focus:ring-primary-600/50 focus:border-primary-600
-           focus:bg-white/60 placeholder-gray-500 transition-all duration-200;
+    @apply w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/60 dark:border-gray-700/60
+           rounded-xl focus:ring-2 focus:ring-primary-600/50 dark:focus:ring-primary-400/50 focus:border-primary-600 dark:focus:border-primary-400
+           focus:bg-white/60 dark:focus:bg-gray-800/60 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200;
   }
 
   /* Gradient text effect */
@@ -110,7 +114,7 @@
 
   /* Navigation bar glass effect - optimized */
   .nav-glass {
-    @apply bg-white/90 backdrop-blur-md border-b border-white/40 shadow-sm;
+    @apply bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-white/40 dark:border-gray-800/40 shadow-sm;
     transform: translateZ(0);
   }
 
@@ -121,8 +125,8 @@
 
   /* Badge variations */
   .badge-glass {
-    @apply px-3 py-1 text-xs font-medium bg-white/40 backdrop-blur-md 
-           border border-white/50 rounded-full;
+    @apply px-3 py-1 text-xs font-medium bg-white/40 dark:bg-gray-800/40 backdrop-blur-md 
+           border border-white/50 dark:border-gray-700/50 rounded-full;
   }
 
   /* Loading shimmer effect */
@@ -137,12 +141,12 @@
 
   /* Modal content */
   .modal-content {
-    @apply relative bg-white/80 backdrop-blur-xl border border-white/70 rounded-2xl shadow-glass max-w-2xl w-full mx-4 p-8 animate-slide-up z-50;
+    @apply relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/70 dark:border-gray-800/70 rounded-2xl shadow-glass max-w-2xl w-full mx-4 p-8 animate-slide-up z-50;
   }
 
   /* Stats card - optimized */
   .stats-card {
-    @apply bg-white/60 backdrop-blur-sm border border-white/70 rounded-2xl shadow-glass p-6 hover:shadow-lg hover:bg-white/70 transition-colors duration-150;
+    @apply bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-white/70 dark:border-gray-700/70 rounded-2xl shadow-glass p-6 hover:shadow-lg hover:bg-white/70 dark:hover:bg-gray-800/70 transition-colors duration-150;
     transform: translateZ(0);
   }
 
@@ -152,12 +156,12 @@
   }
 
   .tab-glass-active {
-    @apply bg-white/40 backdrop-blur-md shadow-glass-inset;
+    @apply bg-white/40 dark:bg-gray-800/40 backdrop-blur-md shadow-glass-inset;
   }
 
   /* Divider with glass effect */
   .divider-glass {
-    @apply h-px bg-gradient-to-r from-transparent via-white/30 to-transparent;
+    @apply h-px bg-gradient-to-r from-transparent via-white/30 dark:via-gray-700/30 to-transparent;
   }
 
   /* Notification dot */
@@ -204,11 +208,11 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/30 rounded-full backdrop-blur-sm;
+    @apply bg-white/30 dark:bg-gray-700/30 rounded-full backdrop-blur-sm;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-white/40;
+    @apply bg-white/40 dark:bg-gray-700/40;
   }
 }
 

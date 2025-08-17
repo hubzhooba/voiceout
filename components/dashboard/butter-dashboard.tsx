@@ -59,6 +59,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
+import { AnalyticsModal } from '@/components/analytics/analytics-modal'
 
 interface TentData {
   id: string
@@ -132,6 +133,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   const [loading, setLoading] = useState(true)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
   const [showCreateTentDialog, setShowCreateTentDialog] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(false)
   const [joinCode, setJoinCode] = useState('')
   const [joining, setJoining] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -328,25 +330,25 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950">
         <motion.div 
           className="text-center"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <Loader2 className="h-12 w-12 animate-spin text-primary-600 mx-auto mb-4" />
-          <p className="text-lg font-medium">Setting up your workspace...</p>
-          <p className="text-sm text-gray-500 mt-2">This will just take a moment</p>
+          <Loader2 className="h-12 w-12 animate-spin text-primary-600 dark:text-primary-400 mx-auto mb-4" />
+          <p className="text-lg font-medium dark:text-gray-100">Setting up your workspace...</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This will just take a moment</p>
         </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950 transition-colors duration-300">
       {/* Top Navigation Bar */}
       <motion.nav 
-        className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50"
+        className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 transition-colors duration-300"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100 }}
@@ -358,7 +360,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
                   <Tent className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                   VoiceOut
                 </h1>
               </div>
@@ -368,11 +370,11 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search tents, invoices..."
-                  className="pl-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                  className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-750 transition-colors"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-xs bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded border border-gray-200 dark:border-gray-700">
                   ⌘K
                 </kbd>
               </div>
@@ -506,29 +508,29 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
         >
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
                 {greeting.emoji} {greeting.text}, Creator!
               </h2>
-              <p className="text-gray-600 mt-2 flex items-center gap-2">
+              <p className="text-gray-600 dark:text-gray-400 mt-2 flex items-center gap-2">
                 <motivationalMessage.icon className="h-4 w-4 text-yellow-500" />
                 {motivationalMessage.text}
               </p>
             </div>
             
             {/* Quick Stats for Today */}
-            <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 border-0">
+            <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-0">
               <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{stats.pendingInvoices}</p>
-                  <p className="text-xs text-gray-600">Pending Review</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.pendingInvoices}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Pending Review</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{stats.approvedInvoices}</p>
-                  <p className="text-xs text-gray-600">Approved</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.approvedInvoices}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Approved</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-600">{stats.completionRate.toFixed(0)}%</p>
-                  <p className="text-xs text-gray-600">Completion</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.completionRate.toFixed(0)}%</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Completion</p>
                 </div>
               </div>
             </Card>
@@ -542,7 +544,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="flex items-center gap-2 p-2 bg-white/80 backdrop-blur">
+          <Card className="flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
             <CreateTentDialog onTentCreated={fetchDashboardData} />
             <Button
               variant="ghost"
@@ -553,28 +555,27 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               <LogIn className="h-4 w-4" />
               <span className="hidden sm:inline">Join Tent</span>
             </Button>
-            {userRole === 'manager' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden sm:inline">Analytics</span>
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAnalytics(true)}
+              className="flex items-center gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
+            </Button>
           </Card>
           
           {userRole === 'manager' && stats.pendingInvoices > 0 && (
-            <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 border-yellow-200">
+            <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
               <Clock className="h-4 w-4 text-yellow-600" />
-              <span className="text-sm font-medium text-yellow-800">
+              <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                 {stats.pendingInvoices} invoices awaiting review
               </span>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-yellow-700 hover:text-yellow-900"
+                className="text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100"
               >
                 Review Now
                 <ChevronRight className="h-4 w-4 ml-1" />
@@ -600,8 +601,8 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                 {Math.abs(stats.revenueGrowth).toFixed(1)}%
               </Badge>
             </div>
-            <p className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">Total Revenue</p>
+            <p className="text-2xl font-bold dark:text-gray-100">${stats.totalRevenue.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total Revenue</p>
             <Progress value={75} className="mt-2 h-1" />
           </Card>
 
@@ -615,8 +616,8 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                 {stats.invoiceGrowth.toFixed(1)}%
               </Badge>
             </div>
-            <p className="text-2xl font-bold">{stats.totalInvoices}</p>
-            <p className="text-xs text-gray-500">Total Invoices</p>
+            <p className="text-2xl font-bold dark:text-gray-100">{stats.totalInvoices}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total Invoices</p>
             <Progress value={stats.completionRate} className="mt-2 h-1" />
           </Card>
 
@@ -627,8 +628,8 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               </div>
               <Badge variant="secondary" className="text-xs">Active</Badge>
             </div>
-            <p className="text-2xl font-bold">{stats.approvedInvoices}</p>
-            <p className="text-xs text-gray-500">Approved</p>
+            <p className="text-2xl font-bold dark:text-gray-100">{stats.approvedInvoices}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Approved</p>
             <Progress value={(stats.approvedInvoices / Math.max(stats.totalInvoices, 1)) * 100} className="mt-2 h-1" />
           </Card>
 
@@ -639,8 +640,8 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               </div>
               <Badge variant="outline" className="text-xs">Pending</Badge>
             </div>
-            <p className="text-2xl font-bold">{stats.pendingInvoices}</p>
-            <p className="text-xs text-gray-500">Awaiting Review</p>
+            <p className="text-2xl font-bold dark:text-gray-100">{stats.pendingInvoices}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Awaiting Review</p>
             <Progress value={(stats.pendingInvoices / Math.max(stats.totalInvoices, 1)) * 100} className="mt-2 h-1" />
           </Card>
         </motion.div>
@@ -648,7 +649,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
         {/* Tents Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold flex items-center gap-2">
+            <h3 className="text-xl font-semibold dark:text-gray-100 flex items-center gap-2">
               <Tent className="h-5 w-5 text-blue-600" />
               Your Tents
             </h3>
@@ -679,7 +680,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               </DropdownMenu>
               
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -708,11 +709,11 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="text-center py-12"
               >
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
-                  <Tent className="h-10 w-10 text-gray-400" />
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+                  <Tent className="h-10 w-10 text-gray-400 dark:text-gray-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No tents yet</h3>
-                <p className="text-gray-500 mb-6">Create your first tent or join an existing one</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No tents yet</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Create your first tent or join an existing one</p>
                 <div className="flex gap-3 justify-center">
                   <CreateTentDialog onTentCreated={fetchDashboardData} />
                   <Button onClick={() => setShowJoinDialog(true)} variant="outline">
@@ -747,7 +748,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                       >
                         <Card 
                           className={cn(
-                            "p-5 cursor-pointer transition-all hover:shadow-xl",
+                            "p-5 cursor-pointer transition-all hover:shadow-xl dark:bg-gray-800/50 dark:hover:bg-gray-800/70",
                             viewMode === 'list' && "flex items-center justify-between"
                           )}
                           onClick={() => navigate(`/tents/${tent.id}`)}
@@ -767,9 +768,9 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                                 )} />
                               </div>
                               <div>
-                                <h4 className="font-semibold text-gray-900">{tent.name}</h4>
+                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">{tent.name}</h4>
                                 {tent.description && viewMode === 'grid' && (
-                                  <p className="text-sm text-gray-500 line-clamp-1">{tent.description}</p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{tent.description}</p>
                                 )}
                               </div>
                             </div>
@@ -795,7 +796,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                                 
                                 {!tent.is_locked && (
                                   <div className="flex items-center justify-between pt-3 border-t">
-                                    <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                                    <code className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded font-mono dark:text-gray-300">
                                       {tent.invite_code}
                                     </code>
                                     <Button
@@ -832,7 +833,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                                   <Badge variant="default" className="text-xs">Open</Badge>
                                 )}
                               </div>
-                              <ChevronRight className="h-5 w-5 text-gray-400" />
+                              <ChevronRight className="h-5 w-5 text-gray-400 dark:text-gray-600" />
                             </div>
                           )}
                         </Card>
@@ -851,7 +852,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <h3 className="text-xl font-semibold dark:text-gray-100 mb-4 flex items-center gap-2">
             <Clock className="h-5 w-5 text-purple-600" />
             Recent Activity
           </h3>
@@ -863,7 +864,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
                   onClick={() => navigate(`/invoices/${invoice.id}`)}
                   onMouseEnter={() => prefetch(`/invoices/${invoice.id}`)}
                 >
@@ -881,20 +882,20 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                        <FileText className="h-4 w-4 text-gray-600" />}
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{invoice.invoice_number}</p>
-                      <p className="text-xs text-gray-500">{invoice.client_name}</p>
+                      <p className="font-medium text-sm dark:text-gray-200">{invoice.invoice_number}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{invoice.client_name}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-sm">${(invoice.total_amount || invoice.amount || 0).toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">{new Date(invoice.created_at).toLocaleDateString()}</p>
+                    <p className="font-semibold text-sm dark:text-gray-200">${(invoice.total_amount || invoice.amount || 0).toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(invoice.created_at).toLocaleDateString()}</p>
                   </div>
                 </motion.div>
               ))}
               
               {invoices.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                   <p>No recent activity</p>
                 </div>
               )}
@@ -902,6 +903,14 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           </Card>
         </motion.div>
       </div>
+
+      {/* Analytics Modal */}
+      <AnalyticsModal
+        open={showAnalytics}
+        onOpenChange={setShowAnalytics}
+        stats={stats}
+        invoices={invoices}
+      />
 
       {/* Create Tent Dialog */}
       <CreateTentDialog 
