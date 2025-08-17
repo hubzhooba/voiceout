@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { InvoiceDetailView } from './invoice-detail-view'
+import { InvoiceWrapper } from './invoice-wrapper'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -19,55 +19,42 @@ export default async function InvoicePage({
     redirect('/auth/login')
   }
 
-  // Fetch invoice details
-  const { data: invoice, error } = await supabase
-    .from('invoices')
-    .select(`
-      *,
-      invoice_items (*),
-      profiles:submitted_by (
-        full_name,
-        email
-      ),
-      approved_profile:approved_by (
-        full_name,
-        email
-      ),
-      rejected_profile:rejected_by (
-        full_name,
-        email
-      )
-    `)
-    .eq('id', id)
-    .single()
+  // Parallel fetch for better performance
+  const [invoiceResult, memberResult] = await Promise.all([
+    supabase
+      .from('invoices')
+      .select(`
+        *,
+        invoice_items (*)
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('tent_members')
+      .select('tent_id, tent_role, is_admin, tents!inner(name, description)')
+      .eq('user_id', user.id)
+  ])
 
-  if (error || !invoice) {
+  if (invoiceResult.error || !invoiceResult.data) {
     redirect('/tents')
   }
 
-  // Check if user has access to this invoice's tent
-  const { data: member } = await supabase
-    .from('tent_members')
-    .select('tent_role, is_admin')
-    .eq('tent_id', invoice.tent_id)
-    .eq('user_id', user.id)
-    .single()
+  const invoice = invoiceResult.data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const member = memberResult.data?.find((m: any) => m.tent_id === invoice.tent_id)
 
   if (!member) {
     redirect('/tents')
   }
 
-  // Get tent details
-  const { data: tent } = await supabase
-    .from('tents')
-    .select('name, description')
-    .eq('id', invoice.tent_id)
-    .single()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tent = (member as any).tents
 
   return (
-    <InvoiceDetailView 
-      invoice={invoice}
-      tent={tent}
+    <InvoiceWrapper 
+      invoiceId={id}
+      initialInvoice={invoice}
+      tentName={tent?.name}
       userRole={member.tent_role}
       isAdmin={member.is_admin}
       userId={user.id}

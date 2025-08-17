@@ -212,6 +212,54 @@
   }
 }
 
+/* Print styles for invoice */
+@media print {
+  body {
+    background: white !important;
+  }
+  
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  /* Hide everything except the invoice content */
+  body > div:not(.container) {
+    display: none !important;
+  }
+  
+  /* Clean printing layout */
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Remove backgrounds and borders for cleaner print */
+  .bg-white {
+    background: white !important;
+  }
+  
+  /* Ensure text is black for printing */
+  * {
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Page breaks */
+  .page-break {
+    page-break-after: always;
+  }
+  
+  @page {
+    margin: 0.5in;
+  }
+}
+
 @layer utilities {
   /* Mesh gradient background */
   .bg-mesh {
