@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
+import { OptimizedButton as Button } from '@/components/ui/optimized-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { useRouter } from 'next/navigation'
+import { useOptimizedNavigation } from '@/hooks/use-optimized-navigation'
 import { CreateTentDialog } from '@/components/tents/create-tent-dialog'
 import {
   Dialog,
@@ -89,31 +89,38 @@ export function GlassDashboard({ userId }: { userId: string }) {
   const [joining, setJoining] = useState(false)
   const supabase = createClient()
   const { toast } = useToast()
-  const router = useRouter()
+  const { navigate, prefetch } = useOptimizedNavigation()
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
-      // Fetch user's tents
-      const { data: tentsData, error: tentsError } = await supabase
-        .from('tent_members')
-        .select(`
-          tent_id,
-          tent_role,
-          is_admin,
-          tents (
-            id,
-            name,
-            description,
-            is_locked,
-            invite_code
-          )
-        `)
-        .eq('user_id', userId)
+      // Batch fetch all data in parallel for better performance
+      const [tentsResponse, invoicesResponse] = await Promise.all([
+        supabase
+          .from('tent_members')
+          .select(`
+            tent_id,
+            tent_role,
+            is_admin,
+            tents (
+              id,
+              name,
+              description,
+              is_locked,
+              invite_code
+            )
+          `)
+          .eq('user_id', userId),
+        supabase
+          .from('invoices')
+          .select('*, tents(name)')
+          .order('created_at', { ascending: false })
+          .limit(10)
+      ])
 
-      if (tentsError) throw tentsError
+      if (tentsResponse.error) throw tentsResponse.error
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const formattedTents = tentsData?.map((item: any) => ({
+      const formattedTents = tentsResponse.data?.map((item: any) => ({
         id: item.tents.id,
         name: item.tents.name,
         description: item.tents.description,
@@ -128,42 +135,23 @@ export function GlassDashboard({ userId }: { userId: string }) {
 
       setTents(formattedTents)
 
-      // Fetch invoices from user's tents
-      const tentIds = formattedTents.map(t => t.id)
-      if (tentIds.length > 0) {
-        const { data: invoicesData, error: invoicesError } = await supabase
-          .from('invoices')
-          .select('*, tents(name)')
-          .in('tent_id', tentIds)
-          .order('created_at', { ascending: false })
-          .limit(10)
+      // Filter invoices to only those from user's tents
+      const tentIds = new Set(formattedTents.map(t => t.id))
+      const userInvoices = invoicesResponse.data?.filter(inv => tentIds.has(inv.tent_id)) || []
+      setInvoices(userInvoices)
 
-        if (invoicesError) throw invoicesError
-        setInvoices(invoicesData || [])
+      // Calculate stats
+      const pending = userInvoices.filter(inv => inv.status === 'submitted')
+      const approved = userInvoices.filter(inv => inv.status === 'approved')
+      const totalRevenue = approved.reduce((sum, inv) => sum + (Number(inv.total_amount) || Number(inv.amount) || 0), 0)
 
-        // Calculate stats
-        const allInvoices = invoicesData || []
-        const pending = allInvoices.filter(inv => inv.status === 'submitted')
-        const approved = allInvoices.filter(inv => inv.status === 'approved')
-        const totalRevenue = approved.reduce((sum, inv) => sum + (Number(inv.total_amount) || Number(inv.amount) || 0), 0)
-
-        setStats({
-          totalTents: formattedTents.length,
-          totalInvoices: allInvoices.length,
-          pendingInvoices: pending.length,
-          approvedInvoices: approved.length,
-          totalRevenue
-        })
-      } else {
-        setInvoices([])
-        setStats({
-          totalTents: 0,
-          totalInvoices: 0,
-          pendingInvoices: 0,
-          approvedInvoices: 0,
-          totalRevenue: 0
-        })
-      }
+      setStats({
+        totalTents: formattedTents.length,
+        totalInvoices: userInvoices.length,
+        pendingInvoices: pending.length,
+        approvedInvoices: approved.length,
+        totalRevenue
+      })
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
       toast({
@@ -174,12 +162,21 @@ export function GlassDashboard({ userId }: { userId: string }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, supabase, toast])
 
   useEffect(() => {
     fetchDashboardData()
     
-    // Set up real-time subscription
+    // Debounced update handler to prevent excessive refetches
+    let updateTimeout: NodeJS.Timeout
+    const handleRealtimeUpdate = () => {
+      clearTimeout(updateTimeout)
+      updateTimeout = setTimeout(() => {
+        fetchDashboardData()
+      }, 1000) // Debounce updates by 1 second
+    }
+    
+    // Set up real-time subscription with debouncing
     const channel = supabase
       .channel('dashboard-updates')
       .on(
@@ -190,9 +187,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
           table: 'tent_members',
           filter: `user_id=eq.${userId}`
         },
-        () => {
-          fetchDashboardData()
-        }
+        handleRealtimeUpdate
       )
       .on(
         'postgres_changes',
@@ -201,19 +196,17 @@ export function GlassDashboard({ userId }: { userId: string }) {
           schema: 'public',
           table: 'invoices'
         },
-        () => {
-          fetchDashboardData()
-        }
+        handleRealtimeUpdate
       )
       .subscribe()
 
     return () => {
+      clearTimeout(updateTimeout)
       supabase.removeChannel(channel)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId])
+  }, [userId, fetchDashboardData, supabase])
 
-  const handleJoinTent = async () => {
+  const handleJoinTent = useCallback(async () => {
     if (joinCode.length !== 6) {
       toast({
         title: 'Invalid code',
@@ -237,16 +230,19 @@ export function GlassDashboard({ userId }: { userId: string }) {
         throw new Error(data.error || 'Failed to join tent')
       }
 
+      // Close dialog immediately for better UX
+      setShowJoinDialog(false)
+      setJoinCode('')
+      
       toast({
         title: 'Success!',
         description: `You've joined ${data.tent.name}`,
       })
       
-      setShowJoinDialog(false)
-      setJoinCode('')
+      // Navigate without blocking
+      navigate(`/tents/${data.tent.id}`)
+      // Fetch data in background
       fetchDashboardData()
-      router.push(`/tents/${data.tent.id}`)
-      router.refresh()
     } catch (error) {
       toast({
         title: 'Error',
@@ -256,17 +252,17 @@ export function GlassDashboard({ userId }: { userId: string }) {
     } finally {
       setJoining(false)
     }
-  }
+  }, [joinCode, toast, navigate, fetchDashboardData])
 
-  const copyInviteCode = (code: string) => {
+  const copyInviteCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
     toast({
       title: 'Copied!',
       description: 'Invite code copied to clipboard',
     })
-  }
+  }, [toast])
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = useCallback((status: string) => {
     switch (status) {
       case 'approved':
         return <CheckCircle className="h-4 w-4 text-green-500" />
@@ -277,7 +273,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
       default:
         return <AlertCircle className="h-4 w-4 text-gray-500" />
     }
-  }
+  }, [])
 
   const getUserRole = (tent: TentData) => {
     const member = tent.tent_members?.find(m => m.user_id === userId)
@@ -302,11 +298,11 @@ export function GlassDashboard({ userId }: { userId: string }) {
 
   return (
     <div className="container mx-auto p-6 space-y-8 custom-scrollbar">
-      {/* Animated Header */}
+      {/* Header */}
       <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
         className="flex justify-between items-center"
       >
         <div>
@@ -361,11 +357,11 @@ export function GlassDashboard({ userId }: { userId: string }) {
         </div>
       </motion.div>
 
-      {/* Animated Stats Grid */}
+      {/* Stats Grid */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+        transition={{ duration: 0.2 }}
         className="grid gap-4 md:grid-cols-2 lg:grid-cols-5"
       >
         {[
@@ -377,10 +373,10 @@ export function GlassDashboard({ userId }: { userId: string }) {
         ].map((stat, index) => (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
-            whileHover={{ y: -4, scale: 1.02 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2, delay: index * 0.02 }}
+            whileHover={{ y: -2 }}
             className="stats-card"
           >
             <div className="flex items-center justify-between mb-2">
@@ -396,9 +392,9 @@ export function GlassDashboard({ userId }: { userId: string }) {
 
       {/* Main Content Tabs */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
       >
         <Tabs defaultValue="tents" className="space-y-6">
           <TabsList className="glass-card p-1 w-fit">
@@ -416,9 +412,9 @@ export function GlassDashboard({ userId }: { userId: string }) {
             <AnimatePresence>
               {tents.length === 0 ? (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="glass-card p-8 text-center"
                 >
                   <Tent className="h-12 w-12 mx-auto mb-4 text-primary-600" />
@@ -442,12 +438,13 @@ export function GlassDashboard({ userId }: { userId: string }) {
                   {tents.map((tent, index) => (
                     <motion.div
                       key={tent.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      whileHover={{ y: -8, scale: 1.02 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.15, delay: Math.min(index * 0.03, 0.15) }}
+                      whileHover={{ y: -2 }}
                       className="glass-card-hover p-6 cursor-pointer group"
-                      onClick={() => router.push(`/tents/${tent.id}`)}
+                      onClick={() => navigate(`/tents/${tent.id}`)}
+                      onMouseEnter={() => prefetch(`/tents/${tent.id}`)}
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div>
@@ -492,6 +489,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
                                 copyInviteCode(tent.invite_code)
                               }}
                               className="hover:bg-white/10"
+                              immediateResponse={false}
                             >
                               <Copy className="h-3 w-3" />
                             </Button>
@@ -513,8 +511,8 @@ export function GlassDashboard({ userId }: { userId: string }) {
           <TabsContent value="invoices" className="space-y-4">
             {invoices.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className="glass-card p-8 text-center"
               >
                 <FileText className="h-12 w-12 mx-auto mb-4 text-primary-600" />
@@ -528,12 +526,13 @@ export function GlassDashboard({ userId }: { userId: string }) {
                 {invoices.map((invoice, index) => (
                   <motion.div
                     key={invoice.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                    whileHover={{ x: 8 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.1) }}
+                    whileHover={{ x: 2 }}
                     className="glass-card-hover p-4 cursor-pointer"
-                    onClick={() => router.push(`/invoices/${invoice.id}`)}
+                    onClick={() => navigate(`/invoices/${invoice.id}`)}
+                    onMouseEnter={() => prefetch(`/invoices/${invoice.id}`)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">

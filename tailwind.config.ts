@@ -72,10 +72,10 @@ const config: Config = {
       },
       animation: {
         'gradient': 'gradient 8s linear infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'shimmer': 'shimmer 2s linear infinite',
+        'float': 'float 8s ease-in-out infinite', // Slower for less CPU usage
+        'fade-in': 'fadeIn 0.2s ease-out', // Faster for snappier feel
+        'slide-up': 'slideUp 0.15s ease-out', // Faster animation
+        'shimmer': 'shimmer 3s linear infinite', // Less frequent
       },
       keyframes: {
         gradient: {
@@ -129,9 +129,9 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-        'glass-sm': '0 4px 16px 0 rgba(31, 38, 135, 0.2)',
-        'glass-inset': 'inset 0 2px 8px 0 rgba(31, 38, 135, 0.15)',
+        'glass': '0 4px 16px 0 rgba(31, 38, 135, 0.2)', // Lighter shadow
+        'glass-sm': '0 2px 8px 0 rgba(31, 38, 135, 0.15)', // Lighter shadow
+        'glass-inset': 'inset 0 1px 4px 0 rgba(31, 38, 135, 0.1)', // Lighter shadow
       },
     },
   },

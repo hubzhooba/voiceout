@@ -18,14 +18,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} relative min-h-screen`}>
-        {/* Gradient mesh background */}
+        {/* Optimized gradient mesh background */}
         <div className="fixed inset-0 bg-mesh -z-10" />
         
-        {/* Animated gradient orbs */}
-        <div className="fixed inset-0 overflow-hidden -z-10">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "2s" }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "4s" }} />
+        {/* Static gradient overlay for performance */}
+        <div className="fixed inset-0 overflow-hidden -z-10 pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/10 rounded-full" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200/10 rounded-full" />
         </div>
         
         {/* Main content */}
