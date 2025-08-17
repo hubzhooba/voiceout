@@ -30,15 +30,12 @@ export function OptimizedButton({
     }
     
     try {
-      // Use requestAnimationFrame for smoother UI updates
-      requestAnimationFrame(async () => {
-        if (onClick) {
-          await onClick(e)
-        }
-      })
+      if (onClick) {
+        await onClick(e)
+      }
     } finally {
-      // Reset after a small delay to prevent flickering
-      setTimeout(() => setIsProcessing(false), 100)
+      // Reset after operation completes
+      setIsProcessing(false)
     }
   }, [onClick, isProcessing, disabled, immediateResponse])
 

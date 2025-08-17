@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { OptimizedButton as Button } from '@/components/ui/optimized-button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,7 +35,14 @@ export function CreateTentDialog({ onTentCreated }: CreateTentDialogProps) {
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
 
-  const handleCreate = async () => {
+  const handleCreate = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    console.log('Creating tent with:', { tentName, description, creatorRole })
+    
     if (!tentName.trim()) {
       toast({
         title: 'Error',
@@ -57,12 +64,13 @@ export function CreateTentDialog({ onTentCreated }: CreateTentDialogProps) {
         }),
       })
 
+      const data = await response.json()
+      console.log('API Response:', response.status, data)
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create tent')
+        throw new Error(data.error || 'Failed to create tent')
       }
 
-      const data = await response.json()
       setInviteCode(data.inviteCode)
       setInviteLink(data.inviteLink)
       setInvitedUserRole(data.invitedUserRole)
@@ -76,13 +84,17 @@ export function CreateTentDialog({ onTentCreated }: CreateTentDialogProps) {
         onTentCreated(data.tent)
       }
     } catch (err) {
+      console.error('Create tent error:', err)
       toast({
         title: 'Error',
-        description: (err as Error).message,
+        description: (err as Error).message || 'Failed to create tent',
         variant: 'destructive',
       })
+      setLoading(false) // Reset loading state on error
     } finally {
-      setLoading(false)
+      if (!inviteCode) {
+        setLoading(false)
+      }
     }
   }
 
@@ -200,7 +212,7 @@ export function CreateTentDialog({ onTentCreated }: CreateTentDialogProps) {
               >
                 Cancel
               </Button>
-              <Button onClick={handleCreate} disabled={loading}>
+              <Button onClick={handleCreate} disabled={loading} type="button">
                 {loading ? 'Creating...' : 'Create Tent'}
               </Button>
             </DialogFooter>

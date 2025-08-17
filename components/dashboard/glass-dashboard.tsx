@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { OptimizedButton as Button } from '@/components/ui/optimized-button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
@@ -206,7 +206,14 @@ export function GlassDashboard({ userId }: { userId: string }) {
     }
   }, [userId, fetchDashboardData, supabase])
 
-  const handleJoinTent = useCallback(async () => {
+  const handleJoinTent = useCallback(async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    console.log('Joining tent with code:', joinCode)
+    
     if (joinCode.length !== 6) {
       toast({
         title: 'Invalid code',
@@ -225,6 +232,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
       })
 
       const data = await response.json()
+      console.log('Join response:', response.status, data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to join tent')
@@ -244,15 +252,20 @@ export function GlassDashboard({ userId }: { userId: string }) {
       // Fetch data in background
       fetchDashboardData()
     } catch (error) {
+      console.error('Join tent error:', error)
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to join tent',
         variant: 'destructive'
       })
+      setJoining(false) // Ensure joining state is reset on error
     } finally {
-      setJoining(false)
+      // Only reset if we're still in the dialog (not navigated away)
+      if (showJoinDialog) {
+        setJoining(false)
+      }
     }
-  }, [joinCode, toast, navigate, fetchDashboardData])
+  }, [joinCode, toast, navigate, fetchDashboardData, showJoinDialog])
 
   const copyInviteCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code)
@@ -347,6 +360,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
                   onClick={handleJoinTent}
                   disabled={joining || joinCode.length !== 6}
                   className="btn-primary"
+                  type="button"
                 >
                   {joining ? 'Joining...' : 'Join Tent'}
                 </Button>
@@ -489,7 +503,6 @@ export function GlassDashboard({ userId }: { userId: string }) {
                                 copyInviteCode(tent.invite_code)
                               }}
                               className="hover:bg-white/10"
-                              immediateResponse={false}
                             >
                               <Copy className="h-3 w-3" />
                             </Button>
