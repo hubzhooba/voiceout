@@ -11,7 +11,7 @@ export default async function Home() {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
-      redirect('/tents')
+      redirect('/dashboard')
     } else {
       redirect('/auth/login')
     }

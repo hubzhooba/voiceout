@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { GlassDashboard } from '@/components/dashboard/glass-dashboard'
+import { ButterDashboard } from '@/components/dashboard/butter-dashboard'
 
 // Force dynamic rendering to avoid build-time Supabase errors
 export const dynamic = 'force-dynamic'
@@ -47,5 +47,5 @@ export default async function DashboardPage() {
     )
   }
 
-  return <GlassDashboard userId={user.id} />
+  return <ButterDashboard userId={user.id} userEmail={user.email} />
 }
