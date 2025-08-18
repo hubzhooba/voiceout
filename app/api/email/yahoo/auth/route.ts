@@ -12,13 +12,29 @@ export async function GET(request: Request) {
       )
     }
 
-    // Yahoo OAuth 2.0 configuration
-    const clientId = process.env.YAHOO_CLIENT_ID
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/email/yahoo/callback`
+    // Try to get tenant-specific OAuth configuration first
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    
+    // Get OAuth config from database (tenant-specific or app-level)
+    const { data: configData } = await supabase
+      .rpc('get_oauth_config', {
+        p_tent_id: tentId,
+        p_provider: 'yahoo'
+      })
+    
+    let clientId = configData?.client_id
+    let redirectUri = configData?.redirect_uri
+    
+    // Fallback to environment variables if no database config
+    if (!clientId) {
+      clientId = process.env.YAHOO_CLIENT_ID
+      redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/email/yahoo/callback`
+    }
     
     if (!clientId) {
       return NextResponse.json(
-        { error: 'Yahoo OAuth is not configured' },
+        { error: 'Yahoo OAuth is not configured. Please configure OAuth in tent settings.' },
         { status: 500 }
       )
     }

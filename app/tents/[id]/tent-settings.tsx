@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Settings, Save, Mail } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmailSettings } from '@/components/email/email-settings'
+import { OAuthSettings } from '@/components/settings/oauth-settings'
 
 interface Tent {
   id: string
@@ -34,6 +35,7 @@ interface TentSettingsProps {
 export function TentSettings({ tent }: TentSettingsProps) {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
+  const [isOwner, setIsOwner] = useState(false)
   const [formData, setFormData] = useState({
     name: tent.name || '',
     description: tent.description || '',
@@ -46,6 +48,25 @@ export function TentSettings({ tent }: TentSettingsProps) {
   
   const { toast } = useToast()
   const supabase = createClient()
+  
+  // Check if user is owner
+  useEffect(() => {
+    const checkOwnership = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: member } = await supabase
+          .from('tent_members')
+          .select('role')
+          .eq('tent_id', tent.id)
+          .eq('user_id', user.id)
+          .single()
+        
+        setIsOwner(member?.role === 'owner')
+      }
+    }
+    checkOwnership()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tent.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,14 +101,18 @@ export function TentSettings({ tent }: TentSettingsProps) {
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="general">
           <Settings className="h-4 w-4 mr-2" />
-          General Settings
+          General
+        </TabsTrigger>
+        <TabsTrigger value="oauth">
+          <Settings className="h-4 w-4 mr-2" />
+          OAuth Setup
         </TabsTrigger>
         <TabsTrigger value="email">
           <Mail className="h-4 w-4 mr-2" />
-          Email Integration
+          Email Accounts
         </TabsTrigger>
       </TabsList>
 
@@ -202,6 +227,10 @@ export function TentSettings({ tent }: TentSettingsProps) {
             </Button>
           </div>
         </form>
+      </TabsContent>
+
+      <TabsContent value="oauth" className="space-y-6">
+        <OAuthSettings tentId={tent.id} isOwner={isOwner} />
       </TabsContent>
 
       <TabsContent value="email" className="space-y-6">
