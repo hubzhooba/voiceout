@@ -7,6 +7,7 @@ import { InvoiceFormEnhanced } from '@/components/invoice-form-enhanced'
 import { TentSettings } from './tent-settings'
 import { TentMembers } from './tent-members'
 import { InquiryReview } from '@/components/email/inquiry-review'
+import { EmailSettings } from '@/components/email/email-settings'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, FileText, Settings, Users, Plus, Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -105,7 +106,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-lg grid-cols-4">
+        <TabsList className="grid w-full max-w-lg grid-cols-5">
           <TabsTrigger value="invoices">
             <FileText className="h-4 w-4 mr-2" />
             Invoices
@@ -113,6 +114,10 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
           <TabsTrigger value="inquiries">
             <Mail className="h-4 w-4 mr-2" />
             Inquiries
+          </TabsTrigger>
+          <TabsTrigger value="email">
+            <Mail className="h-4 w-4 mr-2" />
+            Email
           </TabsTrigger>
           <TabsTrigger value="members">
             <Users className="h-4 w-4 mr-2" />
@@ -136,8 +141,15 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
         <TabsContent value="inquiries" className="mt-6">
           <InquiryReview 
             tentId={tent.id}
-            userRole={userRole === 'manager' ? 'manager' : 'client'}
+            userRole={isAdmin ? 'owner' : userRole === 'manager' ? 'manager' : 'client'}
             userId={currentUserId}
+          />
+        </TabsContent>
+
+        <TabsContent value="email" className="mt-6">
+          <EmailSettings 
+            tentId={tent.id}
+            userRole={isAdmin ? 'owner' : userRole === 'manager' ? 'manager' : 'client'}
           />
         </TabsContent>
 

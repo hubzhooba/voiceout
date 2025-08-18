@@ -386,7 +386,15 @@ export function OAuthSettings({ tentId, isOwner }: OAuthSettingsProps) {
               </p>
               <Button
                 className="w-full"
-                onClick={() => window.location.href = `/tents/${tentId}/settings?tab=email`}
+                onClick={() => {
+                  // Navigate to the tent page and programmatically switch to settings tab
+                  window.location.href = `/tents/${tentId}#settings`
+                  // After navigation, trigger tab change
+                  setTimeout(() => {
+                    const settingsTab = document.querySelector('[value="settings"]') as HTMLButtonElement
+                    if (settingsTab) settingsTab.click()
+                  }, 100)
+                }}
               >
                 Go to Email Integration
               </Button>
