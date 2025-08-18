@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import { Settings, Save } from 'lucide-react'
+import { Settings, Save, Mail } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmailSettings } from '@/components/email/email-settings'
 
 interface Tent {
   id: string
@@ -31,6 +33,7 @@ interface TentSettingsProps {
 
 export function TentSettings({ tent }: TentSettingsProps) {
   const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('general')
   const [formData, setFormData] = useState({
     name: tent.name || '',
     description: tent.description || '',
@@ -76,7 +79,20 @@ export function TentSettings({ tent }: TentSettingsProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="general">
+          <Settings className="h-4 w-4 mr-2" />
+          General Settings
+        </TabsTrigger>
+        <TabsTrigger value="email">
+          <Mail className="h-4 w-4 mr-2" />
+          Email Integration
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="general" className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -179,12 +195,18 @@ export function TentSettings({ tent }: TentSettingsProps) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={loading}>
-          <Save className="h-4 w-4 mr-2" />
-          {loading ? 'Saving...' : 'Save Settings'}
-        </Button>
-      </div>
-    </form>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={loading}>
+              <Save className="h-4 w-4 mr-2" />
+              {loading ? 'Saving...' : 'Save Settings'}
+            </Button>
+          </div>
+        </form>
+      </TabsContent>
+
+      <TabsContent value="email" className="space-y-6">
+        <EmailSettings tentId={tent.id} isAdmin={true} />
+      </TabsContent>
+    </Tabs>
   )
 }

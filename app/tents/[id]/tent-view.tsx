@@ -6,8 +6,9 @@ import { InvoiceList } from '@/components/invoice-list'
 import { InvoiceFormEnhanced } from '@/components/invoice-form-enhanced'
 import { TentSettings } from './tent-settings'
 import { TentMembers } from './tent-members'
+import { InquiryReview } from '@/components/email/inquiry-review'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, FileText, Settings, Users, Plus } from 'lucide-react'
+import { ArrowLeft, FileText, Settings, Users, Plus, Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
@@ -104,10 +105,14 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-md grid-cols-3">
+        <TabsList className="grid w-full max-w-lg grid-cols-4">
           <TabsTrigger value="invoices">
             <FileText className="h-4 w-4 mr-2" />
             Invoices
+          </TabsTrigger>
+          <TabsTrigger value="inquiries">
+            <Mail className="h-4 w-4 mr-2" />
+            Inquiries
           </TabsTrigger>
           <TabsTrigger value="members">
             <Users className="h-4 w-4 mr-2" />
@@ -125,6 +130,14 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
           <InvoiceList 
             tentId={tent.id}
             userRole={userRole}
+          />
+        </TabsContent>
+
+        <TabsContent value="inquiries" className="mt-6">
+          <InquiryReview 
+            tentId={tent.id}
+            userRole={userRole === 'manager' ? 'manager' : 'client'}
+            userId={currentUserId}
           />
         </TabsContent>
 
