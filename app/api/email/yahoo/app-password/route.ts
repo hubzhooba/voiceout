@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { encrypt } from '@/lib/encryption'
-import * as Imap from 'node-imap'
 
 export async function POST(request: Request) {
   try {
@@ -26,40 +25,80 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify the connection works with IMAP
-    const testConnection = await verifyImapConnection(email, appPassword)
-    
-    if (!testConnection.success) {
+    // Basic validation
+    if (!email.includes('@yahoo.com') && !email.includes('@ymail.com')) {
       return NextResponse.json(
-        { error: testConnection.error || 'Failed to connect to Yahoo Mail' },
+        { error: 'Please use a valid Yahoo email address' },
+        { status: 400 }
+      )
+    }
+
+    // Validate app password format (Yahoo app passwords are 16 characters without spaces)
+    const cleanPassword = appPassword.replace(/\s/g, '')
+    if (cleanPassword.length !== 16) {
+      return NextResponse.json(
+        { error: 'Invalid app password format. Yahoo app passwords are 16 characters long.' },
         { status: 400 }
       )
     }
 
     // Encrypt the app password
-    const encryptedPassword = await encrypt(appPassword)
+    const encryptedPassword = await encrypt(cleanPassword)
 
-    // Store the email connection
-    const { data: connection, error: connectionError } = await supabase
+    // Check if connection already exists
+    const { data: existingConnection } = await supabase
       .from('email_connections')
-      .insert({
-        user_id: user.id,
-        tent_id: tentId,
-        email_provider: 'yahoo',
-        email_address: email,
-        // Store as refresh_token since we're using app password instead of OAuth
-        refresh_token: encryptedPassword,
-        connection_type: 'app_password',
-        is_active: true,
-        sync_status: 'active'
-      })
-      .select()
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('tent_id', tentId)
+      .eq('email_address', email)
       .single()
+
+    let connection
+    let connectionError
+
+    if (existingConnection) {
+      // Update existing connection
+      const { data, error } = await supabase
+        .from('email_connections')
+        .update({
+          email_provider: 'yahoo',
+          refresh_token: encryptedPassword,
+          is_active: true,
+          sync_status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingConnection.id)
+        .select()
+        .single()
+      
+      connection = data
+      connectionError = error
+    } else {
+      // Create new connection
+      const { data, error } = await supabase
+        .from('email_connections')
+        .insert({
+          user_id: user.id,
+          tent_id: tentId,
+          email_provider: 'yahoo',
+          email_address: email,
+          // Store as refresh_token since we're using app password instead of OAuth
+          refresh_token: encryptedPassword,
+          is_active: true,
+          sync_status: 'active'
+        })
+        .select()
+        .single()
+      
+      connection = data
+      connectionError = error
+    }
 
     if (connectionError) {
       console.error('Error storing connection:', connectionError)
       return NextResponse.json(
-        { error: 'Failed to save email connection' },
+        { error: `Database error: ${connectionError.message}` },
         { status: 500 }
       )
     }
@@ -75,52 +114,8 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error in Yahoo app password connection:', error)
     return NextResponse.json(
-      { error: 'Failed to connect Yahoo Mail' },
+      { error: error instanceof Error ? error.message : 'Failed to connect Yahoo Mail' },
       { status: 500 }
     )
   }
-}
-
-async function verifyImapConnection(email: string, appPassword: string): Promise<{ success: boolean; error?: string }> {
-  return new Promise((resolve) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const imap = new (Imap as any)({
-      user: email,
-      password: appPassword,
-      host: 'imap.mail.yahoo.com',
-      port: 993,
-      tls: true,
-      tlsOptions: { rejectUnauthorized: false },
-      authTimeout: 10000
-    })
-
-    const timeoutId = setTimeout(() => {
-      imap.end()
-      resolve({ success: false, error: 'Connection timeout' })
-    }, 15000)
-
-    imap.once('ready', () => {
-      clearTimeout(timeoutId)
-      imap.end()
-      resolve({ success: true })
-    })
-
-    imap.once('error', (err: Error) => {
-      clearTimeout(timeoutId)
-      console.error('IMAP Error:', err)
-      resolve({ 
-        success: false, 
-        error: err.message.includes('authentication') 
-          ? 'Invalid email or app password. Make sure you\'re using an app-specific password from Yahoo.'
-          : 'Failed to connect to Yahoo Mail servers'
-      })
-    })
-
-    try {
-      imap.connect()
-    } catch (err) {
-      clearTimeout(timeoutId)
-      resolve({ success: false, error: 'Failed to initiate connection' })
-    }
-  })
 }
