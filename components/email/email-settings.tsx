@@ -103,6 +103,40 @@ export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
     }
   }
 
+  const connectYahoo = async () => {
+    try {
+      const response = await fetch(`/api/email/yahoo/auth?tentId=${tentId}`)
+      if (!response.ok) throw new Error('Failed to start Yahoo auth')
+      
+      const { authUrl } = await response.json()
+      window.location.href = authUrl
+    } catch (error) {
+      console.error('Error connecting Yahoo:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to connect Yahoo Mail',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const connectOutlook = async () => {
+    try {
+      const response = await fetch(`/api/email/outlook/auth?tentId=${tentId}`)
+      if (!response.ok) throw new Error('Failed to start Outlook auth')
+      
+      const { authUrl } = await response.json()
+      window.location.href = authUrl
+    } catch (error) {
+      console.error('Error connecting Outlook:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to connect Outlook',
+        variant: 'destructive'
+      })
+    }
+  }
+
   const connectManual = async () => {
     if (!manualEmail || !apiKey) {
       toast({
@@ -410,10 +444,19 @@ export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
               <Button
                 variant="outline"
                 className="w-full justify-start"
-                disabled
+                onClick={connectYahoo}
               >
                 <span className="text-xl mr-2">💜</span>
-                Connect with Yahoo (Coming Soon)
+                Connect with Yahoo Mail
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={connectOutlook}
+              >
+                <span className="text-xl mr-2">📨</span>
+                Connect with Outlook/Hotmail
               </Button>
             </div>
 
