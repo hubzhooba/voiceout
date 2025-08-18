@@ -54,9 +54,17 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
   useEffect(() => {
     // Set user role and admin status
     const currentMember = tent.tent_members?.find((m: TentMember) => m.user_id === currentUserId)
+    console.log('[TentView] Current user ID:', currentUserId)
+    console.log('[TentView] Tent members:', tent.tent_members)
+    console.log('[TentView] Current member found:', currentMember)
+    
     if (currentMember) {
       setUserRole(currentMember.tent_role || '')
       setIsAdmin(currentMember.is_admin || false)
+      console.log('[TentView] User role set to:', currentMember.tent_role)
+      console.log('[TentView] Is admin:', currentMember.is_admin)
+    } else {
+      console.log('[TentView] WARNING: Current member not found in tent members!')
     }
     
     // Check if we should switch to a specific tab
@@ -148,11 +156,23 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
         </TabsContent>
 
         <TabsContent value="inquiries" className="mt-6">
-          <InquiryReview 
-            tentId={tent.id}
-            userRole={isAdmin ? 'owner' : userRole === 'manager' ? 'manager' : 'client'}
-            userId={currentUserId}
-          />
+          {(() => {
+            const calculatedRole = isAdmin ? 'owner' : userRole === 'manager' ? 'manager' : 'client'
+            console.log('[TentView] Passing to InquiryReview:', {
+              tentId: tent.id,
+              userRole: calculatedRole,
+              userId: currentUserId,
+              rawUserRole: userRole,
+              isAdmin
+            })
+            return (
+              <InquiryReview 
+                tentId={tent.id}
+                userRole={calculatedRole}
+                userId={currentUserId}
+              />
+            )
+          })()}
         </TabsContent>
 
         <TabsContent value="email" className="mt-6">

@@ -71,16 +71,33 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
+  // For clients, default to 'approved' since that's all they can see
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>(
+    userRole === 'client' ? 'approved' : 'pending'
+  )
   const { toast } = useToast()
   const supabase = createClient()
 
+  // Debug logging
+  console.log('[InquiryReview] Component mounted with props:', {
+    tentId,
+    userRole,
+    userId,
+    filterStatus
+  })
+
   useEffect(() => {
+    console.log('[InquiryReview] useEffect triggered - fetching inquiries')
     fetchInquiries()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tentId, filterStatus])
 
   const fetchInquiries = async () => {
+    console.log('[InquiryReview] fetchInquiries called')
+    console.log('[InquiryReview] Current filter status:', filterStatus)
+    console.log('[InquiryReview] User role:', userRole)
+    console.log('[InquiryReview] Tent ID:', tentId)
+    
     try {
       let query = supabase
         .from('email_inquiries')
@@ -89,23 +106,42 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
         .order('seriousness_score', { ascending: false })
         .order('received_at', { ascending: false })
 
+      console.log('[InquiryReview] Base query built for tent:', tentId)
+
       if (filterStatus !== 'all') {
+        console.log('[InquiryReview] Adding filter status to query:', filterStatus)
         query = query.eq('status', filterStatus)
       }
 
       // For clients, only show approved inquiries
       if (userRole === 'client') {
+        console.log('[InquiryReview] CLIENT ROLE DETECTED - Overriding to show only approved')
         query = query.eq('status', 'approved')
       }
       
       // For managers/owners, show all tent inquiries
       if (userRole === 'manager' || userRole === 'owner') {
+        console.log('[InquiryReview] MANAGER/OWNER ROLE - Showing all inquiries with filter:', filterStatus)
         // Already filtered by tent_id above
       }
 
+      console.log('[InquiryReview] Executing query...')
       const { data, error } = await query
 
-      if (error) throw error
+      if (error) {
+        console.error('[InquiryReview] Query error:', error)
+        throw error
+      }
+      
+      console.log('[InquiryReview] Query successful. Found inquiries:', data?.length || 0)
+      if (data && data.length > 0) {
+        console.log('[InquiryReview] First inquiry:', {
+          subject: data[0].subject,
+          status: data[0].status,
+          tent_id: data[0].tent_id
+        })
+      }
+      
       setInquiries(data || [])
     } catch (error) {
       console.error('Error fetching inquiries:', error)
