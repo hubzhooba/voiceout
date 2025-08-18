@@ -49,43 +49,51 @@ export function InvoiceTemplate({
           <div className="text-sm space-y-1">
             <p className="text-gray-600">Invoice Number:</p>
             <p className="font-bold text-lg">{invoice.invoice_number}</p>
-            <p className="text-gray-600 mt-2">Date:</p>
+            <p className="text-gray-600 mt-2">Invoice Date:</p>
             <p className="font-semibold">{format(new Date(invoice.created_at), 'MMM dd, yyyy')}</p>
+            {invoice.service_date && (
+              <>
+                <p className="text-gray-600 mt-2">Service Date:</p>
+                <p className="font-semibold">{format(new Date(invoice.service_date), 'MMM dd, yyyy')}</p>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       <Separator className="my-6" />
 
-      {/* Bill To Section */}
-      <div className="grid grid-cols-2 gap-8 mb-8">
-        <div>
-          <h3 className="text-sm font-bold text-gray-700 mb-3">BILL TO:</h3>
-          <div className="space-y-1">
-            <p className="font-semibold text-gray-900">{invoice.client_name}</p>
-            {invoice.client_address && (
-              <p className="text-sm text-gray-600">{invoice.client_address}</p>
+      {/* Bill To Section - Now appears after invoice date */}
+      <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+        <h3 className="text-sm font-bold text-gray-700 mb-3">BILL TO:</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="font-semibold text-gray-900 text-lg">{invoice.client_name}</p>
+            {invoice.client_tin && (
+              <p className="text-sm text-gray-600 mt-1">TIN: {invoice.client_tin}</p>
             )}
+          </div>
+          <div className="space-y-1">
             {invoice.client_email && (
               <p className="text-sm text-gray-600">{invoice.client_email}</p>
             )}
+            {invoice.client_address && (
+              <p className="text-sm text-gray-600">{invoice.client_address}</p>
+            )}
             {invoice.client_phone && (
-              <p className="text-sm text-gray-600">{invoice.client_phone}</p>
+              <p className="text-sm text-gray-600">Tel: {invoice.client_phone}</p>
             )}
           </div>
         </div>
-        <div>
-          <h3 className="text-sm font-bold text-gray-700 mb-3">SERVICE DETAILS:</h3>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold">Service Date:</span> {format(new Date(invoice.service_date), 'MMM dd, yyyy')}
-            </p>
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold">Description:</span> {invoice.service_description}
-            </p>
-          </div>
-        </div>
       </div>
+
+      {/* Service Description if any */}
+      {invoice.service_description && (
+        <div className="mb-8">
+          <h3 className="text-sm font-bold text-gray-700 mb-2">SERVICE DESCRIPTION:</h3>
+          <p className="text-sm text-gray-600">{invoice.service_description}</p>
+        </div>
+      )}
 
       {/* Items Table */}
       <div className="mb-8">

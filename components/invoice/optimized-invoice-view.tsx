@@ -383,54 +383,60 @@ export function OptimizedInvoiceView({
           <p className="text-sm text-gray-600 mt-1">Service Invoice</p>
         </div>
 
-        {/* Invoice Info and Client Details */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          {/* Left: Invoice Info */}
-          <div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-4 mb-4">
-                <label className="flex items-center gap-2">
-                  <div className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center ${invoice.is_cash_sale ? 'bg-gray-100' : ''}`}>
-                    {invoice.is_cash_sale && <Check className="w-3 h-3" />}
-                  </div>
-                  <span className="text-sm font-medium">CASH SALE</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <div className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center ${!invoice.is_cash_sale ? 'bg-gray-100' : ''}`}>
-                    {!invoice.is_cash_sale && <Check className="w-3 h-3" />}
-                  </div>
-                  <span className="text-sm font-medium">CHARGE SALE</span>
-                </label>
+        {/* Invoice Info */}
+        <div className="mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <label className="flex items-center gap-2">
+              <div className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center ${invoice.is_cash_sale ? 'bg-gray-100' : ''}`}>
+                {invoice.is_cash_sale && <Check className="w-3 h-3" />}
               </div>
+              <span className="text-sm font-medium">CASH SALE</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <div className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center ${!invoice.is_cash_sale ? 'bg-gray-100' : ''}`}>
+                {!invoice.is_cash_sale && <Check className="w-3 h-3" />}
+              </div>
+              <span className="text-sm font-medium">CHARGE SALE</span>
+            </label>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
               <p className="text-sm text-gray-600">Invoice Number</p>
               <p className="font-bold text-lg">{invoice.invoice_number}</p>
-              <p className="text-sm text-gray-600">Date</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Invoice Date</p>
               <p className="font-medium">{format(new Date(invoice.created_at), 'MMM dd, yyyy')}</p>
               {invoice.service_date && (
-                <>
+                <div className="mt-2">
                   <p className="text-sm text-gray-600">Service Date</p>
                   <p className="font-medium">{format(new Date(invoice.service_date), 'MMM dd, yyyy')}</p>
-                </>
+                </div>
               )}
             </div>
           </div>
+        </div>
 
-          {/* Right: Bill To */}
-          <div>
-            <h3 className="text-sm font-bold text-gray-700 mb-3">BILL TO:</h3>
-            <div className="space-y-1">
-              <p className="font-semibold text-gray-900">{invoice.client_name}</p>
+        {/* Bill To Section - Now appears after invoice date */}
+        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-sm font-bold text-gray-700 mb-3">BILL TO:</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="font-semibold text-gray-900 text-lg">{invoice.client_name}</p>
               {invoice.client_tin && (
-                <p className="text-sm text-gray-600">TIN: {invoice.client_tin}</p>
+                <p className="text-sm text-gray-600 mt-1">TIN: {invoice.client_tin}</p>
+              )}
+            </div>
+            <div className="space-y-1">
+              {invoice.client_email && (
+                <p className="text-sm text-gray-600">{invoice.client_email}</p>
               )}
               {invoice.client_address && (
                 <p className="text-sm text-gray-600">{invoice.client_address}</p>
               )}
-              {invoice.client_email && (
-                <p className="text-sm text-gray-600">{invoice.client_email}</p>
-              )}
               {invoice.client_phone && (
-                <p className="text-sm text-gray-600">{invoice.client_phone}</p>
+                <p className="text-sm text-gray-600">Tel: {invoice.client_phone}</p>
               )}
             </div>
           </div>
