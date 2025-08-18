@@ -172,6 +172,12 @@ async function syncAllYahooConnections() {
         let inquiriesCreated = 0
         
         for (const email of emails) {
+          // Skip if no messageId
+          if (!email.messageId) {
+            console.log('Skipping email without messageId')
+            continue
+          }
+          
           // Check if email already exists
           const { data: existing } = await supabase
             .from('email_inquiries')
@@ -179,18 +185,50 @@ async function syncAllYahooConnections() {
             .eq('email_message_id', email.messageId)
             .single()
           
-          if (!existing && email.messageId) {
-            // Simple business inquiry detection (you can enhance this)
-            const isBusinessInquiry = 
-              email.subject.toLowerCase().includes('collaboration') ||
-              email.subject.toLowerCase().includes('partnership') ||
-              email.subject.toLowerCase().includes('sponsor') ||
-              email.subject.toLowerCase().includes('business') ||
-              email.subject.toLowerCase().includes('opportunity') ||
-              email.text.toLowerCase().includes('collaboration') ||
-              email.text.toLowerCase().includes('partnership')
-            
-            if (isBusinessInquiry) {
+          if (existing) {
+            console.log(`Email already processed: ${email.subject}`)
+            continue
+          }
+          
+          // Enhanced business inquiry detection
+          const emailContent = (email.subject + ' ' + email.text).toLowerCase()
+          
+          // Business keywords to look for
+          const businessKeywords = [
+            'collaboration', 'partnership', 'sponsor', 'business', 
+            'opportunity', 'proposal', 'work together', 'brand deal',
+            'promotion', 'campaign', 'content creation', 'influencer',
+            'creator', 'paid', 'compensation', 'budget', 'project',
+            'inquiry', 'interested in', 'reach out', 'discuss',
+            'meeting', 'call', 'schedule', 'connect', 'offer'
+          ]
+          
+          // Check if email contains any business keywords
+          const hasBusinessKeyword = businessKeywords.some(keyword => 
+            emailContent.includes(keyword)
+          )
+          
+          // Skip common non-business emails
+          const spamIndicators = [
+            'unsubscribe', 'no-reply', 'noreply', 'newsletter',
+            'notification', 'alert', 'automated', 'do not reply',
+            'verification', 'confirm your', 'reset password',
+            'welcome to', 'thank you for signing up'
+          ]
+          
+          const isSpam = spamIndicators.some(indicator => 
+            emailContent.includes(indicator)
+          )
+          
+          // More lenient check - if it has business keywords and isn't spam
+          const isBusinessInquiry = hasBusinessKeyword && !isSpam
+          
+          // For testing: Save ALL emails with lower scores for non-business
+          const saveAllForTesting = true // Change to false in production
+          
+          console.log(`Email: "${email.subject.substring(0, 50)}..." - Business: ${isBusinessInquiry}`)
+          
+          if (isBusinessInquiry || saveAllForTesting) {
               const { error: insertError } = await supabase
                 .from('email_inquiries')
                 .insert({
@@ -201,11 +239,11 @@ async function syncAllYahooConnections() {
                   body: email.text || email.html,
                   received_at: email.date,
                   email_message_id: email.messageId,
-                  is_business_inquiry: true,
-                  seriousness_score: 7,
-                  inquiry_type: 'general',
+                  is_business_inquiry: isBusinessInquiry,
+                  seriousness_score: isBusinessInquiry ? 7 : 3,
+                  inquiry_type: isBusinessInquiry ? 'general' : 'spam',
                   ai_summary: `Email from ${email.from} regarding: ${email.subject.substring(0, 100)}`,
-                  status: 'pending_review'
+                  status: isBusinessInquiry ? 'pending_review' : 'archived'
                 })
               
               if (!insertError) {
