@@ -46,14 +46,14 @@ export async function GET(request: Request) {
     // Decrypt the client secret
     const { decrypt } = await import('@/lib/encryption')
     
-    let clientId = configData?.client_id
-    let clientSecret = configData?.client_secret ? await decrypt(configData.client_secret) : null
+    let clientId: string | undefined = configData?.client_id
+    let clientSecret: string | null = configData?.client_secret ? await decrypt(configData.client_secret) : null
     let redirectUri = configData?.redirect_uri || `${process.env.NEXT_PUBLIC_APP_URL}/api/email/yahoo/callback`
     
     // Fallback to environment variables if no database config
     if (!clientId || !clientSecret) {
       clientId = process.env.YAHOO_CLIENT_ID
-      clientSecret = process.env.YAHOO_CLIENT_SECRET
+      clientSecret = process.env.YAHOO_CLIENT_SECRET || null
       redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/email/yahoo/callback`
     }
     

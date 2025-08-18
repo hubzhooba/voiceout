@@ -57,7 +57,7 @@ export async function GET(request: Request) {
         p_provider: 'gmail'
       })
     
-    let clientId = configData?.client_id || process.env.GOOGLE_CLIENT_ID
+    const clientId = configData?.client_id || process.env.GOOGLE_CLIENT_ID
     let clientSecret = configData?.client_secret || process.env.GOOGLE_CLIENT_SECRET
     const redirectUri = configData?.redirect_uri || `${process.env.NEXT_PUBLIC_APP_URL}/api/email/gmail/callback`
     
