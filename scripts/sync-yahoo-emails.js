@@ -319,10 +319,11 @@ async function syncAllYahooConnections() {
               
               if (!insertError) {
                 inquiriesCreated++
+              } else {
+                console.error('Error inserting inquiry:', insertError)
               }
             }
           }
-        }
         
         // Update last sync
         await supabase
