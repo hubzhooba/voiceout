@@ -545,7 +545,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           transition={{ delay: 0.2 }}
         >
           <Card className="flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
-            <CreateTentDialog onTentCreated={fetchDashboardData} />
             <Button
               variant="ghost"
               size="sm"
