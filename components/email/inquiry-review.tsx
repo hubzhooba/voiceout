@@ -48,8 +48,8 @@ interface EmailInquiry {
   budget_range: string | null
   project_timeline: string | null
   project_description: string | null
-  importance_score: number | null
-  sentiment_score: number | null
+  seriousness_score: number | null
+  is_business_inquiry: boolean | null
   ai_summary: string | null
   status: string
   reviewed_by: string | null
@@ -86,7 +86,7 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
         .from('email_inquiries')
         .select('*')
         .eq('tent_id', tentId)
-        .order('importance_score', { ascending: false })
+        .order('seriousness_score', { ascending: false })
         .order('received_at', { ascending: false })
 
       if (filterStatus !== 'all') {
@@ -271,8 +271,8 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
                 <Card 
                   className={cn(
                     "p-4 cursor-pointer hover:shadow-lg transition-all",
-                    inquiry.importance_score && inquiry.importance_score >= 80 && "border-l-4 border-l-red-500",
-                    inquiry.importance_score && inquiry.importance_score >= 60 && inquiry.importance_score < 80 && "border-l-4 border-l-orange-500"
+                    inquiry.seriousness_score && inquiry.seriousness_score >= 8 && "border-l-4 border-l-red-500",
+                    inquiry.seriousness_score && inquiry.seriousness_score >= 6 && inquiry.seriousness_score < 8 && "border-l-4 border-l-orange-500"
                   )}
                   onClick={() => {
                     setSelectedInquiry(inquiry)
@@ -295,7 +295,7 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
                             <h4 className="font-semibold text-gray-900 dark:text-gray-100">
                               {inquiry.subject}
                             </h4>
-                            {inquiry.importance_score && inquiry.importance_score >= 60 && (
+                            {inquiry.seriousness_score && inquiry.seriousness_score >= 6 && (
                               <Badge variant="destructive" className="text-xs">
                                 <Sparkles className="h-3 w-3 mr-1" />
                                 High Priority
@@ -349,17 +349,17 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
                     </div>
                     
                     <div className="flex flex-col items-end gap-2">
-                      {inquiry.importance_score && (
+                      {inquiry.seriousness_score && (
                         <div className="text-right">
                           <p className="text-xs text-gray-500 dark:text-gray-400">Importance</p>
                           <p className={cn(
                             "text-lg font-bold",
-                            inquiry.importance_score >= 80 && "text-red-600",
-                            inquiry.importance_score >= 60 && inquiry.importance_score < 80 && "text-orange-600",
-                            inquiry.importance_score >= 40 && inquiry.importance_score < 60 && "text-yellow-600",
-                            inquiry.importance_score < 40 && "text-gray-600"
+                            inquiry.seriousness_score >= 8 && "text-red-600",
+                            inquiry.seriousness_score >= 6 && inquiry.seriousness_score < 8 && "text-orange-600",
+                            inquiry.seriousness_score >= 4 && inquiry.seriousness_score < 6 && "text-yellow-600",
+                            inquiry.seriousness_score < 4 && "text-gray-600"
                           )}>
-                            {inquiry.importance_score}%
+                            {inquiry.seriousness_score}/10
                           </p>
                         </div>
                       )}
