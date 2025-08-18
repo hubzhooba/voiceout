@@ -58,6 +58,15 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
       setUserRole(currentMember.tent_role || '')
       setIsAdmin(currentMember.is_admin || false)
     }
+    
+    // Check if we should switch to a specific tab
+    if (typeof window !== 'undefined') {
+      const desiredTab = sessionStorage.getItem('tentActiveTab')
+      if (desiredTab) {
+        setActiveTab(desiredTab)
+        sessionStorage.removeItem('tentActiveTab')
+      }
+    }
   }, [tent, currentUserId])
 
   const handleInvoiceCreated = () => {

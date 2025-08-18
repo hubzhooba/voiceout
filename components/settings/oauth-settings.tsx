@@ -19,16 +19,10 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  HelpCircle
+  HelpCircle,
+  Mail
 } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { useRouter } from 'next/navigation'
 
 interface OAuthSettingsProps {
   tentId: string
@@ -44,6 +38,7 @@ interface OAuthConfig {
 }
 
 export function OAuthSettings({ tentId, isOwner }: OAuthSettingsProps) {
+  const router = useRouter()
   const [configs, setConfigs] = useState<Record<string, OAuthConfig>>({
     yahoo: {
       provider: 'yahoo',
@@ -366,41 +361,30 @@ export function OAuthSettings({ tentId, isOwner }: OAuthSettingsProps) {
           </Tabs>
         )}
 
-        {/* Test Connection Dialog */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="w-full mt-4">
-              Test Email Connection
+        {/* Success Notice */}
+        <Alert className="mt-4 border-green-200 bg-green-50 dark:bg-green-900/20">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertTitle>Ready to Connect Emails!</AlertTitle>
+          <AlertDescription className="space-y-2">
+            <p>Your OAuth configuration is saved. Now users can connect their email accounts.</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => {
+                // Store the desired tab in sessionStorage
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('tentActiveTab', 'email')
+                  // Navigate to the tent page
+                  router.push(`/tents/${tentId}`)
+                }
+              }}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Go to Email Tab
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Test Email Connection</DialogTitle>
-              <DialogDescription>
-                After configuring OAuth, test the connection by connecting an email account.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Go to the Email Integration tab in your tent settings to connect an email account using the OAuth credentials you&apos;ve configured.
-              </p>
-              <Button
-                className="w-full"
-                onClick={() => {
-                  // Navigate to the tent page and programmatically switch to settings tab
-                  window.location.href = `/tents/${tentId}#settings`
-                  // After navigation, trigger tab change
-                  setTimeout(() => {
-                    const settingsTab = document.querySelector('[value="settings"]') as HTMLButtonElement
-                    if (settingsTab) settingsTab.click()
-                  }, 100)
-                }}
-              >
-                Go to Email Integration
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   )
