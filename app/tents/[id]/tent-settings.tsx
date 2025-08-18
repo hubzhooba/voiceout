@@ -56,13 +56,18 @@ export function TentSettings({ tent }: TentSettingsProps) {
       if (user) {
         const { data: member } = await supabase
           .from('tent_members')
-          .select('role')
+          .select('tent_role, is_admin')
           .eq('tent_id', tent.id)
           .eq('user_id', user.id)
           .single()
         
-        if (member?.role) {
-          setUserRole(member.role as 'owner' | 'manager' | 'client')
+        if (member) {
+          // Admin is treated as owner
+          if (member.is_admin) {
+            setUserRole('owner')
+          } else if (member.tent_role) {
+            setUserRole(member.tent_role as 'manager' | 'client')
+          }
         }
       }
     }

@@ -34,7 +34,7 @@ CREATE POLICY "Managers can view tent member email connections" ON email_connect
       SELECT 1 FROM tent_members tm2
       WHERE tm2.tent_id = email_connections.tent_id
       AND tm2.user_id = auth.uid()
-      AND tm2.role IN ('manager', 'owner')
+      AND (tm2.tent_role = 'manager' OR tm2.is_admin = true)
     )
   );
 
@@ -60,7 +60,7 @@ CREATE POLICY "Managers can manage tent inquiries" ON email_inquiries
       SELECT 1 FROM tent_members
       WHERE tent_members.tent_id = email_inquiries.tent_id
       AND tent_members.user_id = auth.uid()
-      AND tent_members.role IN ('manager', 'owner')
+      AND (tent_members.tent_role = 'manager' OR tent_members.is_admin = true)
     )
   );
 
@@ -72,7 +72,7 @@ CREATE POLICY "Clients see approved inquiries" ON email_inquiries
       SELECT 1 FROM tent_members
       WHERE tent_members.tent_id = email_inquiries.tent_id
       AND tent_members.user_id = auth.uid()
-      AND tent_members.role = 'client'
+      AND tent_members.tent_role = 'client'
     )
   );
 
@@ -108,7 +108,8 @@ SELECT
   ei.*,
   ec.email_address as user_email,
   u.raw_user_meta_data->>'full_name' as user_name,
-  tm.role as user_role
+  tm.tent_role as user_role,
+  tm.is_admin as is_admin
 FROM email_inquiries ei
 JOIN email_connections ec ON ei.email_connection_id = ec.id
 JOIN auth.users u ON ec.user_id = u.id

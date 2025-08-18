@@ -18,14 +18,14 @@ CREATE TABLE IF NOT EXISTS oauth_configurations (
 -- Add RLS policies
 ALTER TABLE oauth_configurations ENABLE ROW LEVEL SECURITY;
 
--- Only tent managers can view/edit OAuth configurations
-CREATE POLICY "Tent managers can manage OAuth configurations" ON oauth_configurations
+-- Only tent admins can view/edit OAuth configurations
+CREATE POLICY "Tent admins can manage OAuth configurations" ON oauth_configurations
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM tent_members
       WHERE tent_members.tent_id = oauth_configurations.tent_id
       AND tent_members.user_id = auth.uid()
-      AND tent_members.role IN ('owner', 'manager')
+      AND tent_members.is_admin = true
     )
   );
 
