@@ -305,9 +305,11 @@ async function syncAllYahooConnections() {
                 .insert({
                   email_connection_id: connection.id,
                   tent_id: connection.tent_id,
-                  sender_email: email.from,
+                  from_email: email.from,
+                  from_name: email.from.split('<')[0].trim(),
                   subject: email.subject,
-                  body: email.text || email.html,
+                  body_text: email.text || '',
+                  body_html: email.html || '',
                   received_at: email.date,
                   email_message_id: email.messageId,
                   is_business_inquiry: isBusinessInquiry,
