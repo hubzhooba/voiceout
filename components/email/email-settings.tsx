@@ -219,10 +219,18 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
       
       const result = await response.json()
       
-      toast({
-        title: 'Sync Complete',
-        description: `Fetched ${result.emailsFetched} emails, found ${result.inquiriesCreated} new inquiries`,
-      })
+      // Show appropriate message based on provider
+      if (result.message) {
+        toast({
+          title: 'Sync Status',
+          description: result.message,
+        })
+      } else {
+        toast({
+          title: 'Sync Complete',
+          description: `Fetched ${result.emailsFetched} emails, found ${result.inquiriesCreated} new inquiries`,
+        })
+      }
       
       fetchConnections()
     } catch (error) {
