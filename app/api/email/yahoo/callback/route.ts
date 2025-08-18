@@ -32,15 +32,37 @@ export async function GET(request: Request) {
       )
     }
 
-    // Exchange code for tokens
-    const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token'
-    const clientId = process.env.YAHOO_CLIENT_ID
-    const clientSecret = process.env.YAHOO_CLIENT_SECRET
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/email/yahoo/callback`
+    // Get OAuth credentials from database
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    
+    // Get OAuth config from database
+    const { data: configData } = await supabase
+      .rpc('get_oauth_config', {
+        p_tent_id: stateData.tentId,
+        p_provider: 'yahoo'
+      })
+    
+    // Decrypt the client secret
+    const { decrypt } = await import('@/lib/encryption')
+    
+    let clientId = configData?.client_id
+    let clientSecret = configData?.client_secret ? await decrypt(configData.client_secret) : null
+    let redirectUri = configData?.redirect_uri || `${process.env.NEXT_PUBLIC_APP_URL}/api/email/yahoo/callback`
+    
+    // Fallback to environment variables if no database config
+    if (!clientId || !clientSecret) {
+      clientId = process.env.YAHOO_CLIENT_ID
+      clientSecret = process.env.YAHOO_CLIENT_SECRET
+      redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/email/yahoo/callback`
+    }
     
     if (!clientId || !clientSecret) {
       throw new Error('Yahoo OAuth credentials not configured')
     }
+    
+    // Exchange code for tokens
+    const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token'
 
     // Prepare token exchange request
     const tokenParams = new URLSearchParams({

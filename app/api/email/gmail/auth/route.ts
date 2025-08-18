@@ -2,13 +2,6 @@ import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { createClient } from '@/lib/supabase/server'
 
-// Gmail OAuth configuration
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  `${process.env.NEXT_PUBLIC_APP_URL}/api/email/gmail/callback`
-)
-
 // Scopes needed for reading emails
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
@@ -56,6 +49,37 @@ export async function GET(request: Request) {
     if (sessionError) {
       console.error('Error storing session:', sessionError)
     }
+
+    // Get OAuth config from database
+    const { data: configData } = await supabase
+      .rpc('get_oauth_config', {
+        p_tent_id: tentId,
+        p_provider: 'gmail'
+      })
+    
+    let clientId = configData?.client_id || process.env.GOOGLE_CLIENT_ID
+    let clientSecret = configData?.client_secret || process.env.GOOGLE_CLIENT_SECRET
+    const redirectUri = configData?.redirect_uri || `${process.env.NEXT_PUBLIC_APP_URL}/api/email/gmail/callback`
+    
+    if (!clientId || !clientSecret) {
+      return NextResponse.json(
+        { error: 'Gmail OAuth is not configured. Please configure OAuth in tent settings.' },
+        { status: 500 }
+      )
+    }
+    
+    // Decrypt client secret if from database
+    if (configData?.client_secret) {
+      const { decrypt } = await import('@/lib/encryption')
+      clientSecret = await decrypt(configData.client_secret)
+    }
+    
+    // Create OAuth client with tenant-specific credentials
+    const oauth2Client = new google.auth.OAuth2(
+      clientId,
+      clientSecret,
+      redirectUri
+    )
 
     // Generate the OAuth URL
     const authUrl = oauth2Client.generateAuthUrl({

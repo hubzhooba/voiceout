@@ -281,12 +281,10 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
               : 'Connect your email to receive filtered business inquiries'}
           </p>
         </div>
-        {userRole === 'client' && (
-          <Button onClick={() => setShowAddDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Connect My Email
-          </Button>
-        )}
+        <Button onClick={() => setShowAddDialog(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Connect My Email
+        </Button>
       </div>
 
       {/* Features Card */}
@@ -339,16 +337,12 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
             No Email Connected
           </h4>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {userRole === 'client' 
-              ? 'Connect your email to start receiving filtered business inquiries'
-              : 'No team members have connected their emails yet'}
+            Connect your email to start receiving filtered business inquiries
           </p>
-          {userRole === 'client' && (
-            <Button onClick={() => setShowAddDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Connect Your First Email
-            </Button>
-          )}
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Connect Your First Email
+          </Button>
         </Card>
       ) : (
         <div className="grid gap-4">
