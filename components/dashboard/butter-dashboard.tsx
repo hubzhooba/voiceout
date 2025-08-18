@@ -713,9 +713,8 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                   <Tent className="h-10 w-10 text-gray-400 dark:text-gray-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No tents yet</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">Create your first tent or join an existing one</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Join an existing tent to get started</p>
                 <div className="flex gap-3 justify-center">
-                  <CreateTentDialog onTentCreated={fetchDashboardData} />
                   <Button onClick={() => setShowJoinDialog(true)} variant="outline">
                     <LogIn className="mr-2 h-4 w-4" />
                     Join Tent
