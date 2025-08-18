@@ -64,7 +64,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
   const [showInvoiceForm, setShowInvoiceForm] = useState(false)
   const [userRole, setUserRole] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
-  const [settingsSubTab, setSettingsSubTab] = useState('general')
+  const [settingsSubTab, setSettingsSubTab] = useState('email') // Default to email for all users
   const router = useRouter()
 
   useEffect(() => {
@@ -168,7 +168,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
         <Card className="border-0 shadow-xl bg-white/70 dark:bg-gray-900/70 backdrop-blur">
           <CardContent className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className={`grid w-full ${isClient ? 'grid-cols-2 max-w-md' : 'grid-cols-3 max-w-lg'} bg-gray-100/50 dark:bg-gray-800/50`}>
+              <TabsList className="grid w-full grid-cols-3 max-w-lg bg-gray-100/50 dark:bg-gray-800/50">
                 <TabsTrigger 
                   value="inquiries" 
                   className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md"
@@ -183,15 +183,13 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                   <FileText className="h-4 w-4 mr-2" />
                   Invoices
                 </TabsTrigger>
-                {(isManager || isOwner) && (
-                  <TabsTrigger 
-                    value="settings"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md"
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </TabsTrigger>
-                )}
+                <TabsTrigger 
+                  value="settings"
+                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </TabsTrigger>
               </TabsList>
 
               {/* Inquiries Tab */}
@@ -227,118 +225,135 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                 />
               </TabsContent>
 
-              {/* Settings Tab (for Managers and Owners only) */}
-              {(isManager || isOwner) && (
-                <TabsContent value="settings" className="space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-semibold mb-1">Settings</h2>
-                    <p className="text-muted-foreground mb-6">Manage your tent configuration and team</p>
+              {/* Settings Tab (for all users with role-based access) */}
+              <TabsContent value="settings" className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-semibold mb-1">Settings</h2>
+                  <p className="text-muted-foreground mb-6">
+                    {isClient ? 'Connect your email and view team members' : 'Manage your tent configuration and team'}
+                  </p>
+                </div>
+
+                {/* Settings Sub-navigation */}
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Sidebar */}
+                  <div className="lg:w-64 space-y-1">
+                    {isOwner && (
+                      <button
+                        onClick={() => setSettingsSubTab('general')}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
+                          settingsSubTab === 'general' 
+                            ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <Settings className="h-4 w-4 mr-3" />
+                          General Settings
+                        </div>
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    )}
+                    
+                    <button
+                      onClick={() => setSettingsSubTab('email')}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
+                        settingsSubTab === 'email' 
+                          ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <SendHorizontal className="h-4 w-4 mr-3" />
+                        Email Integration
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                    
+                    <button
+                      onClick={() => setSettingsSubTab('members')}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
+                        settingsSubTab === 'members' 
+                          ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-3" />
+                        Team Members
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
                   </div>
 
-                  {/* Settings Sub-navigation */}
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Sidebar */}
-                    <div className="lg:w-64 space-y-1">
-                      {isOwner && (
-                        <button
-                          onClick={() => setSettingsSubTab('general')}
-                          className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
-                            settingsSubTab === 'general' 
-                              ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <Settings className="h-4 w-4 mr-3" />
-                            General Settings
+                  {/* Content Area */}
+                  <div className="flex-1">
+                    <Card className="border-0 shadow-md">
+                      <CardContent className="p-6">
+                        {settingsSubTab === 'general' && isOwner && (
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-1">General Settings</h3>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                Configure your tent&apos;s business information and preferences
+                              </p>
+                            </div>
+                            <TentSettings tent={tent} />
                           </div>
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                      )}
-                      
-                      <button
-                        onClick={() => setSettingsSubTab('email')}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
-                          settingsSubTab === 'email' 
-                            ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <SendHorizontal className="h-4 w-4 mr-3" />
-                          Email Integration
-                        </div>
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                      
-                      <button
-                        onClick={() => setSettingsSubTab('members')}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
-                          settingsSubTab === 'members' 
-                            ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-3" />
-                          Team Members
-                        </div>
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    {/* Content Area */}
-                    <div className="flex-1">
-                      <Card className="border-0 shadow-md">
-                        <CardContent className="p-6">
-                          {settingsSubTab === 'general' && isOwner && (
-                            <div className="space-y-4">
-                              <div>
-                                <h3 className="text-lg font-semibold mb-1">General Settings</h3>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                  Configure your tent&apos;s business information and preferences
-                                </p>
-                              </div>
-                              <TentSettings tent={tent} />
+                        )}
+                        
+                        {settingsSubTab === 'email' && (
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-1">Email Integration</h3>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                {isClient 
+                                  ? 'Connect your email account to automatically capture your business inquiries'
+                                  : 'Connect and manage email accounts to automatically capture business inquiries'}
+                              </p>
                             </div>
-                          )}
-                          
-                          {settingsSubTab === 'email' && (
-                            <div className="space-y-4">
-                              <div>
-                                <h3 className="text-lg font-semibold mb-1">Email Integration</h3>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                  Connect your email accounts to automatically capture business inquiries
-                                </p>
-                              </div>
-                              <EmailSettings 
-                                tentId={tent.id}
-                                userRole={isOwner ? 'owner' : 'manager'}
-                              />
+                            <EmailSettings 
+                              tentId={tent.id}
+                              userRole={isOwner ? 'owner' : isManager ? 'manager' : 'client'}
+                            />
+                          </div>
+                        )}
+                        
+                        {settingsSubTab === 'members' && (
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-1">Team Members</h3>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                {isClient 
+                                  ? 'View your team members and their roles'
+                                  : 'Manage your team members and their permissions'}
+                              </p>
                             </div>
-                          )}
-                          
-                          {settingsSubTab === 'members' && (
-                            <div className="space-y-4">
-                              <div>
-                                <h3 className="text-lg font-semibold mb-1">Team Members</h3>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                  Manage your team members and their permissions
-                                </p>
-                              </div>
-                              <TentMembers 
-                                tent={tent}
-                                currentUserId={currentUserId}
-                                isAdmin={isOwner}
-                              />
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
+                            <TentMembers 
+                              tent={tent}
+                              currentUserId={currentUserId}
+                              isAdmin={isOwner}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Show message for clients when on general settings */}
+                        {settingsSubTab === 'general' && isClient && (
+                          <div className="text-center py-8">
+                            <Settings className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+                              Access Restricted
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              General settings are only available to tent owners.
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   </div>
-                </TabsContent>
-              )}
+                </div>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
