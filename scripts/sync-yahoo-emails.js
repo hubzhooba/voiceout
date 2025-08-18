@@ -192,41 +192,112 @@ async function syncAllYahooConnections() {
           
           // Enhanced business inquiry detection
           const emailContent = (email.subject + ' ' + email.text).toLowerCase()
+          const emailSubject = email.subject.toLowerCase()
           
-          // Business keywords to look for
-          const businessKeywords = [
-            'collaboration', 'partnership', 'sponsor', 'business', 
-            'opportunity', 'proposal', 'work together', 'brand deal',
-            'promotion', 'campaign', 'content creation', 'influencer',
-            'creator', 'paid', 'compensation', 'budget', 'project',
-            'inquiry', 'interested in', 'reach out', 'discuss',
-            'meeting', 'call', 'schedule', 'connect', 'offer'
+          // Strong indicators in subject line (immediate qualification)
+          const strongSubjectKeywords = [
+            'collaboration', 'rate inquiry', 'possible collaboration',
+            'project inquiry', 'inquiry', 'partnership', 'campaign',
+            'brand deal', 'sponsored', 'paid partnership', 'opportunity'
           ]
           
-          // Check if email contains any business keywords
-          const hasBusinessKeyword = businessKeywords.some(keyword => 
-            emailContent.includes(keyword)
+          const hasStrongSubject = strongSubjectKeywords.some(keyword => 
+            emailSubject.includes(keyword)
           )
+          
+          // Business keywords in email body
+          const businessKeywords = [
+            // Agency/Brand indicators
+            'agency', 'brand', 'client', 'campaign', 'marketing',
+            'influencer marketing', 'content creator', 'influencer',
+            
+            // Project/Work terms
+            'collaboration', 'partnership', 'sponsor', 'project',
+            'opportunity', 'proposal', 'work together', 'brand deal',
+            'promotion', 'campaign', 'content creation', 'sow',
+            'scope of work', 'deliverables', 'brief', 'requirements',
+            
+            // Payment/Rate terms
+            'rate', 'rates', 'compensation', 'budget', 'paid',
+            'payment', 'fee', 'cost', 'pricing', 'quote',
+            
+            // Platform mentions
+            'tiktok', 'instagram', 'facebook', 'youtube', 'reel',
+            'post', 'video', 'content', 'boosting rights', 'usage rights',
+            
+            // Professional communication
+            'inquire', 'inquiry', 'interested in', 'reach out',
+            'discuss', 'meeting', 'call', 'schedule', 'connect',
+            'looking forward', 'get back to you', 'let us know',
+            'please let me know', 'would like to', 'feel that your profile'
+          ]
+          
+          // Check if email contains business keywords
+          const businessKeywordCount = businessKeywords.filter(keyword => 
+            emailContent.includes(keyword)
+          ).length
+          
+          // Check if sender addresses recipient by name (more personal/professional)
+          const hasPersonalGreeting = 
+            emailContent.includes('hi kaila') || 
+            emailContent.includes('hello kaila') ||
+            emailContent.includes('dear kaila') ||
+            emailContent.includes('hey kaila')
+          
+          // Check for professional sign-offs
+          const hasProfessionalSignoff = 
+            emailContent.includes('regards') ||
+            emailContent.includes('best regards') ||
+            emailContent.includes('sincerely') ||
+            emailContent.includes('best,') ||
+            emailContent.includes('thank you') ||
+            emailContent.includes('thanks')
           
           // Skip common non-business emails
           const spamIndicators = [
             'unsubscribe', 'no-reply', 'noreply', 'newsletter',
             'notification', 'alert', 'automated', 'do not reply',
             'verification', 'confirm your', 'reset password',
-            'welcome to', 'thank you for signing up'
+            'welcome to', 'thank you for signing up', 'receipt',
+            'your order', 'has been shipped', 'tracking number'
           ]
           
           const isSpam = spamIndicators.some(indicator => 
             emailContent.includes(indicator)
           )
           
-          // More lenient check - if it has business keywords and isn't spam
-          const isBusinessInquiry = hasBusinessKeyword && !isSpam
+          // Scoring system for business inquiry detection
+          let businessScore = 0
+          if (hasStrongSubject) businessScore += 5  // Strong subject = very likely
+          if (businessKeywordCount >= 5) businessScore += 3  // Multiple keywords
+          else if (businessKeywordCount >= 3) businessScore += 2
+          else if (businessKeywordCount >= 1) businessScore += 1
+          if (hasPersonalGreeting) businessScore += 2  // Personal greeting
+          if (hasProfessionalSignoff) businessScore += 1  // Professional signoff
+          if (isSpam) businessScore -= 5  // Spam indicators
+          
+          // Consider it a business inquiry if score is 3 or higher
+          const isBusinessInquiry = businessScore >= 3
           
           // For testing: Save ALL emails with lower scores for non-business
-          const saveAllForTesting = true // Change to false in production
+          const saveAllForTesting = false // Set to true to see all emails
           
-          console.log(`Email: "${email.subject.substring(0, 50)}..." - Business: ${isBusinessInquiry}`)
+          // Calculate seriousness score (1-10)
+          let seriousnessScore = Math.min(10, Math.max(1, businessScore))
+          
+          // Determine inquiry type based on content
+          let inquiryType = 'general'
+          if (emailContent.includes('sponsor') || emailContent.includes('paid')) {
+            inquiryType = 'sponsorship'
+          } else if (emailContent.includes('collaboration') || emailContent.includes('work together')) {
+            inquiryType = 'collaboration'
+          } else if (emailContent.includes('book') || emailContent.includes('event')) {
+            inquiryType = 'booking'
+          } else if (!isBusinessInquiry) {
+            inquiryType = 'spam'
+          }
+          
+          console.log(`Email: "${email.subject.substring(0, 50)}..." - Business: ${isBusinessInquiry} (Score: ${businessScore})`)
           
           if (isBusinessInquiry || saveAllForTesting) {
               const { error: insertError } = await supabase
@@ -240,9 +311,9 @@ async function syncAllYahooConnections() {
                   received_at: email.date,
                   email_message_id: email.messageId,
                   is_business_inquiry: isBusinessInquiry,
-                  seriousness_score: isBusinessInquiry ? 7 : 3,
-                  inquiry_type: isBusinessInquiry ? 'general' : 'spam',
-                  ai_summary: `Email from ${email.from} regarding: ${email.subject.substring(0, 100)}`,
+                  seriousness_score: seriousnessScore,
+                  inquiry_type: inquiryType,
+                  ai_summary: `${inquiryType.charAt(0).toUpperCase() + inquiryType.slice(1)} inquiry from ${email.from}. Subject: ${email.subject.substring(0, 100)}`,
                   status: isBusinessInquiry ? 'pending_review' : 'archived'
                 })
               
