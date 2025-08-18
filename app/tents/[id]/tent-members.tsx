@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 
 interface TentMember {
   user_id: string
-  tent_role: string
+  tent_role: string | null
   is_admin: boolean
   profiles?: {
     id: string

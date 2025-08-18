@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
@@ -78,26 +78,12 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
   const { toast } = useToast()
   const supabase = createClient()
 
-  // Debug logging
-  console.log('[InquiryReview] Component mounted with props:', {
-    tentId,
-    userRole,
-    userId,
-    filterStatus
-  })
-
   useEffect(() => {
-    console.log('[InquiryReview] useEffect triggered - fetching inquiries')
     fetchInquiries()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tentId, filterStatus])
 
   const fetchInquiries = async () => {
-    console.log('[InquiryReview] fetchInquiries called')
-    console.log('[InquiryReview] Current filter status:', filterStatus)
-    console.log('[InquiryReview] User role:', userRole)
-    console.log('[InquiryReview] Tent ID:', tentId)
-    
     try {
       let query = supabase
         .from('email_inquiries')
@@ -106,42 +92,23 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
         .order('seriousness_score', { ascending: false })
         .order('received_at', { ascending: false })
 
-      console.log('[InquiryReview] Base query built for tent:', tentId)
-
       if (filterStatus !== 'all') {
-        console.log('[InquiryReview] Adding filter status to query:', filterStatus)
         query = query.eq('status', filterStatus)
       }
 
       // For clients, only show approved inquiries
       if (userRole === 'client') {
-        console.log('[InquiryReview] CLIENT ROLE DETECTED - Overriding to show only approved')
         query = query.eq('status', 'approved')
       }
       
-      // For managers/owners, show all tent inquiries
+      // For managers/owners, show all tent inquiries based on filter
       if (userRole === 'manager' || userRole === 'owner') {
-        console.log('[InquiryReview] MANAGER/OWNER ROLE - Showing all inquiries with filter:', filterStatus)
-        // Already filtered by tent_id above
+        // Already filtered by tent_id and filterStatus above
       }
 
-      console.log('[InquiryReview] Executing query...')
       const { data, error } = await query
 
-      if (error) {
-        console.error('[InquiryReview] Query error:', error)
-        throw error
-      }
-      
-      console.log('[InquiryReview] Query successful. Found inquiries:', data?.length || 0)
-      if (data && data.length > 0) {
-        console.log('[InquiryReview] First inquiry:', {
-          subject: data[0].subject,
-          status: data[0].status,
-          tent_id: data[0].tent_id
-        })
-      }
-      
+      if (error) throw error
       setInquiries(data || [])
     } catch (error) {
       console.error('Error fetching inquiries:', error)
@@ -233,23 +200,66 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Mail className="h-5 w-5 text-blue-600" />
-            {userRole === 'client' ? 'My Opportunities' : 'Team Inquiry Review'}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {userRole === 'client' 
-              ? 'View your approved business opportunities'
-              : 'Review and approve business inquiries from all team members'}
-          </p>
+      {/* Stats Cards */}
+      {userRole !== 'client' && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total</p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {inquiries.length}
+                  </p>
+                </div>
+                <Mail className="h-8 w-8 text-blue-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/30 dark:to-yellow-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Pending</p>
+                  <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
+                    {inquiries.filter(i => i.status === 'pending').length}
+                  </p>
+                </div>
+                <Clock className="h-8 w-8 text-yellow-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">Approved</p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                    {inquiries.filter(i => i.status === 'approved').length}
+                  </p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/30 dark:to-red-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-red-600 dark:text-red-400">High Priority</p>
+                  <p className="text-2xl font-bold text-red-900 dark:text-red-100">
+                    {inquiries.filter(i => i.seriousness_score && i.seriousness_score >= 8).length}
+                  </p>
+                </div>
+                <Sparkles className="h-8 w-8 text-red-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <Badge variant="outline">
-          {filteredInquiries.length} inquiries
-        </Badge>
-      </div>
+      )}
 
       {/* Filters */}
       <Card className="p-4">
@@ -306,102 +316,122 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
               >
                 <Card 
                   className={cn(
-                    "p-4 cursor-pointer hover:shadow-lg transition-all",
-                    inquiry.seriousness_score && inquiry.seriousness_score >= 8 && "border-l-4 border-l-red-500",
-                    inquiry.seriousness_score && inquiry.seriousness_score >= 6 && inquiry.seriousness_score < 8 && "border-l-4 border-l-orange-500"
+                    "group cursor-pointer transition-all duration-200 hover:shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur",
+                    inquiry.seriousness_score && inquiry.seriousness_score >= 8 && "ring-2 ring-red-500/20 bg-gradient-to-r from-red-50/50 to-white dark:from-red-950/20 dark:to-gray-900/80",
+                    inquiry.seriousness_score && inquiry.seriousness_score >= 6 && inquiry.seriousness_score < 8 && "ring-2 ring-orange-500/20 bg-gradient-to-r from-orange-50/50 to-white dark:from-orange-950/20 dark:to-gray-900/80"
                   )}
                   onClick={() => {
                     setSelectedInquiry(inquiry)
                     setShowDetailDialog(true)
                   }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-start gap-3">
-                        <div className={cn(
-                          "p-2 rounded-lg",
-                          inquiry.status === 'approved' ? "bg-green-100 dark:bg-green-900/20" :
-                          inquiry.status === 'rejected' ? "bg-red-100 dark:bg-red-900/20" :
-                          "bg-yellow-100 dark:bg-yellow-900/20"
-                        )}>
-                          {getInquiryTypeIcon(inquiry.inquiry_type)}
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className={cn(
+                            "p-2.5 rounded-xl transition-transform group-hover:scale-110",
+                            inquiry.status === 'approved' ? "bg-gradient-to-br from-green-400 to-emerald-600 text-white shadow-lg shadow-green-500/25" :
+                            inquiry.status === 'rejected' ? "bg-gradient-to-br from-red-400 to-rose-600 text-white shadow-lg shadow-red-500/25" :
+                            "bg-gradient-to-br from-yellow-400 to-amber-600 text-white shadow-lg shadow-yellow-500/25"
+                          )}>
+                            {getInquiryTypeIcon(inquiry.inquiry_type)}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                  {inquiry.subject}
+                                </h4>
+                                <div className="flex items-center gap-3 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                  <span className="flex items-center gap-1.5">
+                                    <User className="h-3.5 w-3.5" />
+                                    {inquiry.from_name || inquiry.from_email}
+                                  </span>
+                                  {inquiry.company_name && (
+                                    <span className="flex items-center gap-1.5">
+                                      <Building className="h-3.5 w-3.5" />
+                                      {inquiry.company_name}
+                                    </span>
+                                  )}
+                                  <span className="flex items-center gap-1.5">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    {new Date(inquiry.received_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
+                              {inquiry.seriousness_score && inquiry.seriousness_score >= 6 && (
+                                <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 animate-pulse">
+                                  <Sparkles className="h-3 w-3 mr-1" />
+                                  High Priority
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold text-gray-900 dark:text-gray-100">
-                              {inquiry.subject}
-                            </h4>
-                            {inquiry.seriousness_score && inquiry.seriousness_score >= 6 && (
-                              <Badge variant="destructive" className="text-xs">
-                                <Sparkles className="h-3 w-3 mr-1" />
-                                High Priority
+                        
+                        {inquiry.ai_summary && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 pl-14">
+                            {inquiry.ai_summary}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center justify-between pl-14">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {inquiry.inquiry_type && (
+                              <Badge variant="secondary" className="text-xs capitalize bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300">
+                                {inquiry.inquiry_type.replace(/_/g, ' ')}
+                              </Badge>
+                            )}
+                            {inquiry.budget_range && (
+                              <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300">
+                                <DollarSign className="h-3 w-3 mr-1" />
+                                {inquiry.budget_range}
+                              </Badge>
+                            )}
+                            {inquiry.project_timeline && (
+                              <Badge variant="secondary" className="text-xs bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {inquiry.project_timeline}
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {inquiry.from_name || inquiry.from_email}
-                            </span>
-                            {inquiry.company_name && (
-                              <span className="flex items-center gap-1">
-                                <Building className="h-3 w-3" />
-                                {inquiry.company_name}
-                              </span>
+                          
+                          <div className="flex items-center gap-3">
+                            {inquiry.seriousness_score && (
+                              <div className="text-right">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Score</p>
+                                <div className="flex items-center gap-1">
+                                  <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div 
+                                      className={cn(
+                                        "h-full rounded-full transition-all",
+                                        inquiry.seriousness_score >= 8 && "bg-gradient-to-r from-red-400 to-red-600",
+                                        inquiry.seriousness_score >= 6 && inquiry.seriousness_score < 8 && "bg-gradient-to-r from-orange-400 to-orange-600",
+                                        inquiry.seriousness_score >= 4 && inquiry.seriousness_score < 6 && "bg-gradient-to-r from-yellow-400 to-yellow-600",
+                                        inquiry.seriousness_score < 4 && "bg-gradient-to-r from-gray-400 to-gray-600"
+                                      )}
+                                      style={{ width: `${(inquiry.seriousness_score / 10) * 100}%` }}
+                                    />
+                                  </div>
+                                  <span className={cn(
+                                    "text-sm font-bold",
+                                    inquiry.seriousness_score >= 8 && "text-red-600",
+                                    inquiry.seriousness_score >= 6 && inquiry.seriousness_score < 8 && "text-orange-600",
+                                    inquiry.seriousness_score >= 4 && inquiry.seriousness_score < 6 && "text-yellow-600",
+                                    inquiry.seriousness_score < 4 && "text-gray-600"
+                                  )}>
+                                    {inquiry.seriousness_score}
+                                  </span>
+                                </div>
+                              </div>
                             )}
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {new Date(inquiry.received_at).toLocaleDateString()}
-                            </span>
+                            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
                           </div>
                         </div>
                       </div>
-                      
-                      {inquiry.ai_summary && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {inquiry.ai_summary}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {inquiry.inquiry_type && (
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {inquiry.inquiry_type.replace('_', ' ')}
-                          </Badge>
-                        )}
-                        {inquiry.budget_range && (
-                          <Badge variant="secondary" className="text-xs">
-                            <DollarSign className="h-3 w-3 mr-1" />
-                            {inquiry.budget_range}
-                          </Badge>
-                        )}
-                        {inquiry.project_timeline && (
-                          <Badge variant="secondary" className="text-xs">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {inquiry.project_timeline}
-                          </Badge>
-                        )}
-                      </div>
                     </div>
-                    
-                    <div className="flex flex-col items-end gap-2">
-                      {inquiry.seriousness_score && (
-                        <div className="text-right">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Importance</p>
-                          <p className={cn(
-                            "text-lg font-bold",
-                            inquiry.seriousness_score >= 8 && "text-red-600",
-                            inquiry.seriousness_score >= 6 && inquiry.seriousness_score < 8 && "text-orange-600",
-                            inquiry.seriousness_score >= 4 && inquiry.seriousness_score < 6 && "text-yellow-600",
-                            inquiry.seriousness_score < 4 && "text-gray-600"
-                          )}>
-                            {inquiry.seriousness_score}/10
-                          </p>
-                        </div>
-                      )}
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
+                  </CardContent>
                 </Card>
               </motion.div>
             ))}
