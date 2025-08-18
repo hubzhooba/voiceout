@@ -285,16 +285,24 @@ async function syncAllYahooConnections() {
           // Calculate seriousness score (1-10)
           let seriousnessScore = Math.min(10, Math.max(1, businessScore))
           
-          // Determine inquiry type based on content
-          let inquiryType = 'general'
+          // Determine inquiry type based on content (must match database constraints)
+          let inquiryType = 'other'
           if (emailContent.includes('sponsor') || emailContent.includes('paid')) {
             inquiryType = 'sponsorship'
-          } else if (emailContent.includes('collaboration') || emailContent.includes('work together')) {
+          } else if (emailContent.includes('collaboration') || emailContent.includes('work together') || emailContent.includes('collab')) {
             inquiryType = 'collaboration'
-          } else if (emailContent.includes('book') || emailContent.includes('event')) {
-            inquiryType = 'booking'
-          } else if (!isBusinessInquiry) {
-            inquiryType = 'spam'
+          } else if (emailContent.includes('partnership') || emailContent.includes('partner')) {
+            inquiryType = 'partnership'
+          } else if (emailContent.includes('review') || emailContent.includes('product')) {
+            inquiryType = 'product_review'
+          } else if (emailContent.includes('event') || emailContent.includes('invitation')) {
+            inquiryType = 'event_invitation'
+          } else if (emailContent.includes('content') || emailContent.includes('create')) {
+            inquiryType = 'content_request'
+          } else if (emailContent.includes('speaking') || emailContent.includes('talk')) {
+            inquiryType = 'speaking_engagement'
+          } else if (emailContent.includes('business') || emailContent.includes('deal')) {
+            inquiryType = 'business_deal'
           }
           
           console.log(`Email: "${email.subject.substring(0, 50)}..." - Business: ${isBusinessInquiry} (Score: ${businessScore})`)
@@ -317,8 +325,8 @@ async function syncAllYahooConnections() {
                   is_business_inquiry: isBusinessInquiry,
                   seriousness_score: seriousnessScore,
                   inquiry_type: inquiryType,
-                  ai_summary: `${inquiryType.charAt(0).toUpperCase() + inquiryType.slice(1)} inquiry from ${email.from}. Subject: ${email.subject.substring(0, 100)}`,
-                  status: isBusinessInquiry ? 'pending_review' : 'archived'
+                  ai_summary: `${inquiryType.replace(/_/g, ' ').charAt(0).toUpperCase() + inquiryType.replace(/_/g, ' ').slice(1)} inquiry from ${email.from}. Subject: ${email.subject.substring(0, 100)}`,
+                  status: isBusinessInquiry ? 'pending' : 'spam'
                 })
               
               if (!insertError) {
