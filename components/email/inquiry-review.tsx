@@ -93,9 +93,9 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
         query = query.eq('status', filterStatus)
       }
 
-      // For clients, only show their own approved inquiries
+      // For clients, only show approved inquiries
       if (userRole === 'client') {
-        query = query.eq('status', 'approved').eq('user_id', userId)
+        query = query.eq('status', 'approved')
       }
       
       // For managers/owners, show all tent inquiries
