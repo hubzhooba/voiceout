@@ -49,10 +49,10 @@ interface EmailConnection {
 
 interface EmailSettingsProps {
   tentId: string
-  isAdmin: boolean
+  userRole: 'owner' | 'manager' | 'client'
 }
 
-export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
+export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
   const [connections, setConnections] = useState<EmailConnection[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -273,16 +273,18 @@ export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Mail className="h-5 w-5 text-blue-600" />
-            Email Integration
+            {userRole === 'manager' ? 'Team Email Connections' : 'My Email Connection'}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Connect your email to automatically filter and manage business inquiries
+            {userRole === 'manager' 
+              ? 'View email connections from all team members'
+              : 'Connect your email to receive filtered business inquiries'}
           </p>
         </div>
-        {isAdmin && (
+        {userRole === 'client' && (
           <Button onClick={() => setShowAddDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Connect Email
+            Connect My Email
           </Button>
         )}
       </div>
@@ -337,9 +339,11 @@ export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
             No Email Connected
           </h4>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Connect your email to start filtering business inquiries automatically
+            {userRole === 'client' 
+              ? 'Connect your email to start receiving filtered business inquiries'
+              : 'No team members have connected their emails yet'}
           </p>
-          {isAdmin && (
+          {userRole === 'client' && (
             <Button onClick={() => setShowAddDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Connect Your First Email
@@ -385,7 +389,7 @@ export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={connection.is_active}
-                      disabled={!isAdmin}
+                      disabled={userRole !== 'client'}
                       onCheckedChange={() => {
                         // TODO: Implement toggle active status
                       }}
@@ -394,7 +398,7 @@ export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => syncEmails(connection.id)}
-                      disabled={syncing === connection.id}
+                      disabled={syncing === connection.id || userRole === 'manager'}
                     >
                       {syncing === connection.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -402,7 +406,7 @@ export function EmailSettings({ tentId, isAdmin }: EmailSettingsProps) {
                         <RefreshCw className="h-4 w-4" />
                       )}
                     </Button>
-                    {isAdmin && (
+                    {userRole === 'client' && (
                       <Button
                         variant="ghost"
                         size="sm"

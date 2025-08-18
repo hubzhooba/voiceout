@@ -35,7 +35,7 @@ interface TentSettingsProps {
 export function TentSettings({ tent }: TentSettingsProps) {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
-  const [isOwner, setIsOwner] = useState(false)
+  const [userRole, setUserRole] = useState<'owner' | 'manager' | 'client'>('client')
   const [formData, setFormData] = useState({
     name: tent.name || '',
     description: tent.description || '',
@@ -49,9 +49,9 @@ export function TentSettings({ tent }: TentSettingsProps) {
   const { toast } = useToast()
   const supabase = createClient()
   
-  // Check if user is owner
+  // Check user role
   useEffect(() => {
-    const checkOwnership = async () => {
+    const checkUserRole = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: member } = await supabase
@@ -61,10 +61,12 @@ export function TentSettings({ tent }: TentSettingsProps) {
           .eq('user_id', user.id)
           .single()
         
-        setIsOwner(member?.role === 'owner')
+        if (member?.role) {
+          setUserRole(member.role as 'owner' | 'manager' | 'client')
+        }
       }
     }
-    checkOwnership()
+    checkUserRole()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tent.id])
 
@@ -230,11 +232,11 @@ export function TentSettings({ tent }: TentSettingsProps) {
       </TabsContent>
 
       <TabsContent value="oauth" className="space-y-6">
-        <OAuthSettings tentId={tent.id} isOwner={isOwner} />
+        <OAuthSettings tentId={tent.id} isOwner={userRole === 'owner'} />
       </TabsContent>
 
       <TabsContent value="email" className="space-y-6">
-        <EmailSettings tentId={tent.id} isAdmin={true} />
+        <EmailSettings tentId={tent.id} userRole={userRole} />
       </TabsContent>
     </Tabs>
   )

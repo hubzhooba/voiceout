@@ -59,7 +59,7 @@ interface EmailInquiry {
 
 interface InquiryReviewProps {
   tentId: string
-  userRole: 'manager' | 'client'
+  userRole: 'owner' | 'manager' | 'client'
   userId: string
 }
 
@@ -93,9 +93,14 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
         query = query.eq('status', filterStatus)
       }
 
-      // For clients, only show approved inquiries
+      // For clients, only show their own approved inquiries
       if (userRole === 'client') {
-        query = query.eq('status', 'approved')
+        query = query.eq('status', 'approved').eq('user_id', userId)
+      }
+      
+      // For managers/owners, show all tent inquiries
+      if (userRole === 'manager' || userRole === 'owner') {
+        // Already filtered by tent_id above
       }
 
       const { data, error } = await query
@@ -197,12 +202,12 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Mail className="h-5 w-5 text-blue-600" />
-            {userRole === 'manager' ? 'Inquiry Review' : 'Approved Opportunities'}
+            {userRole === 'client' ? 'My Opportunities' : 'Team Inquiry Review'}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {userRole === 'manager' 
-              ? 'Review and approve business inquiries from email'
-              : 'View approved business opportunities'}
+            {userRole === 'client' 
+              ? 'View your approved business opportunities'
+              : 'Review and approve business inquiries from all team members'}
           </p>
         </div>
         <Badge variant="outline">
@@ -222,7 +227,7 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {userRole === 'manager' && (
+          {(userRole === 'manager' || userRole === 'owner') && (
             <div className="flex gap-2">
               {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
                 <Button
@@ -443,8 +448,8 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
                   </Card>
                 </div>
                 
-                {/* Review Notes (for manager) */}
-                {userRole === 'manager' && selectedInquiry.status === 'pending' && (
+                {/* Review Notes (for manager/owner) */}
+                {(userRole === 'manager' || userRole === 'owner') && selectedInquiry.status === 'pending' && (
                   <div>
                     <Label>Review Notes (Optional)</Label>
                     <Textarea
@@ -466,7 +471,7 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
               </div>
               
               <DialogFooter>
-                {userRole === 'manager' && selectedInquiry.status === 'pending' ? (
+                {(userRole === 'manager' || userRole === 'owner') && selectedInquiry.status === 'pending' ? (
                   <>
                     <Button
                       variant="outline"
