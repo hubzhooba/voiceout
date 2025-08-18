@@ -157,7 +157,6 @@ export function OAuthSettings({ tentId, isOwner }: OAuthSettingsProps) {
   }
 
   const getSetupInstructions = (provider: string) => {
-    const redirectUri = `${appUrl}/api/email/${provider}/callback`
     
     const instructions = {
       yahoo: {

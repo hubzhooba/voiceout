@@ -37,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { YahooAppPasswordGuide } from '@/components/email/yahoo-app-password-guide'
 
 interface EmailConnection {
   id: string
@@ -56,6 +57,7 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
   const [connections, setConnections] = useState<EmailConnection[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showYahooGuide, setShowYahooGuide] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<string>('gmail')
   const [manualEmail, setManualEmail] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -104,19 +106,43 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
   }
 
   const connectYahoo = async () => {
+    // Yahoo requires App Password authentication
+    setShowAddDialog(false)
+    setShowYahooGuide(true)
+  }
+  
+  const handleYahooConnection = async (email: string, appPassword: string) => {
     try {
-      const response = await fetch(`/api/email/yahoo/auth?tentId=${tentId}`)
-      if (!response.ok) throw new Error('Failed to start Yahoo auth')
+      const response = await fetch('/api/email/yahoo/app-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tentId,
+          email,
+          appPassword
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to connect Yahoo Mail')
+      }
       
-      const { authUrl } = await response.json()
-      window.location.href = authUrl
+      toast({
+        title: 'Success',
+        description: 'Yahoo Mail connected successfully!',
+      })
+      
+      setShowYahooGuide(false)
+      fetchConnections()
     } catch (error) {
       console.error('Error connecting Yahoo:', error)
       toast({
         title: 'Error',
-        description: 'Failed to connect Yahoo Mail',
+        description: error instanceof Error ? error.message : 'Failed to connect Yahoo Mail',
         variant: 'destructive'
       })
+      throw error
     }
   }
 
@@ -521,6 +547,14 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Yahoo App Password Guide */}
+      {showYahooGuide && (
+        <YahooAppPasswordGuide 
+          tentId={tentId}
+          onConnect={handleYahooConnection}
+        />
+      )}
     </div>
   )
 }

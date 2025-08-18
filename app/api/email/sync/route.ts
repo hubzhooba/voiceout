@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { google } from 'googleapis'
 import { decrypt, encrypt } from '@/lib/encryption'
-import { analyzeEmailWithAI } from '@/lib/ai/email-analyzer'
+import { analyzeEmailInquiry } from '@/lib/ai/email-analyzer'
 
 export async function POST(request: Request) {
   try {
@@ -58,10 +58,14 @@ export async function POST(request: Request) {
       // Process emails with AI
       const inquiries = []
       for (const email of emails) {
-        const analysis = await analyzeEmailWithAI(email)
+        const analysis = await analyzeEmailInquiry({
+          from: `${email.from.name} <${email.from.email}>`,
+          subject: email.subject,
+          body: email.bodyText
+        })
         
         // Only save if it's a legitimate business inquiry
-        if (analysis.isLegitimate && analysis.importanceScore > 30) {
+        if (analysis.isBusinessInquiry && analysis.seriousnessScore >= 7) {
           inquiries.push({
             tent_id: connection.tent_id,
             email_connection_id: connectionId,
@@ -74,17 +78,9 @@ export async function POST(request: Request) {
             body_html: email.bodyHtml,
             received_at: email.receivedAt,
             inquiry_type: analysis.inquiryType,
-            company_name: analysis.extractedData.companyName,
-            contact_person: analysis.extractedData.contactPerson,
-            contact_phone: analysis.extractedData.contactPhone,
-            budget_range: analysis.extractedData.budgetRange,
-            project_timeline: analysis.extractedData.projectTimeline,
-            project_description: analysis.extractedData.projectDescription,
-            importance_score: analysis.importanceScore,
-            sentiment_score: analysis.sentimentScore,
-            is_legitimate: analysis.isLegitimate,
+            seriousness_score: analysis.seriousnessScore,
+            is_business_inquiry: analysis.isBusinessInquiry,
             ai_summary: analysis.summary,
-            extracted_keywords: analysis.keywords,
             status: 'pending'
           })
         }

@@ -6,74 +6,41 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({
 }) : null
 
 export interface EmailAnalysis {
-  isLegitimate: boolean
-  importanceScore: number // 0-100
-  sentimentScore: number // -100 to 100
-  inquiryType: 
-    | 'collaboration' 
-    | 'sponsorship' 
-    | 'business_deal'
-    | 'speaking_engagement' 
-    | 'content_request' 
-    | 'partnership'
-    | 'product_review' 
-    | 'event_invitation' 
-    | 'other'
+  isBusinessInquiry: boolean
+  seriousnessScore: number // 1-10
+  inquiryType: 'collaboration' | 'booking' | 'sponsorship' | 'general' | 'spam'
   summary: string
-  keywords: string[]
-  extractedData: {
-    companyName?: string
-    contactPerson?: string
-    contactPhone?: string
-    budgetRange?: string
-    projectTimeline?: string
-    projectDescription?: string
-  }
 }
 
-export async function analyzeEmailWithAI(email: {
-  from: { name: string; email: string }
+export async function analyzeEmailInquiry(email: {
+  from: string
   subject: string
-  bodyText: string
-  bodyHtml?: string
+  body: string
 }): Promise<EmailAnalysis> {
   try {
     // Return default analysis if OpenAI is not configured
     if (!openai) {
       console.warn('OpenAI API key not configured - returning default analysis')
       return {
-        isLegitimate: false,
-        importanceScore: 0,
-        sentimentScore: 0,
-        inquiryType: 'other',
-        summary: 'AI analysis unavailable - OpenAI not configured',
-        keywords: [],
-        extractedData: {}
+        isBusinessInquiry: false,
+        seriousnessScore: 1,
+        inquiryType: 'general',
+        summary: 'AI analysis unavailable - OpenAI not configured'
       }
     }
     const prompt = `
     Analyze this email and determine if it's a legitimate business inquiry for a content creator/influencer.
     
-    From: ${email.from.name} <${email.from.email}>
+    From: ${email.from}
     Subject: ${email.subject}
-    Body: ${email.bodyText}
+    Body: ${email.body}
     
     Please analyze and return a JSON object with the following structure:
     {
-      "isLegitimate": boolean (true if this appears to be a genuine business inquiry),
-      "importanceScore": number (0-100, how important/valuable this opportunity seems),
-      "sentimentScore": number (-100 to 100, sentiment of the email),
-      "inquiryType": string (one of: collaboration, sponsorship, business_deal, speaking_engagement, content_request, partnership, product_review, event_invitation, other),
-      "summary": string (2-3 sentence summary of the opportunity),
-      "keywords": string[] (5-10 relevant keywords),
-      "extractedData": {
-        "companyName": string or null,
-        "contactPerson": string or null,
-        "contactPhone": string or null,
-        "budgetRange": string or null (if mentioned),
-        "projectTimeline": string or null (if mentioned),
-        "projectDescription": string or null (brief description of what they want)
-      }
+      "isBusinessInquiry": boolean (true if this appears to be a genuine business inquiry),
+      "seriousnessScore": number (1-10, where 10 is extremely serious/professional),
+      "inquiryType": string (one of: collaboration, booking, sponsorship, general, spam),
+      "summary": string (2-3 sentence summary of the opportunity)
     }
     
     Consider these factors for legitimacy and importance:
@@ -93,7 +60,7 @@ export async function analyzeEmailWithAI(email: {
     `
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -113,19 +80,22 @@ export async function analyzeEmailWithAI(email: {
       throw new Error('No response from AI')
     }
 
-    return JSON.parse(result) as EmailAnalysis
+    const analysis = JSON.parse(result)
+    return {
+      isBusinessInquiry: analysis.isBusinessInquiry || false,
+      seriousnessScore: Math.min(10, Math.max(1, analysis.seriousnessScore || 1)),
+      inquiryType: analysis.inquiryType || 'general',
+      summary: analysis.summary || 'No summary available'
+    }
   } catch (error) {
     console.error('Error analyzing email with AI:', error)
     
     // Return a default analysis on error
     return {
-      isLegitimate: false,
-      importanceScore: 0,
-      sentimentScore: 0,
-      inquiryType: 'other',
-      summary: 'Could not analyze email',
-      keywords: [],
-      extractedData: {}
+      isBusinessInquiry: false,
+      seriousnessScore: 1,
+      inquiryType: 'general',
+      summary: 'Could not analyze email'
     }
   }
 }
