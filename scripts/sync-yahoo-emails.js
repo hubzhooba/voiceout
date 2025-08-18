@@ -305,6 +305,8 @@ async function syncAllYahooConnections() {
                 .insert({
                   email_connection_id: connection.id,
                   tent_id: connection.tent_id,
+                  email_id: email.messageId || `yahoo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  thread_id: email.messageId || null,
                   from_email: email.from,
                   from_name: email.from.split('<')[0].trim(),
                   subject: email.subject,
