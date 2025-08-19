@@ -132,7 +132,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   })
   const [loading, setLoading] = useState(true)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
-  const [showCreateTentDialog, setShowCreateTentDialog] = useState(false)
   const [showAnalytics, setShowAnalytics] = useState(false)
   const [joinCode, setJoinCode] = useState('')
   const [joining, setJoining] = useState(false)
@@ -909,16 +908,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
         onOpenChange={setShowAnalytics}
         stats={stats}
         invoices={invoices}
-      />
-
-      {/* Create Tent Dialog */}
-      <CreateTentDialog 
-        open={showCreateTentDialog}
-        onOpenChange={setShowCreateTentDialog}
-        onTentCreated={() => {
-          setShowCreateTentDialog(false)
-          fetchDashboardData()
-        }} 
       />
 
       {/* Join Tent Dialog */}
