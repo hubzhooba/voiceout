@@ -545,6 +545,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           transition={{ delay: 0.2 }}
         >
           <Card className="flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
+            <CreateTentDialog onTentCreated={fetchDashboardData} />
             <Button
               variant="ghost"
               size="sm"
@@ -982,10 +983,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => setShowCreateTentDialog(true)}>
-              <Tent className="mr-2 h-4 w-4" />
-              Create Tent
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowJoinDialog(true)}>
               <LogIn className="mr-2 h-4 w-4" />
               Join Tent
