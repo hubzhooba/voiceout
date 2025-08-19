@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { InvoiceList } from '@/components/invoice-list'
-import { InvoiceFormEnhanced } from '@/components/invoice-form-enhanced'
+import { ProjectList } from '@/components/project-list'
+import { ProjectForm } from '@/components/project-form'
 import { TentSettings } from './tent-settings'
 import { TentMembers } from './tent-members'
 import { InquiryReview } from '@/components/email/inquiry-review'
@@ -61,7 +61,7 @@ interface TentViewProps {
 
 export function TentView({ tent, currentUserId }: TentViewProps) {
   const [activeTab, setActiveTab] = useState('inquiries')
-  const [showInvoiceForm, setShowInvoiceForm] = useState(false)
+  const [showProjectForm, setShowProjectForm] = useState(false)
   const [userRole, setUserRole] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [settingsSubTab, setSettingsSubTab] = useState('email') // Default to email for all users
@@ -86,8 +86,8 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
     }
   }, [tent.tent_members, currentUserId])
 
-  const handleInvoiceCreated = () => {
-    setShowInvoiceForm(false)
+  const handleProjectCreated = () => {
+    setShowProjectForm(false)
     router.refresh()
   }
 
@@ -152,11 +152,11 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
 
                 {isClient && (
                   <Button 
-                    onClick={() => setShowInvoiceForm(true)}
+                    onClick={() => setShowProjectForm(true)}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    New Invoice
+                    New Project
                   </Button>
                 )}
               </div>
@@ -177,11 +177,11 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                   Inquiries
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="invoices"
+                  value="projects"
                   className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md"
                 >
                   <FileText className="h-4 w-4 mr-2" />
-                  Invoices
+                  Projects
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings"
@@ -209,17 +209,17 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                 />
               </TabsContent>
 
-              {/* Invoices Tab */}
-              <TabsContent value="invoices" className="space-y-4">
+              {/* Projects Tab */}
+              <TabsContent value="projects" className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-2xl font-semibold">Invoices</h2>
+                    <h2 className="text-2xl font-semibold">Projects</h2>
                     <p className="text-muted-foreground">
-                      {isClient ? 'Create and manage your invoices' : 'View and track all tent invoices'}
+                      {isClient ? 'Create and manage your projects' : 'View and track all tent projects'}
                     </p>
                   </div>
                 </div>
-                <InvoiceList 
+                <ProjectList 
                   tentId={tent.id}
                   userRole={userRole}
                 />
@@ -358,13 +358,13 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
           </CardContent>
         </Card>
 
-        {/* Invoice Creation Dialog */}
-        <Dialog open={showInvoiceForm} onOpenChange={setShowInvoiceForm}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Project Creation Dialog */}
+        <Dialog open={showProjectForm} onOpenChange={setShowProjectForm}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Invoice</DialogTitle>
+              <DialogTitle>Create New Project</DialogTitle>
             </DialogHeader>
-            <InvoiceFormEnhanced
+            <ProjectForm
               tentId={tent.id}
               tentSettings={{
                 business_address: tent.business_address,
@@ -373,8 +373,8 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                 invoice_prefix: tent.invoice_prefix,
                 invoice_notes: tent.invoice_notes
               }}
-              onSuccess={handleInvoiceCreated}
-              onCancel={() => setShowInvoiceForm(false)}
+              onSuccess={handleProjectCreated}
+              onCancel={() => setShowProjectForm(false)}
             />
           </DialogContent>
         </Dialog>
