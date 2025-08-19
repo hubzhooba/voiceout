@@ -360,7 +360,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                   <Tent className="h-6 w-6 text-white" />
                 </div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-                  VoiceOut
+                  CreatorTents
                 </h1>
               </div>
               

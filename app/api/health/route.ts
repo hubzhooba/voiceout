@@ -5,7 +5,7 @@ export async function GET() {
     { 
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      service: 'voiceout',
+      service: 'creatortents',
     },
     { status: 200 }
   )

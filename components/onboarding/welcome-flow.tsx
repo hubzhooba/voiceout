@@ -34,7 +34,7 @@ interface WelcomeFlowProps {
 
 const steps = [
   {
-    title: "Welcome to VoiceOut! 🎉",
+    title: "Welcome to CreatorTents! 🎉",
     description: "Let's get you set up in just a few steps",
     icon: Rocket,
     color: "from-blue-500 to-purple-600",

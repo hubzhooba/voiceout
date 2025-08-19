@@ -21,10 +21,10 @@ interface InvoiceTemplateProps {
 export function InvoiceTemplate({
   invoice,
   items,
-  companyName = "VoiceOut Services",
+  companyName = "CreatorTents Services",
   companyAddress = "123 Business St, City, State 12345",
   companyPhone = "(555) 123-4567",
-  companyEmail = "billing@voiceout.com",
+  companyEmail = "billing@creatortents.com",
   companyLogo
 }: InvoiceTemplateProps) {
   return (

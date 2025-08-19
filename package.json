@@ -9,8 +9,8 @@
     "lint": "next lint",
     "deploy:vercel": "vercel",
     "deploy:railway": "railway up",
-    "docker:build": "DOCKER_BUILD=true docker build -t voiceout .",
-    "docker:run": "docker run -p 3000:3000 --env-file .env.local voiceout"
+    "docker:build": "DOCKER_BUILD=true docker build -t creatortents .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env.local creatortents"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

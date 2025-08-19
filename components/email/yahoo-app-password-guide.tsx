@@ -223,16 +223,16 @@ export function YahooAppPasswordGuide({ onConnect }: YahooAppPasswordGuideProps)
               <div className="flex-1">
                 <h4 className="font-medium mb-1">Name Your App</h4>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Enter a name like &quot;VoiceOut Email&quot; to identify this connection
+                  Enter a name like &quot;CreatorTents Email&quot; to identify this connection
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm">
-                    VoiceOut Email
+                    CreatorTents Email
                   </code>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copyToClipboard('VoiceOut Email')}
+                    onClick={() => copyToClipboard('CreatorTents Email')}
                   >
                     <Copy className="h-3 w-3" />
                   </Button>
@@ -265,7 +265,7 @@ export function YahooAppPasswordGuide({ onConnect }: YahooAppPasswordGuideProps)
                 <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-300" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium mb-1">Connect to VoiceOut</h4>
+                <h4 className="font-medium mb-1">Connect to CreatorTents</h4>
                 <p className="text-sm text-muted-foreground">
                   Return here and enter your Yahoo email address and the app password you just generated
                 </p>
