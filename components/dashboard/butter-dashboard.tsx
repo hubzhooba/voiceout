@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useOptimizedNavigation } from '@/hooks/use-optimized-navigation'
 import { CreateTentDialog } from '@/components/tents/create-tent-dialog'
-import { UnifiedDashboard } from '@/components/dashboard/unified-dashboard'
 import {
   Tent,
   FileText,
@@ -137,7 +136,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   const [joinCode, setJoinCode] = useState('')
   const [joining, setJoining] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [dashboardView, setDashboardView] = useState<'classic' | 'unified'>('unified')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [userRole, setUserRole] = useState<'creator' | 'manager'>('creator')
@@ -538,61 +536,34 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           </div>
         </motion.div>
 
-        {/* View Toggle */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
+        {/* Quick Actions Bar */}
+        <motion.div 
+          className="flex items-center gap-3 mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
+            <CreateTentDialog onTentCreated={fetchDashboardData} />
             <Button
-              variant={dashboardView === 'unified' ? 'default' : 'outline'}
+              variant="ghost"
               size="sm"
-              onClick={() => setDashboardView('unified')}
+              onClick={() => setShowJoinDialog(true)}
+              className="flex items-center gap-2"
             >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Unified View
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">Join Tent</span>
             </Button>
             <Button
-              variant={dashboardView === 'classic' ? 'default' : 'outline'}
+              variant="ghost"
               size="sm"
-              onClick={() => setDashboardView('classic')}
+              onClick={() => setShowAnalytics(true)}
+              className="flex items-center gap-2"
             >
-              <Grid3x3 className="h-4 w-4 mr-2" />
-              Classic View
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
             </Button>
-          </div>
-        </div>
-
-        {/* Render based on view */}
-        {dashboardView === 'unified' ? (
-          <UnifiedDashboard userId={userId} userEmail={userEmail || ''} />
-        ) : (
-          <>
-            {/* Quick Actions Bar */}
-            <motion.div 
-              className="flex items-center gap-3 mb-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
-                <CreateTentDialog onTentCreated={fetchDashboardData} />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowJoinDialog(true)}
-                  className="flex items-center gap-2"
-                >
-                  <LogIn className="h-4 w-4" />
-                  <span className="hidden sm:inline">Join Tent</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAnalytics(true)}
-                  className="flex items-center gap-2"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Analytics</span>
-                </Button>
-              </Card>
+          </Card>
           
           {userRole === 'manager' && stats.pendingInvoices > 0 && (
             <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
@@ -937,8 +908,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           stats={stats}
           invoices={invoices}
         />
-          </>
-        )}
       </div>
 
       {/* Join Tent Dialog */}
