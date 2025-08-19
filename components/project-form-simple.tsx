@@ -219,21 +219,27 @@ export function ProjectFormSimple({ tentId, tentSettings, onSuccess, onCancel }:
         if (itemsError) throw itemsError
       }
 
-      // Log activity
-      const activityMessage = formData.requires_invoice 
-        ? `Project "${formData.service_description}" created with invoice request for manager`
-        : `Project "${formData.service_description}" created without invoice`
-        
-      const { error: activityError } = await supabase
-        .from('project_activity')
-        .insert({
-          project_id: project.id,
-          user_id: user.id,
-          activity_type: 'project_created',
-          description: activityMessage
-        })
+      // Log activity (optional - don't fail if it doesn't work)
+      try {
+        const activityMessage = formData.requires_invoice 
+          ? `Project "${formData.service_description}" created with invoice request for manager`
+          : `Project "${formData.service_description}" created without invoice`
+          
+        const { error: activityError } = await supabase
+          .from('project_activity')
+          .insert({
+            project_id: project.id,
+            user_id: user.id,
+            activity_type: 'project_created',
+            description: activityMessage
+          })
 
-      if (activityError) console.error('Activity log error:', activityError)
+        if (activityError) {
+          console.warn('Activity log could not be created (non-critical):', activityError)
+        }
+      } catch (err) {
+        console.warn('Activity logging failed (non-critical):', err)
+      }
 
       toast({
         title: 'Success',
