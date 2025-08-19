@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProjectList } from '@/components/project-list'
-import { ProjectForm } from '@/components/project-form'
+import { ProjectFormSimple } from '@/components/project-form-simple'
 import { TentSettings } from './tent-settings'
 import { TentMembers } from './tent-members'
 import { InquiryReview } from '@/components/email/inquiry-review'
@@ -364,7 +364,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
             </DialogHeader>
-            <ProjectForm
+            <ProjectFormSimple
               tentId={tent.id}
               tentSettings={{
                 business_address: tent.business_address,
