@@ -9,6 +9,7 @@ import { TentSettings } from './tent-settings'
 import { TentMembers } from './tent-members'
 import { InquiryReview } from '@/components/email/inquiry-review'
 import { EmailSettings } from '@/components/email/email-settings'
+import { ClientSpreadsheetDashboard } from '@/components/client-spreadsheet-dashboard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -215,14 +216,21 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                   <div>
                     <h2 className="text-2xl font-semibold">Projects</h2>
                     <p className="text-muted-foreground">
-                      {isClient ? 'Create and manage your projects' : 'View and track all tent projects'}
+                      {isClient ? 'View and track all your projects in a spreadsheet format' : 'View and track all tent projects'}
                     </p>
                   </div>
                 </div>
-                <ProjectList 
-                  tentId={tent.id}
-                  userRole={userRole}
-                />
+                {isClient ? (
+                  <ClientSpreadsheetDashboard 
+                    tentId={tent.id}
+                    userRole={userRole}
+                  />
+                ) : (
+                  <ProjectList 
+                    tentId={tent.id}
+                    userRole={userRole}
+                  />
+                )}
               </TabsContent>
 
               {/* Settings Tab (for all users with role-based access) */}

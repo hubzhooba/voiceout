@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { 
-  FileText, 
   DollarSign, 
   Calendar, 
   User, 
@@ -20,9 +19,7 @@ import {
   MoreVertical,
   Eye,
   Edit,
-  Trash,
   TrendingUp,
-  TrendingDown,
   Minus,
   Briefcase,
   CheckSquare,
@@ -90,6 +87,7 @@ export function ProjectList({ tentId, userRole }: ProjectListProps) {
 
   useEffect(() => {
     fetchProjects()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tentId])
 
   const fetchProjects = async () => {

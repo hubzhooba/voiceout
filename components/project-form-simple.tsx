@@ -14,9 +14,6 @@ import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { 
   DollarSign, 
-  Calendar, 
-  User, 
-  FileText, 
   Info,
   Receipt
 } from 'lucide-react'
@@ -67,6 +64,7 @@ export function ProjectFormSimple({ tentId, tentSettings, onSuccess, onCancel }:
   // Generate project number on mount
   useEffect(() => {
     generateProjectNumber()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Apply default withholding tax
@@ -84,7 +82,7 @@ export function ProjectFormSimple({ tentId, tentSettings, onSuccess, onCancel }:
     const date = format(new Date(), 'yyyyMM')
     
     // Get the last project number for this tent
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('projects')
       .select('project_number')
       .eq('tent_id', tentId)

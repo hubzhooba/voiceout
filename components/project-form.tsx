@@ -14,15 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { 
-  Info, 
   DollarSign, 
-  Calendar, 
   User, 
-  FileText, 
-  AlertCircle,
   Briefcase,
-  Tag,
-  Clock,
   CheckSquare
 } from 'lucide-react'
 
@@ -88,6 +82,7 @@ export function ProjectForm({ tentId, tentSettings, onSuccess, onCancel }: Proje
   // Generate project number on mount
   useEffect(() => {
     generateProjectNumber()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Apply default withholding tax when invoice is required
@@ -105,7 +100,7 @@ export function ProjectForm({ tentId, tentSettings, onSuccess, onCancel }: Proje
     const date = format(new Date(), 'yyyyMM')
     
     // Get the last project number for this tent
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('projects')
       .select('project_number')
       .eq('tent_id', tentId)
