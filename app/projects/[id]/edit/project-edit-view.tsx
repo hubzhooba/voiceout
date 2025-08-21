@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
+import { ProjectAttachments } from '@/components/project/project-attachments'
 import { 
   ArrowLeft,
   Save,
@@ -51,7 +52,7 @@ interface ProjectEditViewProps {
   isAdmin: boolean
 }
 
-export function ProjectEditView({ project, currentUserId }: ProjectEditViewProps) {
+export function ProjectEditView({ project, tentSettings, currentUserId, userRole, isAdmin }: ProjectEditViewProps) {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
@@ -855,6 +856,16 @@ export function ProjectEditView({ project, currentUserId }: ProjectEditViewProps
             </CardContent>
           </Card>
         </form>
+
+        {/* Files & Attachments Section */}
+        <div className="mt-6">
+          <ProjectAttachments 
+            projectId={project.id as string}
+            currentUserId={currentUserId}
+            userRole={userRole}
+            isAdmin={isAdmin}
+          />
+        </div>
       </div>
     </div>
   )

@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
+import { ProjectAttachments } from '@/components/project/project-attachments'
 import { 
   ArrowLeft,
   Edit,
@@ -35,7 +36,7 @@ interface ProjectDetailViewProps {
   isAdmin: boolean
 }
 
-export function ProjectDetailView({ project, userRole, isAdmin }: ProjectDetailViewProps) {
+export function ProjectDetailView({ project, currentUserId, userRole, isAdmin }: ProjectDetailViewProps) {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
@@ -275,8 +276,9 @@ export function ProjectDetailView({ project, userRole, isAdmin }: ProjectDetailV
         <Card className="border-0 shadow-xl bg-white/70 dark:bg-gray-900/70 backdrop-blur">
           <CardContent className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="files">Files</TabsTrigger>
                 <TabsTrigger value="items">Items</TabsTrigger>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
                 <TabsTrigger value="comments">Comments</TabsTrigger>
@@ -407,6 +409,16 @@ export function ProjectDetailView({ project, userRole, isAdmin }: ProjectDetailV
                     </CardContent>
                   </Card>
                 ) : null}
+              </TabsContent>
+
+              {/* Files Tab */}
+              <TabsContent value="files" className="space-y-4">
+                <ProjectAttachments 
+                  projectId={project.id as string}
+                  currentUserId={currentUserId}
+                  userRole={userRole}
+                  isAdmin={isAdmin}
+                />
               </TabsContent>
 
               {/* Items Tab */}
