@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { ProjectDetailView } from './project-detail-view'
+import { ProjectDetailEnhanced } from './project-detail-enhanced'
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -12,11 +12,29 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     notFound()
   }
 
-  // Fetch project with all related data
+  // Fetch project with all related data including workflow fields
   const { data: project, error } = await supabase
     .from('projects')
     .select(`
       *,
+      workflow_step,
+      step1_status,
+      step1_completed_at,
+      step1_completed_by,
+      step2_status,
+      step2_approved_at,
+      step2_approved_by,
+      step3_status,
+      step3_requested_at,
+      step3_requested_by,
+      step4_status,
+      step4_uploaded_at,
+      step4_uploaded_by,
+      step5_status,
+      step5_accepted_at,
+      step5_accepted_by,
+      invoice_file_url,
+      invoice_file_name,
       project_items (
         id,
         item_type,
@@ -88,7 +106,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     notFound()
   }
 
-  return <ProjectDetailView 
+  return <ProjectDetailEnhanced 
     project={project} 
     currentUserId={user.id}
     userRole={userMember.tent_role || 'client'}

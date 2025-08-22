@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ProjectList } from '@/components/project-list'
+import { ProjectListEnhanced } from '@/components/project-list-enhanced'
 import { ProjectFormSimple } from '@/components/project-form-simple'
 import { TentSettings } from './tent-settings'
 import { TentMembers } from './tent-members'
@@ -226,9 +226,10 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                     userRole={userRole}
                   />
                 ) : (
-                  <ProjectList 
+                  <ProjectListEnhanced 
                     tentId={tent.id}
                     userRole={userRole}
+                    userId={currentUserId}
                   />
                 )}
               </TabsContent>

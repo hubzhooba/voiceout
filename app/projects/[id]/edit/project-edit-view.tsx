@@ -52,7 +52,7 @@ interface ProjectEditViewProps {
   isAdmin: boolean
 }
 
-export function ProjectEditView({ project, tentSettings, currentUserId, userRole, isAdmin }: ProjectEditViewProps) {
+export function ProjectEditView({ project, tentSettings: _tentSettings, currentUserId, userRole, isAdmin }: ProjectEditViewProps) {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
