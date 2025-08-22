@@ -401,9 +401,98 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                           </p>
                         </div>
                       ) : null}
+                      {project.requires_invoice ? (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Invoice Required</span>
+                          <p className="font-medium">Yes</p>
+                        </div>
+                      ) : null}
+                      {project.is_cash_sale !== null ? (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Payment Type</span>
+                          <p className="font-medium">{project.is_cash_sale ? 'Cash Sale' : 'Charge Sale'}</p>
+                        </div>
+                      ) : null}
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Line Items */}
+                {project.project_items && (project.project_items as Array<Record<string, unknown>>).length > 0 ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Line Items</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-2 text-sm font-medium text-muted-foreground">Description</th>
+                              <th className="text-center py-2 text-sm font-medium text-muted-foreground w-20">Qty</th>
+                              <th className="text-right py-2 text-sm font-medium text-muted-foreground w-28">Unit Price</th>
+                              <th className="text-right py-2 text-sm font-medium text-muted-foreground w-28">Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(project.project_items as Array<Record<string, unknown>>).map((item) => (
+                              <tr key={item.id as string} className="border-b">
+                                <td className="py-2">{item.description as string}</td>
+                                <td className="py-2 text-center">{item.quantity as number}</td>
+                                <td className="py-2 text-right">${(item.unit_price as number || 0).toFixed(2)}</td>
+                                <td className="py-2 text-right font-medium">${(item.amount as number || 0).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : null}
+
+                {/* Financial Summary */}
+                {(project.invoice_amount || project.total_amount) ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Financial Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {project.invoice_amount ? (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Subtotal</span>
+                            <span className="font-medium">${(project.invoice_amount as number || 0).toFixed(2)}</span>
+                          </div>
+                        ) : null}
+                        {project.tax_amount ? (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Tax</span>
+                            <span className="font-medium">${(project.tax_amount as number || 0).toFixed(2)}</span>
+                          </div>
+                        ) : null}
+                        {project.withholding_tax ? (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">
+                              Withholding Tax {project.withholding_tax_percent ? `(${project.withholding_tax_percent}%)` : ''}
+                            </span>
+                            <span className="font-medium text-red-600">
+                              -${(project.withholding_tax as number || 0).toFixed(2)}
+                            </span>
+                          </div>
+                        ) : null}
+                        {project.total_amount ? (
+                          <>
+                            <div className="border-t pt-2" />
+                            <div className="flex justify-between text-lg font-bold">
+                              <span>Total</span>
+                              <span>${(project.total_amount as number || 0).toFixed(2)}</span>
+                            </div>
+                          </>
+                        ) : null}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : null}
 
                 {/* Notes */}
                 {project.notes ? (
