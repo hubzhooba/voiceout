@@ -1,87 +1,70 @@
-# 🚨 IMPORTANT: Database Migration Required
+# Migration Instructions for File Upload Fix
 
-## QUICK FIX FOR STATUS ENUM ERROR
+## Issue Fixed
+1. Invoice details page now properly displays complete project information including items, price, quantity, and WHT% breakdown
+2. Fixed "StorageApiError: Bucket not found" error when uploading files
 
-If you're getting: `invalid input value for enum invoice_status: "awaiting_approval"`
+## Changes Made
 
-**Run this first:**
-1. Go to SQL Editor in Supabase
-2. Run the contents of: `supabase/simple-status-fix.sql`
-3. This converts the status column to TEXT and adds all new statuses
+### 1. Invoice Details Display
+The invoice details page (`/components/invoice/optimized-invoice-view.tsx`) already displays:
+- Full items table with description, quantity, unit price, and amount
+- Tax and withholding tax breakdown with percentages
+- Subtotal and total calculations
 
----
+### 2. File Upload Fix
+Removed client-side bucket creation attempts from:
+- `/components/project/invoice-upload-modal.tsx`
+- `/components/project/project-attachments.tsx`
 
-## Full Migration Instructions
+### 3. Database Migration Required
+Run the following SQL migration in your Supabase dashboard SQL editor:
 
-You're getting errors because your Supabase database doesn't have the new columns yet. Follow these steps to fix it:
+```sql
+-- File: /supabase/migrations/008_ensure_project_files_bucket.sql
+-- This ensures the project-files storage bucket exists with proper configuration
 
-## Quick Fix Instructions
+DO $$
+BEGIN
+  -- Check if bucket exists
+  IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'project-files') THEN
+    -- Create the bucket
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES (
+      'project-files',
+      'project-files',
+      true,
+      10485760, -- 10MB
+      ARRAY[
+        'image/jpeg',
+        'image/png', 
+        'image/gif',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ]
+    );
+  END IF;
+END $$;
+```
 
-### Step 1: Open Supabase Dashboard
-1. Go to your [Supabase Dashboard](https://ivictnlwwogzxphhhlnh.supabase.co)
-2. Click on **SQL Editor** in the left sidebar
+## Steps to Apply
 
-### Step 2: Run the Migration
-1. Click **New Query** button
-2. Copy ALL contents from: `supabase/complete-migration.sql`
-3. Paste it into the SQL Editor
-4. Click **Run** button
+1. **Apply the database migration:**
+   - Go to your Supabase dashboard
+   - Navigate to SQL Editor
+   - Copy and paste the SQL from `/supabase/migrations/008_ensure_project_files_bucket.sql`
+   - Run the query
 
-### Step 3: Verify the Migration
-After running the script, you should see:
-- ✅ "Success" message in green
-- ✅ "Migration completed successfully!" notice
+2. **Deploy the code changes:**
+   - The code changes have already been made to the components
+   - Deploy your application normally
 
-### Step 4: Clear Browser Cache (if needed)
-If you still see errors after migration:
-1. Open Developer Tools (F12)
-2. Go to Application/Storage tab
-3. Clear Local Storage for your app
-4. Refresh the page
+3. **Test the fixes:**
+   - Navigate to any invoice details page to verify all information displays correctly
+   - Test file upload functionality on projects to ensure it works without errors
 
-## What This Migration Does
-
-The migration adds these new fields to support the service invoice format:
-
-### New Invoice Fields:
-- `client_tin` - Tax Identification Number
-- `is_cash_sale` - Boolean for cash/charge sale
-- `withholding_tax` - Tax deduction amount
-- `approved_at`, `approved_by` - Approval tracking
-- `completed_at` - Completion timestamp
-- `processing_notes` - Manager notes
-
-### New Features:
-- Invoice activity logging
-- Approval workflow states
-- Automatic status change tracking
-
-## Troubleshooting
-
-### If you get "column already exists" errors:
-This is OK! It means some columns were already added. The script will continue.
-
-### If you get permission errors:
-Make sure you're using the service_role key or running as the database owner.
-
-### If the app still shows errors after migration:
-1. Wait 30 seconds for cache to clear
-2. Hard refresh the page (Ctrl+Shift+R or Cmd+Shift+R)
-3. If still not working, restart your development server
-
-## Alternative: Manual Column Addition
-
-If the script doesn't work, you can add columns manually in Table Editor:
-
-1. Go to **Table Editor** → **invoices** table
-2. Click **Add column** and add:
-   - `client_tin` (text, nullable)
-   - `is_cash_sale` (boolean, default: true)
-   - `withholding_tax` (numeric, default: 0)
-
-## Need Help?
-
-If you're still having issues:
-1. Check the Supabase logs for errors
-2. Verify the columns exist in Table Editor
-3. Make sure your app is using the correct Supabase URL and anon key
+## Note
+The client-side code no longer attempts to create storage buckets, which requires admin privileges. Instead, the bucket is created via SQL migration which has the proper permissions.

@@ -88,45 +88,13 @@ export function ProjectAttachments({ projectId, currentUserId, userRole, isAdmin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
-  // Create storage bucket if it doesn't exist
-  const ensureStorageBucket = async () => {
-    try {
-      // Try to access the bucket
-      const { data: buckets } = await supabase.storage.listBuckets()
-      
-      if (!buckets?.find(b => b.name === 'project-files')) {
-        // Create the bucket if it doesn't exist
-        const { error } = await supabase.storage.createBucket('project-files', {
-          public: true,
-          allowedMimeTypes: [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-          ],
-          fileSizeLimit: 10485760 // 10MB
-        })
-        
-        if (error && !error.message.includes('already exists')) {
-          throw error
-        }
-      }
-    } catch (error) {
-      console.error('Error ensuring storage bucket:', error)
-    }
-  }
+  // Storage bucket should already exist from migration
 
   // Upload file to Supabase Storage
   const uploadFile = async (file: File) => {
     setUploading(true)
     try {
-      // Ensure bucket exists
-      await ensureStorageBucket()
-
+      // Upload file directly - bucket should already exist from migration
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
       const filePath = `${projectId}/${fileName}`

@@ -66,16 +66,7 @@ export function InvoiceUploadModal({
 
     setUploading(true)
     try {
-      // Ensure bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets()
-      if (!buckets?.find(b => b.name === 'project-files')) {
-        await supabase.storage.createBucket('project-files', {
-          public: true,
-          fileSizeLimit: 10485760
-        })
-      }
-
-      // Upload file
+      // Upload file directly - bucket should already exist from migration
       const fileExt = selectedFile.name.split('.').pop()
       const fileName = `invoice_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
       const filePath = `${projectId}/${fileName}`

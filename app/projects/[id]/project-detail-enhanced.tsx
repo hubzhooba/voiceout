@@ -50,7 +50,7 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
   const currentStep = (project.workflow_step as number) || 1
 
   // Handle workflow step actions
-  const handleStepAction = async (step: number, _action: string) => {
+  const handleStepAction = async (step: number) => {
     setLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
