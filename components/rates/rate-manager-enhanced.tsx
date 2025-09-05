@@ -58,7 +58,15 @@ export function RateManagerEnhanced({ tentId, userRole = 'client', userId }: Rat
   const [additionalNotes, setAdditionalNotes] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [tentMembers, setTentMembers] = useState<any[]>([])
+  const [tentMembers, setTentMembers] = useState<{
+    user_id: string
+    role: string
+    profiles: {
+      id: string
+      email: string
+      full_name: string | null
+    } | null
+  }[]>([])
   const [selectedUserId, setSelectedUserId] = useState<string>('')
   const { toast } = useToast()
   const supabase = createClient()
@@ -93,12 +101,14 @@ export function RateManagerEnhanced({ tentId, userRole = 'client', userId }: Rat
       }
     }
     init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tentId, userRole, userId])
 
   useEffect(() => {
     if (selectedUserId) {
       fetchRates(selectedUserId)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUserId, tentId])
 
   const fetchTentMembers = async () => {
