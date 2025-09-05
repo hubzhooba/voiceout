@@ -482,6 +482,10 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings/rates')}>
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    <span>Rates & Auto-Reply</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
@@ -562,6 +566,15 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             >
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Analytics</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/settings/rates')}
+              className="flex items-center gap-2"
+            >
+              <DollarSign className="h-4 w-4" />
+              <span className="hidden sm:inline">Rates</span>
             </Button>
           </Card>
           

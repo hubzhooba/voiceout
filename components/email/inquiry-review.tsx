@@ -15,6 +15,7 @@ import {
   Mail,
   Building,
   User,
+  Users,
   DollarSign,
   Calendar,
   MessageSquare,
@@ -22,6 +23,11 @@ import {
   Search,
   ChevronRight,
   Loader2,
+  FileText,
+  Handshake,
+  Package,
+  Send,
+  Zap,
 } from 'lucide-react'
 import {
   Dialog,
@@ -55,6 +61,8 @@ interface EmailInquiry {
   reviewed_by: string | null
   reviewed_at: string | null
   review_notes: string | null
+  auto_reply_sent: boolean | null
+  auto_reply_sent_at: string | null
 }
 
 interface InquiryReviewProps {
@@ -71,6 +79,7 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [sendingReply, setSendingReply] = useState<string | null>(null)
   // For clients, default to 'approved' since that's all they can see
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>(
     userRole === 'client' ? 'approved' : 'pending'
@@ -119,6 +128,41 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const sendAutoReply = async (inquiryId: string) => {
+    setSendingReply(inquiryId)
+    try {
+      const response = await fetch('/api/email/auto-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inquiryId })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to send auto-reply')
+      }
+
+      const result = await response.json()
+      
+      toast({
+        title: 'Auto-reply sent!',
+        description: 'Your rates have been sent to the inquiry sender',
+      })
+      
+      // Refresh inquiries to update status
+      fetchInquiries()
+    } catch (error) {
+      console.error('Error sending auto-reply:', error)
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send auto-reply',
+        variant: 'destructive'
+      })
+    } finally {
+      setSendingReply(null)
     }
   }
 
@@ -562,9 +606,36 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={() => setShowDetailDialog(false)}>
-                    Close
-                  </Button>
+                  <>
+                    {selectedInquiry.status === 'approved' && !selectedInquiry.auto_reply_sent && (
+                      <Button
+                        variant="default"
+                        onClick={() => sendAutoReply(selectedInquiry.id)}
+                        disabled={sendingReply === selectedInquiry.id}
+                      >
+                        {sendingReply === selectedInquiry.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="h-4 w-4 mr-2" />
+                            Send Auto-Reply with Rates
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    {selectedInquiry.auto_reply_sent && (
+                      <Badge variant="secondary" className="bg-green-100 dark:bg-green-950/50">
+                        <Send className="h-3 w-3 mr-1" />
+                        Auto-reply sent
+                      </Badge>
+                    )}
+                    <Button onClick={() => setShowDetailDialog(false)}>
+                      Close
+                    </Button>
+                  </>
                 )}
               </DialogFooter>
             </>
@@ -574,6 +645,3 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
     </div>
   )
 }
-
-// Missing imports
-import { Handshake, Package, FileText, Users } from 'lucide-react'
