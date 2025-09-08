@@ -145,7 +145,7 @@ export function InquiryReview({ tentId, userRole, userId }: InquiryReviewProps) 
         throw new Error(error.error || 'Failed to send auto-reply')
       }
 
-      const result = await response.json()
+      await response.json()
       
       toast({
         title: 'Auto-reply sent!',

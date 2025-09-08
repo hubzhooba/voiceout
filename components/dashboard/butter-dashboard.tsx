@@ -28,7 +28,6 @@ import {
   Bell,
   Settings,
   User,
-  BarChart3,
   DollarSign,
   ChevronRight,
   Loader2,

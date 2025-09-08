@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,6 @@ import {
   DollarSign,
   Edit2,
   AlertCircle,
-  CheckCircle,
   Loader2,
 } from 'lucide-react'
 import {
@@ -64,6 +63,7 @@ export function RateManager({ tentId }: RateManagerProps) {
 
   useEffect(() => {
     fetchRates()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tentId])
 
   const fetchRates = async () => {

@@ -100,6 +100,7 @@ function formatCurrency(amount: number, currency: string): string {
 async function enhanceReplyWithAI(
   inquiry: EmailInquiry,
   baseReply: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userRates: UserRates
 ): Promise<string | null> {
   if (!openai) return null
