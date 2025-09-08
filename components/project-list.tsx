@@ -24,7 +24,8 @@ import {
   Briefcase,
   CheckSquare,
   XCircle,
-  Pause
+  Pause,
+  Trash2
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -33,6 +34,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { useRouter } from 'next/navigation'
 
 interface Project {
@@ -73,6 +84,8 @@ export function ProjectList({ tentId, userRole }: ProjectListProps) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -136,6 +149,51 @@ export function ProjectList({ tentId, userRole }: ProjectListProps) {
       })
     } finally {
       setLoading(false)
+    }
+  }
+  
+  const openDeleteModal = (projectId: string, projectName: string) => {
+    setProjectToDelete({ id: projectId, name: projectName })
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return
+    
+    const { id: projectId, name: projectName } = projectToDelete
+    
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId)
+      
+      if (error) throw error
+      
+      // Immediately remove from state for instant feedback
+      setProjects(prevProjects => prevProjects.filter(p => p.id !== projectId))
+      
+      toast({
+        title: 'Project Deleted',
+        description: `"${projectName}" has been permanently deleted.`,
+      })
+      
+      setDeleteModalOpen(false)
+      setProjectToDelete(null)
+      
+      // Also fetch fresh data to ensure sync with database
+      setTimeout(() => {
+        fetchProjects()
+      }, 500)
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to delete project. Please try again.',
+        variant: 'destructive'
+      })
+      // Refresh on error to ensure state is in sync
+      fetchProjects()
     }
   }
 
@@ -385,12 +443,19 @@ export function ProjectList({ tentId, userRole }: ProjectListProps) {
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}/edit`)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Project
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => openDeleteModal(project.id, project.project_name)}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Project
+                              </DropdownMenuItem>
                               {userRole !== 'client' && (
                                 <>
-                                  <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}/edit`)}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit Project
-                                  </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem 
                                     onClick={() => handleStatusUpdate(project.id, 'in_progress')}
@@ -493,6 +558,52 @@ export function ProjectList({ tentId, userRole }: ProjectListProps) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
+                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              Delete Project
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Are you sure you want to delete <span className="font-semibold">&quot;{projectToDelete?.name}&quot;</span>?
+                </p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-sm text-amber-800 dark:text-amber-200 font-medium flex items-start gap-2">
+                    <span className="text-amber-600 dark:text-amber-400">⚠️</span>
+                    <span>
+                      This action cannot be undone. This will permanently delete the project and all associated data including:
+                    </span>
+                  </p>
+                  <ul className="ml-7 mt-2 text-sm text-amber-700 dark:text-amber-300 list-disc list-inside space-y-1">
+                    <li>Project details and settings</li>
+                    <li>All project items and tasks</li>
+                    <li>Comments and activity history</li>
+                    <li>Associated files and documents</li>
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProjectToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProject}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Yes, Delete Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

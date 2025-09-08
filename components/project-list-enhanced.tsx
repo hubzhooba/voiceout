@@ -21,7 +21,8 @@ import {
   Briefcase,
   FileText,
   Upload,
-  Activity
+  Activity,
+  Trash2
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -29,6 +30,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { useRouter } from 'next/navigation'
 
 interface Project {
@@ -71,12 +82,15 @@ interface ProjectListEnhancedProps {
   tentId: string
   userRole: string
   userId: string
+  onProjectsChange?: () => void
 }
 
-export function ProjectListEnhanced({ tentId, userRole, userId }: ProjectListEnhancedProps) {
+export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange }: ProjectListEnhancedProps) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -96,6 +110,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId }: ProjectListEnh
   }, [tentId])
 
   const fetchProjects = async () => {
+    console.log('fetchProjects called for tent:', tentId)
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -116,8 +131,13 @@ export function ProjectListEnhanced({ tentId, userRole, userId }: ProjectListEnh
         .eq('tent_id', tentId)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('fetchProjects error:', error)
+        throw error
+      }
 
+      console.log('fetchProjects received data:', data?.length, 'projects')
+      console.log('Project IDs:', data?.map(p => p.id))
       setProjects(data || [])
       
       // Calculate stats
@@ -144,6 +164,85 @@ export function ProjectListEnhanced({ tentId, userRole, userId }: ProjectListEnh
       })
     } finally {
       setLoading(false)
+    }
+  }
+  
+  const openDeleteModal = (projectId: string, projectName: string) => {
+    setProjectToDelete({ id: projectId, name: projectName })
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return
+    
+    const { id: projectId, name: projectName } = projectToDelete
+    console.log('Delete confirmed for project:', projectId, projectName)
+    console.log('Projects before delete:', projects.length, projects.map(p => p.id))
+    
+    try {
+      console.log('Sending delete request to Supabase...')
+      const { data: deleteData, error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId)
+        .select()
+      
+      if (error) {
+        console.error('Supabase delete error:', error)
+        throw error
+      }
+      
+      console.log('Delete successful, deleted records:', deleteData)
+      
+      // Verify the project was actually deleted
+      const { data: verifyData } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('id', projectId)
+        .maybeSingle()
+      
+      console.log('Verification after delete - project found?:', verifyData)
+      if (verifyData) {
+        console.error('WARNING: Project still exists after delete!', verifyData)
+      }
+      
+      console.log('Delete successful, updating state...')
+      // Immediately remove from state for instant feedback
+      setProjects(prevProjects => {
+        const filtered = prevProjects.filter(p => p.id !== projectId)
+        console.log('Projects after filter:', filtered.length, filtered.map(p => p.id))
+        return filtered
+      })
+      
+      toast({
+        title: 'Project Deleted',
+        description: `"${projectName}" has been permanently deleted.`,
+      })
+      
+      setDeleteModalOpen(false)
+      setProjectToDelete(null)
+      
+      // Notify parent component of change
+      if (onProjectsChange) {
+        onProjectsChange()
+      }
+      
+      // Also fetch fresh data to ensure sync with database
+      console.log('Scheduling data refresh...')
+      setTimeout(() => {
+        console.log('Fetching fresh project data...')
+        fetchProjects()
+      }, 500)
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to delete project. Please try again.',
+        variant: 'destructive'
+      })
+      // Refresh on error to ensure state is in sync
+      console.log('Fetching projects due to error...')
+      fetchProjects()
     }
   }
 
@@ -396,15 +495,23 @@ export function ProjectListEnhanced({ tentId, userRole, userId }: ProjectListEnh
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            {isManager && (
-                              <DropdownMenuItem onClick={(e) => {
+                            <DropdownMenuItem onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/projects/${project.id}/edit`)
+                            }}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Project
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={(e) => {
                                 e.stopPropagation()
-                                router.push(`/projects/${project.id}/edit`)
-                              }}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit Project
-                              </DropdownMenuItem>
-                            )}
+                                openDeleteModal(project.id, project.project_name)
+                              }}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Project
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -416,6 +523,52 @@ export function ProjectListEnhanced({ tentId, userRole, userId }: ProjectListEnh
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
+                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              Delete Project
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Are you sure you want to delete <span className="font-semibold">&quot;{projectToDelete?.name}&quot;</span>?
+                </p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <div className="text-sm text-amber-800 dark:text-amber-200 font-medium flex items-start gap-2">
+                    <span className="text-amber-600 dark:text-amber-400">⚠️</span>
+                    <span>
+                      This action cannot be undone. This will permanently delete the project and all associated data including:
+                    </span>
+                  </div>
+                  <ul className="ml-7 mt-2 text-sm text-amber-700 dark:text-amber-300 list-disc list-inside space-y-1">
+                    <li>Project details and settings</li>
+                    <li>All project items and tasks</li>
+                    <li>Comments and activity history</li>
+                    <li>Associated files and documents</li>
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProjectToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProject}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Yes, Delete Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

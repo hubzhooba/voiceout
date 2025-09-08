@@ -13,6 +13,7 @@ import { format } from 'date-fns'
 import { ProjectWorkflowSteps } from '@/components/project/project-workflow-steps'
 import { ProjectAttachments } from '@/components/project/project-attachments'
 import { InvoiceUploadModal } from '@/components/project/invoice-upload-modal'
+import { formatCurrency } from '@/lib/currency'
 import { 
   ArrowLeft,
   Edit,
@@ -439,8 +440,8 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                               <tr key={item.id as string} className="border-b">
                                 <td className="py-2">{item.description as string}</td>
                                 <td className="py-2 text-center">{item.quantity as number}</td>
-                                <td className="py-2 text-right">${(item.unit_price as number || 0).toFixed(2)}</td>
-                                <td className="py-2 text-right font-medium">${(item.amount as number || 0).toFixed(2)}</td>
+                                <td className="py-2 text-right">{formatCurrency(item.unit_price as number || 0)}</td>
+                                <td className="py-2 text-right font-medium">{formatCurrency(item.amount as number || 0)}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -461,13 +462,13 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                         {project.invoice_amount ? (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Subtotal</span>
-                            <span className="font-medium">${(project.invoice_amount as number || 0).toFixed(2)}</span>
+                            <span className="font-medium">{formatCurrency(project.invoice_amount as number || 0)}</span>
                           </div>
                         ) : null}
                         {project.tax_amount ? (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Tax</span>
-                            <span className="font-medium">${(project.tax_amount as number || 0).toFixed(2)}</span>
+                            <span className="font-medium">{formatCurrency(project.tax_amount as number || 0)}</span>
                           </div>
                         ) : null}
                         {project.withholding_tax ? (
@@ -476,7 +477,7 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                               Withholding Tax {project.withholding_tax_percent ? `(${project.withholding_tax_percent}%)` : ''}
                             </span>
                             <span className="font-medium text-red-600">
-                              -${(project.withholding_tax as number || 0).toFixed(2)}
+                              -{formatCurrency(project.withholding_tax as number || 0)}
                             </span>
                           </div>
                         ) : null}
@@ -485,7 +486,7 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                             <div className="border-t pt-2" />
                             <div className="flex justify-between text-lg font-bold">
                               <span>Total</span>
-                              <span>${(project.total_amount as number || 0).toFixed(2)}</span>
+                              <span>{formatCurrency(project.total_amount as number || 0)}</span>
                             </div>
                           </>
                         ) : null}

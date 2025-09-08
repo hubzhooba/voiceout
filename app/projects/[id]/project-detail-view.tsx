@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { ProjectAttachments } from '@/components/project/project-attachments'
+import { formatCurrency } from '@/lib/currency'
 import { 
   ArrowLeft,
   Edit,
@@ -334,20 +335,20 @@ export function ProjectDetailView({ project, currentUserId, userRole, isAdmin }:
                       <CardContent className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Subtotal</span>
-                          <span className="font-medium">${subtotal.toFixed(2)}</span>
+                          <span className="font-medium">{formatCurrency(subtotal)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Tax</span>
-                          <span className="font-medium">${((project.tax_amount as number) || 0).toFixed(2)}</span>
+                          <span className="font-medium">{formatCurrency((project.tax_amount as number) || 0)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Withholding ({project.withholding_tax_percent as number}%)</span>
-                          <span className="font-medium text-red-600">-${withholding.toFixed(2)}</span>
+                          <span className="font-medium text-red-600">-{formatCurrency(withholding)}</span>
                         </div>
                         <div className="border-t pt-3">
                           <div className="flex justify-between">
                             <span className="font-semibold">Total</span>
-                            <span className="font-bold text-lg">${((project.total_amount as number) || 0).toFixed(2)}</span>
+                            <span className="font-bold text-lg">{formatCurrency((project.total_amount as number) || 0)}</span>
                           </div>
                         </div>
                         <div className="pt-2">
@@ -435,8 +436,8 @@ export function ProjectDetailView({ project, currentUserId, userRole, isAdmin }:
                                 <span>Qty: {item.quantity as number}</span>
                                 {item.unit_price ? (
                                   <>
-                                    <span>Unit Price: ${item.unit_price as number}</span>
-                                    <span className="font-medium">Amount: ${item.amount as number}</span>
+                                    <span>Unit Price: {formatCurrency(item.unit_price as number)}</span>
+                                    <span className="font-medium">Amount: {formatCurrency(item.amount as number)}</span>
                                   </>
                                 ) : null}
                               </div>

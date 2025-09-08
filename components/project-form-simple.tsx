@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
+import { formatCurrency } from '@/lib/currency'
 import { 
   DollarSign, 
   Info,
@@ -462,19 +463,19 @@ export function ProjectFormSimple({ tentId, tentSettings, onSuccess, onCancel }:
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
-                  <span className="font-medium">${totals.subtotal}</span>
+                  <span className="font-medium">{formatCurrency(parseFloat(totals.subtotal))}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax:</span>
-                  <span className="font-medium">${totals.tax}</span>
+                  <span className="font-medium">{formatCurrency(parseFloat(totals.tax))}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Withholding Tax:</span>
-                  <span className="font-medium text-red-600">-${totals.withholding}</span>
+                  <span className="font-medium text-red-600">-{formatCurrency(parseFloat(totals.withholding))}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-semibold">
                   <span>Total:</span>
-                  <span className="text-lg">${totals.total}</span>
+                  <span className="text-lg">{formatCurrency(parseFloat(totals.total))}</span>
                 </div>
               </div>
             </CardContent>

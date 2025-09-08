@@ -60,7 +60,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
-import { AnalyticsModal } from '@/components/analytics/analytics-modal'
 
 interface TentData {
   id: string
@@ -133,7 +132,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   })
   const [loading, setLoading] = useState(true)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
-  const [showAnalytics, setShowAnalytics] = useState(false)
   const [joinCode, setJoinCode] = useState('')
   const [joining, setJoining] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -484,10 +482,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/settings/rates')}>
-                    <DollarSign className="mr-2 h-4 w-4" />
-                    <span>Rates & Auto-Reply</span>
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/settings')}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
@@ -559,24 +553,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             >
               <LogIn className="h-4 w-4" />
               <span className="hidden sm:inline">Join Tent</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowAnalytics(true)}
-              className="flex items-center gap-2"
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/settings/rates')}
-              className="flex items-center gap-2"
-            >
-              <DollarSign className="h-4 w-4" />
-              <span className="hidden sm:inline">Rates</span>
             </Button>
           </Card>
           
@@ -916,13 +892,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           </Card>
         </motion.div>
 
-        {/* Analytics Modal */}
-        <AnalyticsModal
-          open={showAnalytics}
-          onOpenChange={setShowAnalytics}
-          stats={stats}
-          invoices={invoices}
-        />
       </div>
 
       {/* Join Tent Dialog */}

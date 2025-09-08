@@ -292,9 +292,6 @@ export function RateManagerEnhanced({ tentId, userRole = 'client', userId }: Rat
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="PHP">PHP (₱)</SelectItem>
-              <SelectItem value="USD">USD ($)</SelectItem>
-              <SelectItem value="EUR">EUR (€)</SelectItem>
-              <SelectItem value="GBP">GBP (£)</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -47,13 +47,6 @@ export default async function ProjectEditPage({ params }: { params: Promise<{ id
           user_id,
           tent_role,
           is_admin
-        ),
-        tent_settings (
-          business_address,
-          business_tin,
-          default_withholding_tax,
-          invoice_prefix,
-          invoice_notes
         )
       )
     `)
@@ -64,16 +57,17 @@ export default async function ProjectEditPage({ params }: { params: Promise<{ id
     notFound()
   }
 
-  // Check if user has permission to edit (only managers and admins)
+  // Check if user has permission to edit (members of the tent can edit)
   const userMember = project.tents?.tent_members?.find(
     (member: { user_id: string; tent_role: string; is_admin: boolean }) => member.user_id === user.id
   )
 
-  if (!userMember || (userMember.tent_role === 'client' && !userMember.is_admin)) {
+  if (!userMember) {
     notFound()
   }
 
-  const tentSettings = project.tents?.tent_settings?.[0] || null
+  // For now, pass empty object for tentSettings since the relationship doesn't exist
+  const tentSettings = {}
 
   return <ProjectEditView 
     project={project} 

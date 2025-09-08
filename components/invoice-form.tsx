@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
+import { formatCurrency } from '@/lib/currency'
 
 interface InvoiceFormProps {
   workspaceId: string
@@ -329,7 +330,7 @@ export function InvoiceForm({ workspaceId, onSuccess }: InvoiceFormProps) {
               <Label>Total Amount</Label>
               <Input
                 type="text"
-                value={`$${calculateTotal()}`}
+                value={formatCurrency(parseFloat(calculateTotal()))}
                 readOnly
                 className="bg-muted font-semibold"
               />
