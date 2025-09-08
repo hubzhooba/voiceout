@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { formatCurrency } from '@/lib/currency'
 import {
   Dialog,
   DialogContent,
@@ -105,7 +106,7 @@ export function AnalyticsModal({ open, onOpenChange, stats, invoices = [] }: Ana
                     {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth.toFixed(1)}%
                   </span>
                 </div>
-                <p className="text-2xl font-bold dark:text-gray-100">${stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold dark:text-gray-100">{formatCurrency(stats.totalRevenue)}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Total Revenue</p>
               </Card>
 
@@ -124,7 +125,7 @@ export function AnalyticsModal({ open, onOpenChange, stats, invoices = [] }: Ana
                 <div className="flex items-center justify-between mb-2">
                   <Clock className="h-4 w-4 text-yellow-600" />
                 </div>
-                <p className="text-2xl font-bold dark:text-gray-100">${pendingRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold dark:text-gray-100">{formatCurrency(pendingRevenue)}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Pending Revenue</p>
               </Card>
 
@@ -132,7 +133,7 @@ export function AnalyticsModal({ open, onOpenChange, stats, invoices = [] }: Ana
                 <div className="flex items-center justify-between mb-2">
                   <Activity className="h-4 w-4 text-green-600" />
                 </div>
-                <p className="text-2xl font-bold dark:text-gray-100">${averageInvoiceValue.toFixed(0)}</p>
+                <p className="text-2xl font-bold dark:text-gray-100">{formatCurrency(averageInvoiceValue)}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Avg Invoice Value</p>
               </Card>
             </div>
@@ -261,7 +262,7 @@ export function AnalyticsModal({ open, onOpenChange, stats, invoices = [] }: Ana
                         className="h-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-end pr-2"
                       >
                         <span className="text-xs text-white font-medium">
-                          ${data.amount.toLocaleString()}
+                          {formatCurrency(data.amount)}
                         </span>
                       </motion.div>
                     </div>
@@ -282,7 +283,7 @@ export function AnalyticsModal({ open, onOpenChange, stats, invoices = [] }: Ana
               <Card className="p-4">
                 <h4 className="font-medium mb-3 dark:text-gray-100">Revenue Projection</h4>
                 <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  ${(stats.totalRevenue * 1.15).toLocaleString()}
+                  {formatCurrency(stats.totalRevenue * 1.15)}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Next quarter estimate</p>
               </Card>

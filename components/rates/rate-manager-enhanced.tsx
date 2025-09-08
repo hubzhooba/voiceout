@@ -129,7 +129,15 @@ export function RateManagerEnhanced({ tentId, userRole = 'client', userId }: Rat
         .eq('tent_id', tentId)
 
       if (error) throw error
-      setTentMembers(data || [])
+      
+      // Transform the data to match the expected type
+      const transformedData = data?.map(member => ({
+        user_id: member.user_id,
+        role: member.role,
+        profiles: Array.isArray(member.profiles) ? member.profiles[0] : member.profiles
+      })) || []
+      
+      setTentMembers(transformedData)
     } catch (error) {
       console.error('Error fetching tent members:', error)
     }

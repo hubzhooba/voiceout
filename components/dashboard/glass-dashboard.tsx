@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { formatCurrency } from '@/lib/currency'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -383,7 +384,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
           { title: 'Total Invoices', value: stats.totalInvoices, icon: FileText, color: 'from-purple-500 to-purple-600' },
           { title: 'Pending', value: stats.pendingInvoices, icon: Clock, color: 'from-amber-500 to-amber-600' },
           { title: 'Approved', value: stats.approvedInvoices, icon: CheckCircle, color: 'from-green-500 to-green-600' },
-          { title: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'from-pink-500 to-pink-600' },
+          { title: 'Total Revenue', value: formatCurrency(stats.totalRevenue), icon: TrendingUp, color: 'from-pink-500 to-pink-600' },
         ].map((stat, index) => (
           <motion.div
             key={stat.title}
@@ -559,7 +560,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold gradient-text">
-                          ${(invoice.total_amount || invoice.amount || 0).toLocaleString()}
+                          {formatCurrency(invoice.total_amount || invoice.amount || 0)}
                         </p>
                         <p className="text-xs text-gray-500">
                           {new Date(invoice.created_at).toLocaleDateString()}

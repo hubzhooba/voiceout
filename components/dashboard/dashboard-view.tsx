@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { formatCurrency } from '@/lib/currency'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -391,7 +392,7 @@ export function DashboardView({ userId }: { userId: string }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${stats.totalRevenue.toLocaleString()}
+              {formatCurrency(stats.totalRevenue)}
             </div>
           </CardContent>
         </Card>
@@ -529,7 +530,7 @@ export function DashboardView({ userId }: { userId: string }) {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">
-                          ${invoice.amount.toLocaleString()}
+                          {formatCurrency(invoice.amount)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(invoice.created_at).toLocaleDateString()}

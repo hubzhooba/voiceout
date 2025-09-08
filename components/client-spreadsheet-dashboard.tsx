@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { formatCurrency } from '@/lib/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -261,7 +262,7 @@ export function ClientSpreadsheetDashboard({ tentId }: SpreadsheetDashboardProps
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-              ${totalBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatCurrency(totalBudget)}
             </p>
           </CardContent>
         </Card>
@@ -272,7 +273,7 @@ export function ClientSpreadsheetDashboard({ tentId }: SpreadsheetDashboardProps
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
-              ${totalInvoiced.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatCurrency(totalInvoiced)}
             </p>
           </CardContent>
         </Card>
@@ -283,7 +284,7 @@ export function ClientSpreadsheetDashboard({ tentId }: SpreadsheetDashboardProps
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-              ${totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatCurrency(totalPaid)}
             </p>
           </CardContent>
         </Card>
@@ -294,7 +295,7 @@ export function ClientSpreadsheetDashboard({ tentId }: SpreadsheetDashboardProps
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-              ${totalPending.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatCurrency(totalPending)}
             </p>
           </CardContent>
         </Card>
@@ -498,10 +499,10 @@ export function ClientSpreadsheetDashboard({ tentId }: SpreadsheetDashboardProps
                         {project.end_date ? format(new Date(project.end_date), 'MMM d, yyyy') : '-'}
                       </td>
                       <td className="p-2 text-sm text-right font-mono">
-                        ${project.budget_amount?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}
+                        {formatCurrency(project.budget_amount || 0)}
                       </td>
                       <td className="p-2 text-sm text-right font-mono font-semibold">
-                        ${project.total_amount?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}
+                        {formatCurrency(project.total_amount || 0)}
                       </td>
                       <td className="p-2 text-center">
                         {project.payment_status && (
@@ -544,10 +545,10 @@ export function ClientSpreadsheetDashboard({ tentId }: SpreadsheetDashboardProps
                       Totals:
                     </td>
                     <td className="p-2 text-sm text-right font-mono">
-                      ${filteredAndSortedProjects.reduce((sum, p) => sum + (p.budget_amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {formatCurrency(filteredAndSortedProjects.reduce((sum, p) => sum + (p.budget_amount || 0), 0))}
                     </td>
                     <td className="p-2 text-sm text-right font-mono">
-                      ${filteredAndSortedProjects.reduce((sum, p) => sum + (p.total_amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {formatCurrency(filteredAndSortedProjects.reduce((sum, p) => sum + (p.total_amount || 0), 0))}
                     </td>
                     <td colSpan={3}></td>
                   </tr>

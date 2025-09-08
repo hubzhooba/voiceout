@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { formatCurrency } from '@/lib/currency'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -204,8 +205,9 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
       setTents(formattedTents)
 
       // Determine user's primary role
+      // Only set manager role if user actually has tents with manager role
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const hasManagerRole = tentsResponse.data?.some((item: any) => item.tent_role === 'manager')
+      const hasManagerRole = tentsResponse.data && tentsResponse.data.length > 0 && tentsResponse.data.some((item: any) => item.tent_role === 'manager')
       setUserRole(hasManagerRole ? 'manager' : 'creator')
 
       const tentIds = new Set(formattedTents.map(t => t.id))
@@ -486,7 +488,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                     <DollarSign className="mr-2 h-4 w-4" />
                     <span>Rates & Auto-Reply</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
@@ -613,7 +615,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                 {Math.abs(stats.revenueGrowth).toFixed(1)}%
               </Badge>
             </div>
-            <p className="text-2xl font-bold dark:text-gray-100">${stats.totalRevenue.toLocaleString()}</p>
+            <p className="text-2xl font-bold dark:text-gray-100">{formatCurrency(stats.totalRevenue)}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">Total Revenue</p>
             <Progress value={75} className="mt-2 h-1" />
           </Card>
@@ -898,7 +900,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-sm dark:text-gray-200">${(invoice.total_amount || invoice.amount || 0).toLocaleString()}</p>
+                    <p className="font-semibold text-sm dark:text-gray-200">{formatCurrency(invoice.total_amount || invoice.amount || 0)}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(invoice.created_at).toLocaleDateString()}</p>
                   </div>
                 </motion.div>

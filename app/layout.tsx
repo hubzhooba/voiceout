@@ -16,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} relative min-h-screen`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} relative min-h-screen`} suppressHydrationWarning>
         {/* Optimized gradient mesh background */}
         <div className="fixed inset-0 bg-mesh -z-10" />
         
