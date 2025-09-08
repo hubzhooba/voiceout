@@ -248,7 +248,7 @@ export function ProjectAttachments({ projectId, currentUserId, userRole, isAdmin
     
     if (!fileType) return <File className="h-4 w-4" />
     
-    if (fileType.startsWith('image/')) return <Image className="h-4 w-4 text-blue-600" alt="" />
+    if (fileType.startsWith('image/')) return <Image className="h-4 w-4 text-blue-600" />
     if (fileType === 'application/pdf') return <FileText className="h-4 w-4 text-red-600" />
     if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
       return <FileSpreadsheet className="h-4 w-4 text-green-600" />
