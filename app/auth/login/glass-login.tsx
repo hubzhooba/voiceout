@@ -48,7 +48,8 @@ export function GlassLogin() {
 
       if (data?.user) {
         // Check if profile exists
-        const { error: profileError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: profileError } = await (supabase as any)
           .from('profiles')
           .select('*')
           .eq('id', data.user.id)
@@ -56,7 +57,8 @@ export function GlassLogin() {
 
         if (profileError && profileError.code === 'PGRST116') {
           // Profile doesn't exist, create one
-          const { error: createError } = await supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: createError } = await (supabase as any)
             .from('profiles')
             .insert({
               id: data.user.id,
