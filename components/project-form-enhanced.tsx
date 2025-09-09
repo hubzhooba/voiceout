@@ -23,9 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { 
-  DollarSign, 
-  Info,
-  Receipt,
+  DollarSign,
   User,
   Calendar,
   FileText,
@@ -181,7 +179,7 @@ export function ProjectFormEnhanced({ tentId, tentSettings, onSuccess, onCancel 
   // Generate project number on mount
   useEffect(() => {
     generateProjectNumber()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Apply default withholding tax
   useEffect(() => {
@@ -271,7 +269,7 @@ export function ProjectFormEnhanced({ tentId, tentSettings, onSuccess, onCancel 
     setItems(items.filter((_, i) => i !== index))
   }
 
-  const updateItem = (index: number, field: string, value: any) => {
+  const updateItem = (index: number, field: string, value: string | number) => {
     const updated = [...items]
     updated[index] = { ...updated[index], [field]: value }
     setItems(updated)

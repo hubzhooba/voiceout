@@ -38,7 +38,6 @@ import {
   CreditCard,
   AlertCircle,
   CheckCircle,
-  ArrowRight,
   Sparkles,
   X,
   ChevronLeft,
@@ -231,7 +230,7 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
   // Generate project number on mount
   useEffect(() => {
     generateProjectNumber()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Apply default withholding tax
   useEffect(() => {
@@ -325,7 +324,7 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
     setItems(items.filter((_, i) => i !== index))
   }
 
-  const updateItem = (index: number, field: string, value: any) => {
+  const updateItem = (index: number, field: string, value: string | number) => {
     const updated = [...items]
     updated[index] = { ...updated[index], [field]: value }
     setItems(updated)
@@ -366,46 +365,51 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
         tent_id: tentId,
         project_number: formData.project_number,
         project_name: formData.project_name,
-        project_type: formData.project_type,
+        project_type: 'service', // Map to valid database enum
         client_name: formData.client_name,
         client_email: formData.client_email,
         client_phone: formData.client_phone || null,
         client_address: formData.client_address || null,
+        client_tin: formData.client_tin || null,
         description: formData.description || null,
         start_date: formData.start_date,
         end_date: formData.end_date || null,
         status: 'planning',
         priority: formData.priority,
         requires_invoice: formData.requires_invoice,
-        invoice_status: formData.requires_invoice ? 'pending' : null,
+        invoice_status: formData.requires_invoice ? 'draft' : 'not_required',
         budget_amount: subtotal,
         total_amount: calculateTotal(),
         payment_status: formData.payment_type === 'cash' ? 'paid' : 'pending',
         payment_due_date: formData.payment_terms === 'immediate' ? formData.start_date : null,
-        workflow_step: 1,
-        step1_status: 'completed',
-        step2_status: 'pending',
+        withholding_tax_percent: parseFloat(formData.withholding_tax_percent || '0'),
+        notes: null,
+        tags: formData.tags.length > 0 ? formData.tags : null,
         created_by: user.id,
         
-        // Store items as JSON
-        items: JSON.stringify(items),
+        // Store items as JSONB
+        items: items.filter(item => item.description && parseFloat(item.unit_price) > 0),
         
-        // Additional metadata
-        metadata: JSON.stringify({
+        // Additional metadata as JSONB
+        metadata: {
+          original_project_type: formData.project_type, // Store the actual selection
           service_type: formData.service_type || formData.custom_service,
           payment_terms: formData.payment_terms,
+          payment_type: formData.payment_type,
           withholding_tax_percent: formData.withholding_tax_percent,
-          tags: formData.tags,
-          client_company: formData.client_company,
-          client_tin: formData.client_tin
-        })
+          client_company: formData.client_company
+        }
       }
 
       const { error } = await supabase
         .from('projects')
         .insert([projectData])
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Detailed error:', error)
+        throw error
+      }
 
       toast({
         title: 'Success!',

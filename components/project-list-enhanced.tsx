@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+// import { Badge } from '@/components/ui/badge' // Unused
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -24,9 +24,7 @@ import {
   Activity,
   Trash2,
   Pause,
-  X,
-  CheckSquare,
-  FileEdit
+  X
 } from 'lucide-react'
 import {
   DropdownMenu,
