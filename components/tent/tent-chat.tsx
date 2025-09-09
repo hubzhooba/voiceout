@@ -190,7 +190,7 @@ export function TentChat({ tentId, currentUserId, tentMembers }: TentChatProps) 
       {/* Header */}
       <div className="p-4 border-b border-white/20 bg-white/10">
         <div className="flex items-center gap-2">
-          <MessageCircle className="h-5 w-5 text-primary-600" />
+          <MessageCircle className="h-5 w-5 text-primary-600 hover-icon" />
           <h3 className="font-semibold">Tent Chat</h3>
           <span className="text-sm text-gray-600 ml-auto">
             {tentMembers.length} members
@@ -203,7 +203,7 @@ export function TentChat({ tentId, currentUserId, tentMembers }: TentChatProps) 
         <AnimatePresence initial={false}>
           {messages.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50 hover-icon" />
               <p>No messages yet. Start the conversation!</p>
             </div>
           ) : (
@@ -224,7 +224,7 @@ export function TentChat({ tentId, currentUserId, tentMembers }: TentChatProps) 
                   >
                     <Avatar className="h-8 w-8 flex-shrink-0">
                       <AvatarFallback className={`text-xs ${role === 'manager' ? 'bg-primary-100' : 'bg-gray-100'}`}>
-                        {profile ? getInitials(profile.full_name, profile.email) : <User className="h-4 w-4" />}
+                        {profile ? getInitials(profile.full_name, profile.email) : <User className="h-4 w-4 hover-icon" />}
                       </AvatarFallback>
                     </Avatar>
 
@@ -233,7 +233,7 @@ export function TentChat({ tentId, currentUserId, tentMembers }: TentChatProps) 
                         <span className="font-medium">
                           {profile?.full_name || profile?.email || 'Unknown'}
                         </span>
-                        <span className={`px-1.5 py-0.5 rounded text-xs ${
+                        <span className={`px-1.5 py-0.5 rounded text-xs hover-badge ${
                           role === 'manager' 
                             ? 'bg-primary-100 text-primary-700' 
                             : 'bg-gray-100 text-gray-700'
@@ -280,12 +280,12 @@ export function TentChat({ tentId, currentUserId, tentMembers }: TentChatProps) 
           <Button
             type="submit"
             disabled={!newMessage.trim() || sending}
-            className="btn-primary"
+            className="btn-primary hover-button-subtle"
           >
             {sending ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 hover-icon" />
             )}
           </Button>
         </div>

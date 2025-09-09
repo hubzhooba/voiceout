@@ -385,7 +385,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative"
+                    className="relative hover-icon"
                   >
                     <Bell className="h-5 w-5" />
                     {notifications.filter(n => !n.read).length > 0 && (
@@ -443,6 +443,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               <Button
                 variant="ghost"
                 size="icon"
+                className="hover-icon"
                 onClick={() => {
                   document.documentElement.classList.toggle('dark')
                   toast({
@@ -458,7 +459,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover-button-subtle">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src="/avatar.png" />
                       <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
@@ -477,7 +478,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings/profile')}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
@@ -486,7 +487,13 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                     <span>Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem 
+                    className="text-red-600"
+                    onClick={async () => {
+                      await supabase.auth.signOut()
+                      window.location.href = '/auth/login'
+                    }}
+                  >
                     <span>Log out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -516,7 +523,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             </div>
             
             {/* Quick Stats for Today */}
-            <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-0">
+            <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-0 hover-card-subtle">
               <div className="flex items-center gap-6">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.pendingInvoices}</p>
@@ -542,13 +549,13 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
+          <Card className="flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur hover-card-subtle">
             <CreateTentDialog onTentCreated={fetchDashboardData} />
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowJoinDialog(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover-button-subtle"
             >
               <LogIn className="h-4 w-4" />
               <span className="hidden sm:inline">Join Tent</span>
@@ -556,7 +563,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           </Card>
           
           {userRole === 'manager' && stats.pendingInvoices > 0 && (
-            <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+            <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 hover-glow">
               <Clock className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                 {stats.pendingInvoices} invoices awaiting review
@@ -564,7 +571,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100"
+                className="text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100 hover-button-subtle"
               >
                 Review Now
                 <ChevronRight className="h-4 w-4 ml-1" />
@@ -580,7 +587,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-4 hover:shadow-lg transition-shadow">
+          <Card className="p-4 hover-card">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <DollarSign className="h-5 w-5 text-blue-600" />
@@ -595,7 +602,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             <Progress value={75} className="mt-2 h-1" />
           </Card>
 
-          <Card className="p-4 hover:shadow-lg transition-shadow">
+          <Card className="p-4 hover-card">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <FileText className="h-5 w-5 text-purple-600" />
@@ -610,7 +617,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             <Progress value={stats.completionRate} className="mt-2 h-1" />
           </Card>
 
-          <Card className="p-4 hover:shadow-lg transition-shadow">
+          <Card className="p-4 hover-card">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-green-100 rounded-lg">
                 <CheckCircle className="h-5 w-5 text-green-600" />
@@ -622,7 +629,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             <Progress value={(stats.approvedInvoices / Math.max(stats.totalInvoices, 1)) * 100} className="mt-2 h-1" />
           </Card>
 
-          <Card className="p-4 hover:shadow-lg transition-shadow">
+          <Card className="p-4 hover-card">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <Clock className="h-5 w-5 text-yellow-600" />
@@ -647,7 +654,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               {/* Filters */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="hover-button-subtle">
                     <Filter className="h-4 w-4 mr-2" />
                     Filter
                   </Button>
@@ -736,7 +743,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                       >
                         <Card 
                           className={cn(
-                            "p-5 cursor-pointer transition-all hover:shadow-xl dark:bg-gray-800/50 dark:hover:bg-gray-800/70",
+                            "p-5 cursor-pointer hover-card dark:bg-gray-800/50",
                             viewMode === 'list' && "flex items-center justify-between"
                           )}
                           onClick={() => navigate(`/tents/${tent.id}`)}
@@ -767,18 +774,18 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                               <>
                                 <div className="flex items-center gap-2 mb-3">
                                   {isAdmin && (
-                                    <Badge variant="secondary" className="text-xs">
+                                    <Badge variant="secondary" className="text-xs hover-badge">
                                       <Star className="h-3 w-3 mr-1" />
                                       Admin
                                     </Badge>
                                   )}
-                                  <Badge variant="outline" className="text-xs capitalize">
+                                  <Badge variant="outline" className="text-xs capitalize hover-badge">
                                     {role}
                                   </Badge>
                                   {tent.is_locked ? (
-                                    <Badge variant="destructive" className="text-xs">Locked</Badge>
+                                    <Badge variant="destructive" className="text-xs hover-badge">Locked</Badge>
                                   ) : (
-                                    <Badge variant="default" className="text-xs">Open</Badge>
+                                    <Badge variant="default" className="text-xs hover-badge">Open</Badge>
                                   )}
                                 </div>
                                 
@@ -790,6 +797,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                                     <Button
                                       size="sm"
                                       variant="ghost"
+                                      className="hover-icon"
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         copyInviteCode(tent.invite_code)
@@ -844,7 +852,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             <Clock className="h-5 w-5 text-purple-600" />
             Recent Activity
           </h3>
-          <Card className="p-4">
+          <Card className="p-4 hover-card-subtle">
             <div className="space-y-3">
               {invoices.slice(0, 5).map((invoice, index) => (
                 <motion.div
@@ -852,7 +860,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 hover-list-item rounded-lg cursor-pointer"
                   onClick={() => navigate(`/invoices/${invoice.id}`)}
                   onMouseEnter={() => prefetch(`/invoices/${invoice.id}`)}
                 >

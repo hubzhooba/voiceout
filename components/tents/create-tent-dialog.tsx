@@ -137,8 +137,8 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
     <Dialog open={open} onOpenChange={setOpen}>
       {!controlledOpen && (
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Tent className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" className="hover-button-subtle">
+            <Tent className="mr-2 h-4 w-4 hover-icon" />
             Create Tent
           </Button>
         </DialogTrigger>
@@ -180,11 +180,11 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
               <div className="space-y-3">
                 <Label>Your Role in this Tent *</Label>
                 <RadioGroup value={creatorRole} onValueChange={(value) => setCreatorRole(value as 'client' | 'manager')}>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover-list-item">
                     <RadioGroupItem value="client" id="client" />
                     <Label htmlFor="client" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
+                        <User className="h-4 w-4 hover-icon" />
                         <span className="font-medium">Client</span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -192,11 +192,11 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
                       </p>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover-list-item">
                     <RadioGroupItem value="manager" id="manager" />
                     <Label htmlFor="manager" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
-                        <Briefcase className="h-4 w-4" />
+                        <Briefcase className="h-4 w-4 hover-icon" />
                         <span className="font-medium">Manager</span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -213,12 +213,13 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
             <DialogFooter>
               <Button
                 variant="outline"
+                className="hover-button-subtle"
                 onClick={() => setOpen(false)}
                 disabled={loading}
               >
                 Cancel
               </Button>
-              <Button onClick={handleCreate} disabled={loading} type="button">
+              <Button onClick={handleCreate} disabled={loading} type="button" className="hover-button-subtle">
                 {loading ? 'Creating...' : 'Create Tent'}
               </Button>
             </DialogFooter>
@@ -228,7 +229,7 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
             <div className="py-4 space-y-4">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
-                  <Check className="h-6 w-6 text-green-600" />
+                  <Check className="h-6 w-6 text-green-600 hover-icon" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Tent Created Successfully!</h3>
                 <p className="text-sm text-muted-foreground">
@@ -248,12 +249,13 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
                         <Button
                           size="icon"
                           variant="outline"
+                          className="hover-button-subtle"
                           onClick={() => copyToClipboard(inviteCode)}
                         >
                           {copied ? (
-                            <Check className="h-4 w-4" />
+                            <Check className="h-4 w-4 hover-icon" />
                           ) : (
-                            <Copy className="h-4 w-4" />
+                            <Copy className="h-4 w-4 hover-icon" />
                           )}
                         </Button>
                       </div>
@@ -270,9 +272,10 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
                         <Button
                           size="icon"
                           variant="outline"
+                          className="hover-button-subtle"
                           onClick={() => copyToClipboard(inviteLink)}
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-4 w-4 hover-icon" />
                         </Button>
                       </div>
                     </div>
@@ -297,7 +300,7 @@ export function CreateTentDialog({ onTentCreated, open: controlledOpen, onOpenCh
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleClose}>Done</Button>
+              <Button onClick={handleClose} className="hover-button-subtle">Done</Button>
             </DialogFooter>
           </>
         )}

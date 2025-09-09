@@ -176,11 +176,11 @@ export function RateManager({ tentId }: RateManagerProps) {
   return (
     <div className="space-y-6">
       {/* Service Rates Section */}
-      <Card className="p-6">
+      <Card className="p-6 hover-card-subtle">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
+              <DollarSign className="h-5 w-5 text-green-600 hover-icon" />
               Service Rates
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -189,12 +189,12 @@ export function RateManager({ tentId }: RateManagerProps) {
           </div>
           <div className="flex gap-2">
             {serviceRates.length === 0 && (
-              <Button variant="outline" size="sm" onClick={loadSampleRates}>
+              <Button variant="outline" size="sm" onClick={loadSampleRates} className="hover-button-subtle">
                 Load Sample Rates
               </Button>
             )}
-            <Button size="sm" onClick={addServiceRate}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button size="sm" onClick={addServiceRate} className="hover-button-subtle">
+              <Plus className="h-4 w-4 mr-2 hover-icon" />
               Add Service
             </Button>
           </div>
@@ -245,15 +245,16 @@ export function RateManager({ tentId }: RateManagerProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => removeServiceRate(index)}
+                className="hover-icon"
               >
-                <Trash2 className="h-4 w-4 text-red-500" />
+                <Trash2 className="h-4 w-4 text-red-500 hover-icon" />
               </Button>
             </div>
           ))}
           
           {serviceRates.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              <DollarSign className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+              <DollarSign className="h-12 w-12 mx-auto mb-2 text-gray-300 hover-pulse" />
               <p>No service rates configured</p>
               <p className="text-sm mt-1">Add your first service rate or load sample rates</p>
             </div>
@@ -262,10 +263,10 @@ export function RateManager({ tentId }: RateManagerProps) {
       </Card>
 
       {/* Auto-Reply Settings */}
-      <Card className="p-6">
+      <Card className="p-6 hover-card-subtle">
         <div className="mb-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Edit2 className="h-5 w-5 text-blue-600" />
+            <Edit2 className="h-5 w-5 text-blue-600 hover-icon" />
             Auto-Reply Settings
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -370,6 +371,7 @@ Looking forward to potentially working together!`}
         <Button
           onClick={saveRates}
           disabled={saving}
+          className="hover-button"
         >
           {saving ? (
             <>
@@ -387,7 +389,7 @@ Looking forward to potentially working together!`}
 
       {/* Info Box */}
       {autoReplyEnabled && (
-        <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+        <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover-glow">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
             <div>

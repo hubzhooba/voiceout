@@ -22,7 +22,11 @@ import {
   FileText,
   Upload,
   Activity,
-  Trash2
+  Trash2,
+  Pause,
+  X,
+  CheckSquare,
+  FileEdit
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -259,21 +263,29 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
     
     if (!currentStep) return null
 
-    const getStepColor = (status: string) => {
-      switch (status) {
-        case 'completed':
-          return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-        case 'in_progress':
-          return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-        default:
-          return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
-      }
-    }
-
     return (
-      <Badge className={getStepColor(currentStep.status)}>
-        Step {currentStep.num}: {currentStep.label}
-      </Badge>
+      <div className="flex items-center gap-1.5">
+        {/* Progress dots */}
+        <div className="flex items-center gap-0.5">
+          {steps.map((step, index) => (
+            <div
+              key={step.num}
+              className={`h-1.5 w-1.5 rounded-full transition-all ${
+                index < project.workflow_step - 1
+                  ? 'bg-green-500'
+                  : index === project.workflow_step - 1
+                  ? currentStep.status === 'completed' 
+                    ? 'bg-green-500'
+                    : 'bg-blue-500 animate-pulse'
+                  : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            />
+          ))}
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {currentStep.label}
+        </span>
+      </div>
     )
   }
 
@@ -299,19 +311,38 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'planning':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+        return 'bg-gray-500/10 text-gray-700 dark:bg-gray-400/10 dark:text-gray-300 border-gray-200 dark:border-gray-700'
       case 'in_progress':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+        return 'bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300 border-blue-200 dark:border-blue-700'
       case 'review':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+        return 'bg-yellow-500/10 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700'
       case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+        return 'bg-green-500/10 text-green-700 dark:bg-green-400/10 dark:text-green-300 border-green-200 dark:border-green-700'
       case 'on_hold':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+        return 'bg-orange-500/10 text-orange-700 dark:bg-orange-400/10 dark:text-orange-300 border-orange-200 dark:border-orange-700'
       case 'cancelled':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+        return 'bg-red-500/10 text-red-700 dark:bg-red-400/10 dark:text-red-300 border-red-200 dark:border-red-700'
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+        return 'bg-gray-500/10 text-gray-700 dark:bg-gray-400/10 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+    }
+  }
+  
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'planning':
+        return <Clock className="h-3 w-3" />
+      case 'in_progress':
+        return <Activity className="h-3 w-3" />
+      case 'review':
+        return <Eye className="h-3 w-3" />
+      case 'completed':
+        return <CheckCircle className="h-3 w-3" />
+      case 'on_hold':
+        return <Pause className="h-3 w-3" />
+      case 'cancelled':
+        return <X className="h-3 w-3" />
+      default:
+        return <Clock className="h-3 w-3" />
     }
   }
 
@@ -337,7 +368,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 hover-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -349,7 +380,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 hover-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -362,7 +393,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
         </Card>
 
         {isManager && (
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900 hover-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -376,7 +407,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
         )}
 
         {isManager && (
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -402,7 +433,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
 
         <TabsContent value={filter} className="mt-6">
           {filteredProjects.length === 0 ? (
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg hover-card">
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-30" />
                 <p className="text-muted-foreground">No projects found</p>
@@ -424,15 +455,19 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-lg font-semibold">{project.project_name}</h3>
-                            <Badge className={getStatusColor(project.status)}>
-                              {project.status.replace('_', ' ')}
-                            </Badge>
+                            {/* Clean status badge */}
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
+                              {getStatusIcon(project.status)}
+                              <span className="capitalize">{project.status.replace('_', ' ')}</span>
+                            </div>
+                            {/* Workflow progress */}
                             {getWorkflowStepBadge(project)}
+                            {/* Invoice indicator */}
                             {project.invoice_file_url && (
-                              <Badge variant="outline">
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Invoice Uploaded
-                              </Badge>
+                              <div className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                                <CheckCircle className="h-3 w-3" />
+                                <span>Invoice</span>
+                              </div>
                             )}
                           </div>
 

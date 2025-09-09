@@ -157,7 +157,7 @@ export function TentsList() {
       {tents.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <Tent className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <Tent className="mx-auto h-12 w-12 text-muted-foreground mb-4 hover-icon" />
             <h3 className="text-lg font-semibold mb-2">No tents yet</h3>
             <p className="text-muted-foreground mb-4">
               Create your first tent to start collaborating on invoices
@@ -173,12 +173,12 @@ export function TentsList() {
             const otherMember = tent.tent_members?.find(m => m.user_id !== userId) || null
             
             return (
-              <Card key={tent.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card key={tent.id} className="hover-card cursor-pointer">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div className="flex-1" onClick={() => navigateToTent(tent.id)}>
                       <CardTitle className="flex items-center gap-2">
-                        <Tent className="h-5 w-5" />
+                        <Tent className="h-5 w-5 hover-icon" />
                         {tent.name}
                       </CardTitle>
                       {tent.description && (
@@ -191,13 +191,14 @@ export function TentsList() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="hover-button-subtle"
                         onClick={(e) => {
                           e.stopPropagation()
                           copyInviteCode(tent.invite_code)
                         }}
                         title="Copy invite code"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-4 w-4 hover-icon" />
                       </Button>
                     )}
                   </div>
@@ -205,23 +206,23 @@ export function TentsList() {
                 <CardContent onClick={() => navigateToTent(tent.id)}>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm">
-                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <Users className="h-4 w-4 text-muted-foreground hover-icon" />
                       <span className="text-muted-foreground">
                         {memberCount}/2 members
                       </span>
                       {tent.is_locked && (
-                        <span className="text-xs bg-muted px-2 py-0.5 rounded">Full</span>
+                        <span className="text-xs bg-muted px-2 py-0.5 rounded hover-badge">Full</span>
                       )}
                     </div>
 
                     {currentUserMember && (
                       <div className="flex items-center gap-2 text-sm">
                         <span className="font-medium">Your role:</span>
-                        <span className="capitalize bg-primary/10 text-primary px-2 py-0.5 rounded">
+                        <span className="capitalize bg-primary/10 text-primary px-2 py-0.5 rounded hover-badge">
                           {currentUserMember.tent_role}
                         </span>
                         {currentUserMember.is_admin && (
-                          <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                          <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded hover-badge">
                             Admin
                           </span>
                         )}
@@ -250,14 +251,14 @@ export function TentsList() {
                   </div>
 
                   <Button
-                    className="w-full mt-4"
+                    className="w-full mt-4 hover-button-subtle"
                     variant="outline"
                     onClick={(e) => {
                       e.stopPropagation()
                       navigateToTent(tent.id)
                     }}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
+                    <ExternalLink className="h-4 w-4 mr-2 hover-icon" />
                     Enter Tent
                   </Button>
                 </CardContent>

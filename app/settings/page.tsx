@@ -65,8 +65,8 @@ export default async function SettingsPage() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
           <Link href="/dashboard">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+            <Button variant="ghost" className="mb-4 hover-button-subtle">
+              <ArrowLeft className="h-4 w-4 mr-2 hover-icon" />
               Back to Dashboard
             </Button>
           </Link>
@@ -82,7 +82,7 @@ export default async function SettingsPage() {
             return (
               <div key={section.title}>
                 <div className="flex items-center gap-2 mb-4">
-                  <SectionIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <SectionIcon className="h-5 w-5 text-gray-600 dark:text-gray-400 hover-icon" />
                   <h2 className="text-xl font-semibold">{section.title}</h2>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -90,7 +90,7 @@ export default async function SettingsPage() {
                     const ItemIcon = item.icon
                     const isAvailable = item.available !== false
                     const CardContent = (
-                      <Card className={`p-4 transition-all duration-200 ${isAvailable ? 'hover:shadow-lg cursor-pointer group' : 'opacity-60 cursor-not-allowed'}`}>
+                      <Card className={`p-4 ${isAvailable ? 'hover-card cursor-pointer group' : 'opacity-60 cursor-not-allowed'}`}>
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
                             <div className={`p-2 rounded-lg ${isAvailable ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-900/20 text-gray-400 dark:text-gray-600'}`}>
@@ -100,7 +100,7 @@ export default async function SettingsPage() {
                               <h3 className="font-medium text-gray-900 dark:text-gray-100">
                                 {item.name}
                                 {!isAvailable && (
-                                  <span className="ml-2 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded">
+                                  <span className="ml-2 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded hover-badge">
                                     Coming Soon
                                   </span>
                                 )}
@@ -111,7 +111,7 @@ export default async function SettingsPage() {
                             </div>
                           </div>
                           {isAvailable && (
-                            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+                            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 hover-icon" />
                           )}
                         </div>
                       </Card>
@@ -142,10 +142,10 @@ export default async function SettingsPage() {
             Irreversible and destructive actions
           </p>
           <div className="flex gap-4">
-            <Button variant="outline" className="text-red-600 border-red-300 hover:bg-red-100 dark:hover:bg-red-900/30">
+            <Button variant="outline" className="text-red-600 border-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover-button-subtle">
               Export Data
             </Button>
-            <Button variant="outline" className="text-red-600 border-red-300 hover:bg-red-100 dark:hover:bg-red-900/30">
+            <Button variant="outline" className="text-red-600 border-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover-button-subtle">
               Delete Account
             </Button>
           </div>

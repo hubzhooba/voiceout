@@ -34,6 +34,10 @@ export async function createClient() {
           }
         },
       },
+      auth: {
+        flowType: 'pkce',
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
+      }
     }
   )
 }

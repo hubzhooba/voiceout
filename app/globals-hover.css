@@ -1,0 +1,89 @@
+/* Global Hover Effects and Animations */
+
+/* Card hover effects */
+.hover-card {
+  @apply transition-all duration-300 ease-out;
+  @apply hover:shadow-xl hover:-translate-y-1;
+  @apply hover:shadow-blue-500/10 dark:hover:shadow-blue-400/10;
+}
+
+.hover-card-subtle {
+  @apply transition-all duration-200 ease-out;
+  @apply hover:shadow-lg hover:-translate-y-0.5;
+}
+
+/* Button hover effects */
+.hover-button {
+  @apply transition-all duration-200;
+  @apply hover:scale-105 active:scale-95;
+}
+
+.hover-button-subtle {
+  @apply transition-all duration-200;
+  @apply hover:scale-[1.02] active:scale-[0.98];
+}
+
+/* Link/Tab hover effects */
+.hover-tab {
+  @apply transition-all duration-200;
+  @apply hover:bg-gray-100/50 dark:hover:bg-gray-800/50;
+}
+
+/* Icon hover effects */
+.hover-icon {
+  @apply transition-all duration-200;
+  @apply hover:scale-110 hover:text-primary;
+}
+
+/* Text hover effects */
+.hover-text {
+  @apply transition-colors duration-200;
+  @apply hover:text-primary;
+}
+
+/* Border glow effect */
+.hover-glow {
+  @apply transition-all duration-300;
+  @apply hover:ring-2 hover:ring-primary/20 hover:border-primary/50;
+}
+
+/* Smooth scale */
+@keyframes smoothScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Pulse effect for important elements */
+.hover-pulse:hover {
+  animation: smoothScale 0.6s ease-in-out;
+}
+
+/* Lift effect for cards */
+.card-lift {
+  @apply relative transition-all duration-300 ease-out;
+  @apply hover:shadow-2xl hover:-translate-y-1;
+}
+
+.card-lift::before {
+  content: '';
+  @apply absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/0 to-purple-500/0;
+  @apply transition-all duration-300;
+}
+
+.card-lift:hover::before {
+  @apply from-blue-500/5 to-purple-500/5;
+}
+
+/* Interactive list items */
+.hover-list-item {
+  @apply transition-all duration-200;
+  @apply hover:bg-gray-50 dark:hover:bg-gray-800/50;
+  @apply hover:pl-6;
+}
+
+/* Badge hover effects */
+.hover-badge {
+  @apply transition-all duration-200;
+  @apply hover:scale-105 hover:shadow-md;
+}

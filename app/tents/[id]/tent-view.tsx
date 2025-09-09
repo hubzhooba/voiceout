@@ -190,23 +190,23 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
   const getRoleBadge = () => {
     if (isOwner) {
       return (
-        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
-          <Shield className="h-3 w-3 mr-1" />
+        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 hover-badge">
+          <Shield className="h-3 w-3 mr-1 hover-icon" />
           Owner
         </Badge>
       )
     }
     if (isManager) {
       return (
-        <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0">
-          <Briefcase className="h-3 w-3 mr-1" />
+        <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 hover-badge">
+          <Briefcase className="h-3 w-3 mr-1 hover-icon" />
           Manager
         </Badge>
       )
     }
     return (
-      <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0">
-        <Star className="h-3 w-3 mr-1" />
+      <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 hover-badge">
+        <Star className="h-3 w-3 mr-1 hover-icon" />
         Client
       </Badge>
     )
@@ -220,9 +220,9 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
           <Button
             variant="ghost"
             onClick={() => router.push('/dashboard')}
-            className="mb-4 hover:bg-white/50 dark:hover:bg-gray-800/50"
+            className="mb-4 hover-button-subtle"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-2 hover-icon" />
             Back to Dashboard
           </Button>
 
@@ -239,17 +239,75 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                   {tent.description && (
                     <p className="text-muted-foreground text-lg">{tent.description}</p>
                   )}
+                  {/* Tent Members - Clean Minimal Design */}
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="flex items-center -space-x-3">
+                      {tent.tent_members?.map((member, index) => {
+                        const name = member.profiles?.full_name || member.profiles?.email?.split('@')[0] || 'Unknown'
+                        const role = member.tent_role === 'manager' ? 'Manager' : member.is_admin ? 'Admin' : 'Client'
+                        const initial = name.charAt(0).toUpperCase()
+                        
+                        // Different gradient for each role
+                        const gradientClass = role === 'Manager' 
+                          ? 'from-purple-500 to-pink-500' 
+                          : role === 'Admin'
+                          ? 'from-blue-500 to-cyan-500'
+                          : 'from-green-500 to-emerald-500'
+                        
+                        return (
+                          <div 
+                            key={member.user_id} 
+                            className="relative group"
+                            style={{ zIndex: tent.tent_members.length - index }}
+                          >
+                            <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${gradientClass} flex items-center justify-center text-white text-sm font-semibold ring-2 ring-white dark:ring-gray-900 transition-all duration-200 group-hover:scale-110 group-hover:ring-4`}>
+                              {initial}
+                            </div>
+                            {/* Clean tooltip */}
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">
+                              <div className="font-medium">{name}</div>
+                              <div className="text-gray-400 text-[10px]">{role}</div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {tent.tent_members?.map((m, i) => (
+                          <span key={m.user_id}>
+                            {m.profiles?.full_name || m.profiles?.email?.split('@')[0] || 'Unknown'}
+                            {i < tent.tent_members.length - 1 && ' & '}
+                          </span>
+                        ))}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {tent.tent_members?.length === 1 ? '1 member' : `${tent.tent_members?.length} members`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {isClient && (
-                  <Button 
-                    onClick={() => setShowProjectForm(true)}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+                <div className="flex items-start gap-3">
+                  {isClient && (
+                    <Button 
+                      onClick={() => setShowProjectForm(true)}
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover-button-subtle"
+                    >
+                      <Plus className="h-4 w-4 mr-2 hover-icon" />
+                      New Project
+                    </Button>
+                  )}
+                  
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setActiveTab('settings')}
+                    className="hover-button-subtle"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Project
+                    <Settings className="h-4 w-4 hover-icon" />
                   </Button>
-                )}
+                </div>
               </div>
             </CardHeader>
           </Card>
@@ -272,7 +330,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                     </p>
                   </div>
                   <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400 hover-icon" />
                   </div>
                 </div>
               </CardContent>
@@ -291,7 +349,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                     </p>
                   </div>
                   <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full">
-                    <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                    <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400 hover-icon" />
                   </div>
                 </div>
               </CardContent>
@@ -310,7 +368,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                     </p>
                   </div>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                    <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400 hover-icon" />
                   </div>
                 </div>
               </CardContent>
@@ -329,7 +387,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                     </p>
                   </div>
                   <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                    <CheckCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    <CheckCircle className="h-6 w-6 text-purple-600 dark:text-purple-400 hover-icon" />
                   </div>
                 </div>
               </CardContent>
@@ -344,8 +402,8 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                   <h3 className="text-lg font-semibold">Monthly Revenue Trend</h3>
                   <p className="text-sm text-muted-foreground">Revenue performance over the last 6 months</p>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                <Badge variant="outline" className="text-xs hover-badge">
+                  <TrendingUp className="h-3 w-3 mr-1 hover-icon" />
                   6 Month View
                 </Badge>
               </div>
@@ -390,32 +448,23 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
         <Card className="border-0 shadow-xl bg-white/70 dark:bg-gray-900/70 backdrop-blur min-h-[600px]">
           <CardContent className="p-6 lg:p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6">
                 <TabsList className="grid grid-cols-2 w-auto bg-gray-100/50 dark:bg-gray-800/50">
                   <TabsTrigger 
                     value="projects"
                     className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md px-6"
                   >
-                    <FileText className="h-4 w-4 mr-2" />
+                    <FileText className="h-4 w-4 mr-2 hover-icon" />
                     Projects
                   </TabsTrigger>
                   <TabsTrigger 
                     value="inquiries" 
                     className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md px-6"
                   >
-                    <Inbox className="h-4 w-4 mr-2" />
+                    <Inbox className="h-4 w-4 mr-2 hover-icon" />
                     Inquiries
                   </TabsTrigger>
                 </TabsList>
-                
-                <Button
-                  variant={activeTab === 'settings' ? 'default' : 'outline'}
-                  size="icon"
-                  onClick={() => setActiveTab('settings')}
-                  className="ml-auto"
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
               </div>
 
               {/* Projects Tab */}
@@ -472,14 +521,14 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                         className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                           settingsSubTab === 'general' 
                             ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                            : 'hover-list-item'
                         }`}
                       >
                         <div className="flex items-center">
-                          <Settings className="h-4 w-4 mr-3" />
+                          <Settings className="h-4 w-4 mr-3 hover-icon" />
                           General Settings
                         </div>
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-4 w-4 hover-icon" />
                       </button>
                     )}
                     
@@ -488,11 +537,11 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                         settingsSubTab === 'email' 
                           ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          : 'hover-list-item'
                       }`}
                     >
                       <div className="flex items-center">
-                        <SendHorizontal className="h-4 w-4 mr-3" />
+                        <SendHorizontal className="h-4 w-4 mr-3 hover-icon" />
                         Email Integration
                       </div>
                       <ChevronRight className="h-4 w-4" />
@@ -503,11 +552,11 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                         settingsSubTab === 'members' 
                           ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          : 'hover-list-item'
                       }`}
                     >
                       <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-3" />
+                        <Users className="h-4 w-4 mr-3 hover-icon" />
                         Team Members
                       </div>
                       <ChevronRight className="h-4 w-4" />
@@ -568,7 +617,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                         {/* Show message for clients when on general settings */}
                         {settingsSubTab === 'general' && isClient && (
                           <div className="text-center py-8">
-                            <Settings className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                            <Settings className="h-12 w-12 mx-auto text-gray-400 mb-3 hover-icon" />
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
                               Access Restricted
                             </h3>

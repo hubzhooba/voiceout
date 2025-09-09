@@ -77,10 +77,10 @@ export function JoinTentView({ tent }: JoinTentViewProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
+      <Card className="max-w-md w-full hover-card">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <Tent className="h-8 w-8 text-primary" />
+            <Tent className="h-8 w-8 text-primary hover-icon" />
           </div>
           <CardTitle className="text-2xl">Join Tent</CardTitle>
           <CardDescription>
@@ -96,13 +96,13 @@ export function JoinTentView({ tent }: JoinTentViewProps) {
             
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="h-4 w-4 text-muted-foreground hover-icon" />
                 <span>{tent.tent_members?.length || 0}/2 members</span>
               </div>
               
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium">Your role will be:</span>
-                <Badge variant="outline" className="capitalize">
+                <Badge variant="outline" className="capitalize hover-badge">
                   {newUserRole}
                 </Badge>
               </div>
@@ -155,18 +155,18 @@ export function JoinTentView({ tent }: JoinTentViewProps) {
           <div className="flex gap-3">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 hover-button-subtle"
               onClick={() => router.push('/dashboard')}
             >
               Cancel
             </Button>
             <Button
-              className="flex-1"
+              className="flex-1 hover-button-subtle"
               onClick={handleJoin}
               disabled={joining}
             >
               {joining ? 'Joining...' : 'Join Tent'}
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight className="h-4 w-4 ml-2 hover-icon" />
             </Button>
           </div>
         </CardContent>

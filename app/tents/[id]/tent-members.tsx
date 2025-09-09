@@ -63,7 +63,7 @@ export function TentMembers({ tent, currentUserId, isAdmin }: TentMembersProps) 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
+              <UserPlus className="h-5 w-5 hover-icon" />
               Invite Partner
             </CardTitle>
             <CardDescription>
@@ -78,8 +78,8 @@ export function TentMembers({ tent, currentUserId, isAdmin }: TentMembersProps) 
                 <code className="flex-1 bg-muted px-3 py-2 rounded font-mono text-lg text-center">
                   {tent.invite_code}
                 </code>
-                <Button variant="outline" onClick={copyInviteCode}>
-                  <Copy className="h-4 w-4" />
+                <Button variant="outline" className="hover-button-subtle" onClick={copyInviteCode}>
+                  <Copy className="h-4 w-4 hover-icon" />
                 </Button>
               </div>
             </div>
@@ -93,8 +93,8 @@ export function TentMembers({ tent, currentUserId, isAdmin }: TentMembersProps) 
                   value={`${window.location.origin}/tents/join/${tent.invite_code}`}
                   className="flex-1 bg-muted px-3 py-2 rounded text-sm"
                 />
-                <Button variant="outline" onClick={copyInviteLink}>
-                  <Copy className="h-4 w-4" />
+                <Button variant="outline" className="hover-button-subtle" onClick={copyInviteLink}>
+                  <Copy className="h-4 w-4 hover-icon" />
                 </Button>
               </div>
             </div>
@@ -136,12 +136,12 @@ export function TentMembers({ tent, currentUserId, isAdmin }: TentMembersProps) 
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="capitalize">
+                    <Badge variant="outline" className="capitalize hover-badge">
                       {member.tent_role}
                     </Badge>
                     {member.is_admin && (
-                      <Badge variant="default" className="bg-amber-100 text-amber-800">
-                        <Shield className="h-3 w-3 mr-1" />
+                      <Badge variant="default" className="bg-amber-100 text-amber-800 hover-badge">
+                        <Shield className="h-3 w-3 mr-1 hover-icon" />
                         Admin
                       </Badge>
                     )}
