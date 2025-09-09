@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProjectListEnhanced } from '@/components/project-list-enhanced'
-import { ProjectFormSimple } from '@/components/project-form-simple'
+import { ProjectFormModal } from '@/components/project-form-modal'
 import { TentSettings } from './tent-settings'
 import { TentMembers } from './tent-members'
 import { InquiryReview } from '@/components/email/inquiry-review'
@@ -635,26 +635,21 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
           </CardContent>
         </Card>
 
-        {/* Project Creation Dialog */}
-        <Dialog open={showProjectForm} onOpenChange={setShowProjectForm}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Project</DialogTitle>
-            </DialogHeader>
-            <ProjectFormSimple
-              tentId={tent.id}
-              tentSettings={{
-                business_address: tent.business_address,
-                business_tin: tent.business_tin,
-                default_withholding_tax: tent.default_withholding_tax,
-                invoice_prefix: tent.invoice_prefix,
-                invoice_notes: tent.invoice_notes
-              }}
-              onSuccess={handleProjectCreated}
-              onCancel={() => setShowProjectForm(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        {/* Project Creation Modal */}
+        {showProjectForm && (
+          <ProjectFormModal
+            tentId={tent.id}
+            tentSettings={{
+              business_address: tent.business_address,
+              business_tin: tent.business_tin,
+              default_withholding_tax: tent.default_withholding_tax,
+              invoice_prefix: tent.invoice_prefix,
+              invoice_notes: tent.invoice_notes
+            }}
+            onSuccess={handleProjectCreated}
+            onCancel={() => setShowProjectForm(false)}
+          />
+        )}
       </div>
     </div>
   )
