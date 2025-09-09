@@ -78,11 +78,8 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
       setConnections(data.connections || [])
     } catch (error) {
       console.error('Error fetching connections:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load email connections',
-        variant: 'destructive'
-      })
+      // Don't show toast for now as the email_connections table might not exist yet
+      setConnections([])
     } finally {
       setLoading(false)
     }
@@ -394,12 +391,12 @@ export function EmailSettings({ tentId, userRole }: EmailSettingsProps) {
                       {getProviderIcon(connection.email_provider)}
                     </div>
                     <div>
-                      <p className="font-medium flex items-center gap-2">
+                      <div className="font-medium flex items-center gap-2">
                         {connection.email_address}
                         <Badge variant="outline" className="text-xs">
                           {connection.email_provider}
                         </Badge>
-                      </p>
+                      </div>
                       <div className="flex items-center gap-4 mt-1">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                           {getStatusIcon(connection.sync_status)}

@@ -614,8 +614,8 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                           </div>
                         )}
                         
-                        {/* Show message for clients when on general settings */}
-                        {settingsSubTab === 'general' && isClient && (
+                        {/* Show message for non-owners when on general settings */}
+                        {settingsSubTab === 'general' && !isOwner && (
                           <div className="text-center py-8">
                             <Settings className="h-12 w-12 mx-auto text-gray-400 mb-3 hover-icon" />
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
