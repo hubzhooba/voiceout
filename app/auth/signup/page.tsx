@@ -24,7 +24,8 @@ export default function SignupPage() {
     setLoading(true)
 
     // First check if email already exists in profiles
-    const { data: existingProfile, error: checkError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: existingProfile, error: checkError } = await (supabase as any)
       .from('profiles')
       .select('email')
       .eq('email', email)
@@ -77,7 +78,8 @@ export default function SignupPage() {
       console.log('User created:', authData.user.id, authData.user.email)
       
       // Try to create profile
-      const { error: profileError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: profileError } = await (supabase as any)
         .from('profiles')
         .insert({
           id: authData.user.id,
