@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTheme } from '@/components/theme-provider'
+import { NotificationProvider } from '@/components/providers/notification-provider'
+import { NotificationBell } from '@/components/notification-bell'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/currency'
@@ -25,7 +28,6 @@ import {
   Star,
   Rocket,
   Search,
-  Bell,
   Settings,
   User,
   DollarSign,
@@ -117,6 +119,7 @@ const motivationalMessages = [
 ]
 
 export function ButterDashboard({ userId, userEmail }: { userId: string, userEmail?: string }) {
+  const { theme, toggleTheme } = useTheme()
   const [tents, setTents] = useState<TentData[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [stats, setStats] = useState<DashboardStats>({
@@ -137,7 +140,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [userRole, setUserRole] = useState<'creator' | 'manager'>('creator')
-  const [showNotifications, setShowNotifications] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [notifications, setNotifications] = useState<Array<{
     id: string
@@ -158,9 +160,33 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
     []
   )
 
+  const getWorkflowStepLabel = (step: number) => {
+    const steps = [
+      { num: 1, label: 'Project Created' },
+      { num: 2, label: 'Pending Approval' },
+      { num: 3, label: 'Invoice Requested' },
+      { num: 4, label: 'Awaiting Invoice' },
+      { num: 5, label: 'Ready for Acceptance' }
+    ]
+    
+    const currentStep = steps.find(s => s.num === step)
+    if (!currentStep) return 'Unknown'
+    
+    return currentStep.label
+  }
+
+  const getStepStatusColor = (step: number, status: string) => {
+    if (status === 'completed') return 'text-green-600'
+    if (status === 'in_progress') {
+      if (step === 2 || step === 4) return 'text-amber-600' // Waiting on manager
+      return 'text-blue-600' // Active work
+    }
+    return 'text-gray-400'
+  }
+
   const fetchDashboardData = useCallback(async () => {
     try {
-      const [tentsResponse, invoicesResponse] = await Promise.all([
+      const [tentsResponse, projectsResponse] = await Promise.all([
         supabase
           .from('tent_members')
           .select(`
@@ -177,10 +203,9 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           `)
           .eq('user_id', userId),
         supabase
-          .from('invoices')
-          .select('*, tents(name)')
+          .from('projects')
+          .select('*, tents(name), workflow_step, step1_status, step2_status, step3_status, step4_status, step5_status')
           .order('created_at', { ascending: false })
-          .limit(10)
       ])
 
       if (tentsResponse.error) throw tentsResponse.error
@@ -208,26 +233,26 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
       setUserRole(hasManagerRole ? 'manager' : 'creator')
 
       const tentIds = new Set(formattedTents.map(t => t.id))
-      const userInvoices = invoicesResponse.data?.filter(inv => tentIds.has(inv.tent_id)) || []
-      setInvoices(userInvoices)
+      const userProjects = projectsResponse.data?.filter(proj => tentIds.has(proj.tent_id)) || []
+      setInvoices(userProjects)
 
       // Calculate enhanced stats
-      const pending = userInvoices.filter(inv => inv.status === 'submitted')
-      const approved = userInvoices.filter(inv => inv.status === 'approved')
-      const totalRevenue = approved.reduce((sum, inv) => sum + (Number(inv.total_amount) || Number(inv.amount) || 0), 0)
+      const pending = userProjects.filter(proj => proj.status === 'in_progress' || proj.status === 'review')
+      const completed = userProjects.filter(proj => proj.status === 'completed')
+      const totalRevenue = userProjects.reduce((sum, proj) => sum + (Number(proj.total_amount) || 0), 0)
       
       // Calculate growth (mock data for demo)
       const revenueGrowth = Math.random() * 30 - 10 // Random between -10% and +20%
       const invoiceGrowth = Math.random() * 40 - 5 // Random between -5% and +35%
-      const completionRate = userInvoices.length > 0 
-        ? (approved.length / userInvoices.length) * 100 
+      const completionRate = userProjects.length > 0 
+        ? (completed.length / userProjects.length) * 100 
         : 0
 
       setStats({
         totalTents: formattedTents.length,
-        totalInvoices: userInvoices.length,
+        totalInvoices: userProjects.length,
         pendingInvoices: pending.length,
-        approvedInvoices: approved.length,
+        approvedInvoices: completed.length,
         totalRevenue,
         revenueGrowth,
         invoiceGrowth,
@@ -343,7 +368,8 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950 transition-colors duration-300">
+    <NotificationProvider userId={userId}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950 transition-colors duration-300">
       {/* Top Navigation Bar */}
       <motion.nav 
         className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 transition-colors duration-300"
@@ -379,75 +405,17 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Quick Actions */}
-              <DropdownMenu open={showNotifications} onOpenChange={setShowNotifications}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative hover-icon"
-                  >
-                    <Bell className="h-5 w-5" />
-                    {notifications.filter(n => !n.read).length > 0 && (
-                      <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-80" align="end">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold">Notifications</span>
-                      {notifications.filter(n => !n.read).length > 0 && (
-                        <Button variant="ghost" size="sm" className="h-auto p-1 text-xs">
-                          Mark all read
-                        </Button>
-                      )}
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {notifications.length > 0 ? (
-                    notifications.slice(0, 5).map((notification) => (
-                      <DropdownMenuItem key={notification.id} className="flex flex-col items-start p-3">
-                        <div className="flex items-start gap-2 w-full">
-                          <div className={cn(
-                            "w-2 h-2 rounded-full mt-1.5",
-                            !notification.read && "bg-blue-500"
-                          )} />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{notification.title}</p>
-                            <p className="text-xs text-gray-500 mt-1">{notification.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {new Date(notification.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </DropdownMenuItem>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center text-sm text-gray-500">
-                      <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      No notifications yet
-                    </div>
-                  )}
-                  {notifications.length > 5 && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-center text-sm text-blue-600">
-                        View all notifications
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Notification Bell */}
+              <NotificationBell />
 
               <Button
                 variant="ghost"
                 size="icon"
                 className="hover-icon"
                 onClick={() => {
-                  document.documentElement.classList.toggle('dark')
+                  toggleTheme()
                   toast({
-                    title: document.documentElement.classList.contains('dark') ? '🌙 Dark mode enabled' : '☀️ Light mode enabled',
+                    title: theme === 'light' ? '🌙 Dark mode enabled' : '☀️ Light mode enabled',
                     description: 'Your preference has been saved',
                   })
                 }}
@@ -527,7 +495,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               <div className="flex items-center gap-6">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.pendingInvoices}</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Pending Review</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Active Projects</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.approvedInvoices}</p>
@@ -566,7 +534,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 hover-glow">
               <Clock className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                {stats.pendingInvoices} invoices awaiting review
+                {stats.pendingInvoices} active projects
               </span>
               <Button
                 variant="ghost"
@@ -613,7 +581,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               </Badge>
             </div>
             <p className="text-2xl font-bold dark:text-gray-100">{stats.totalInvoices}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Total Invoices</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total Projects</p>
             <Progress value={stats.completionRate} className="mt-2 h-1" />
           </Card>
 
@@ -637,7 +605,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               <Badge variant="outline" className="text-xs">Pending</Badge>
             </div>
             <p className="text-2xl font-bold dark:text-gray-100">{stats.pendingInvoices}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Awaiting Review</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Active Projects</p>
             <Progress value={(stats.pendingInvoices / Math.max(stats.totalInvoices, 1)) * 100} className="mt-2 h-1" />
           </Card>
         </motion.div>
@@ -854,37 +822,44 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           </h3>
           <Card className="p-4 hover-card-subtle">
             <div className="space-y-3">
-              {invoices.slice(0, 5).map((invoice, index) => (
+              {invoices.slice(0, 5).map((project, index) => (
                 <motion.div
-                  key={invoice.id}
+                  key={project.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="flex items-center justify-between p-3 hover-list-item rounded-lg cursor-pointer"
-                  onClick={() => navigate(`/invoices/${invoice.id}`)}
-                  onMouseEnter={() => prefetch(`/invoices/${invoice.id}`)}
+                  onClick={() => navigate(`/projects/${project.id}`)}
+                  onMouseEnter={() => prefetch(`/projects/${project.id}`)}
                 >
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "p-2 rounded-lg",
-                      invoice.status === 'approved' ? "bg-green-100" :
-                      invoice.status === 'rejected' ? "bg-red-100" :
-                      invoice.status === 'submitted' ? "bg-yellow-100" :
+                      project.status === 'completed' ? "bg-green-100" :
+                      project.status === 'cancelled' ? "bg-red-100" :
+                      project.status === 'in_progress' ? "bg-blue-100" :
+                      project.status === 'review' ? "bg-yellow-100" :
                       "bg-gray-100"
                     )}>
-                      {invoice.status === 'approved' ? <CheckCircle className="h-4 w-4 text-green-600" /> :
-                       invoice.status === 'rejected' ? <XCircle className="h-4 w-4 text-red-600" /> :
-                       invoice.status === 'submitted' ? <Clock className="h-4 w-4 text-yellow-600" /> :
+                      {project.status === 'completed' ? <CheckCircle className="h-4 w-4 text-green-600" /> :
+                       project.status === 'cancelled' ? <XCircle className="h-4 w-4 text-red-600" /> :
+                       project.status === 'in_progress' ? <Clock className="h-4 w-4 text-blue-600" /> :
+                       project.status === 'review' ? <FileText className="h-4 w-4 text-yellow-600" /> :
                        <FileText className="h-4 w-4 text-gray-600" />}
                     </div>
-                    <div>
-                      <p className="font-medium text-sm dark:text-gray-200">{invoice.invoice_number}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{invoice.client_name}</p>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm dark:text-gray-200">{project.project_name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{project.client_name}</p>
+                      <p className={cn("text-xs mt-1 font-medium", 
+                        getStepStatusColor(project.workflow_step, project[`step${project.workflow_step}_status`])
+                      )}>
+                        Step {project.workflow_step}: {getWorkflowStepLabel(project.workflow_step)}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-sm dark:text-gray-200">{formatCurrency(invoice.total_amount || invoice.amount || 0)}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(invoice.created_at).toLocaleDateString()}</p>
+                    <p className="font-semibold text-sm dark:text-gray-200">{formatCurrency(project.total_amount || 0)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(project.updated_at || project.created_at).toLocaleDateString()}</p>
                   </div>
                 </motion.div>
               ))}
@@ -971,5 +946,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
         </DropdownMenu>
       </motion.div>
     </div>
+    </NotificationProvider>
   )
 }

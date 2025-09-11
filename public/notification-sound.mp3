@@ -1,0 +1,18 @@
+# Notification Sound Placeholder
+
+This is a placeholder for a notification sound file.
+To add an actual notification sound:
+
+1. Find a short, pleasant notification sound (0.5-1 second)
+2. Save it as notification-sound.mp3
+3. Replace this file
+
+Recommended sources:
+- freesound.org
+- zapsplat.com
+- Google Material Design sounds
+
+The sound should be:
+- Short (under 1 second)
+- Not too loud or jarring
+- Professional sounding

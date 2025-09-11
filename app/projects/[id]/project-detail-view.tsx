@@ -326,11 +326,11 @@ export function ProjectDetailView({ project, currentUserId, userRole, isAdmin }:
                     </CardContent>
                   </Card>
 
-                  {/* Financial Summary */}
+                  {/* Invoice Details */}
                   {project.requires_invoice ? (
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg">Financial Summary</CardTitle>
+                        <CardTitle className="text-lg">Invoice Details</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="flex justify-between">

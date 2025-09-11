@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 // import { Badge } from '@/components/ui/badge' // Unused
 import { Button } from '@/components/ui/button'
@@ -9,8 +10,9 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
+import { formatCurrency } from '@/lib/currency'
 import { 
-  DollarSign, 
+  Coins, 
   Calendar, 
   User, 
   CheckCircle, 
@@ -421,7 +423,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
 
       {/* Filters */}
       <Tabs value={filter} onValueChange={setFilter}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className={`grid w-full ${isManager ? 'grid-cols-5' : 'grid-cols-3'}`}>
           <TabsTrigger value="all">All Projects</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
@@ -443,12 +445,16 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
                 const actionLabel = getActionForProject(project)
                 
                 return (
-                  <Card 
-                    key={project.id} 
-                    className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
-                    onClick={() => router.push(`/projects/${project.id}`)}
+                  <Link
+                    key={project.id}
+                    href={`/projects/${project.id}`}
+                    prefetch={true}
+                    className="block"
                   >
-                    <CardContent className="p-6">
+                    <Card 
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+                    >
+                      <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
@@ -480,8 +486,8 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
                             </div>
                             {project.total_amount && (
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <DollarSign className="h-4 w-4" />
-                                <span>${project.total_amount.toFixed(2)}</span>
+                                <Coins className="h-4 w-4" />
+                                <span>{formatCurrency(project.total_amount)}</span>
                               </div>
                             )}
                           </div>
@@ -550,6 +556,7 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
                       </div>
                     </CardContent>
                   </Card>
+                </Link>
                 )
               })}
             </div>

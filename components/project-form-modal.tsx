@@ -51,46 +51,46 @@ import {
 import { cn } from '@/lib/utils'
 
 // Project type enum with enhanced visual design
-const PROJECT_TYPES = [
+const PRODUCT_CATEGORIES = [
   { 
-    value: 'social_media', 
-    label: 'Social Media Campaign', 
-    icon: Sparkles,
-    color: 'from-purple-500 to-pink-500',
-    description: 'Instagram, TikTok, YouTube content'
+    value: 'food_beverage', 
+    label: 'Food and Beverage', 
+    icon: Package,
+    color: 'from-orange-500 to-red-500',
+    description: 'Restaurants, cafes, food products'
   },
   { 
-    value: 'content_creation', 
-    label: 'Content Creation', 
+    value: 'beauty_wellness', 
+    label: 'Beauty and Wellness', 
+    icon: Sparkles,
+    color: 'from-pink-500 to-purple-500',
+    description: 'Cosmetics, spa, health products'
+  },
+  { 
+    value: 'finance', 
+    label: 'Finance', 
+    icon: CreditCard,
+    color: 'from-green-500 to-emerald-500',
+    description: 'Banking, insurance, investments'
+  },
+  { 
+    value: 'clothing_apparel', 
+    label: 'Clothing and Apparel', 
     icon: Palette,
     color: 'from-blue-500 to-cyan-500',
-    description: 'Blog posts, videos, photography'
+    description: 'Fashion, accessories, footwear'
   },
   { 
-    value: 'event_attendance', 
-    label: 'Event Attendance', 
-    icon: Calendar,
-    color: 'from-green-500 to-emerald-500',
-    description: 'Conferences, launches, workshops'
+    value: 'entertainment', 
+    label: 'Entertainment', 
+    icon: Zap,
+    color: 'from-purple-500 to-indigo-500',
+    description: 'Media, events, gaming'
   },
   { 
-    value: 'brand_partnership', 
-    label: 'Brand Partnership', 
-    icon: Target,
-    color: 'from-orange-500 to-red-500',
-    description: 'Long-term collaborations'
-  },
-  { 
-    value: 'consulting', 
-    label: 'Consulting', 
+    value: 'others', 
+    label: 'Others', 
     icon: Briefcase,
-    color: 'from-indigo-500 to-purple-500',
-    description: 'Strategy and advisory services'
-  },
-  { 
-    value: 'other', 
-    label: 'Other', 
-    icon: Package,
     color: 'from-gray-500 to-slate-500',
     description: 'Custom project type'
   }
@@ -273,11 +273,14 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
     switch(step) {
       case 'basic':
         if (!formData.project_name) newErrors.project_name = 'Project name is required'
-        if (!formData.project_type) newErrors.project_type = 'Project type is required'
+        if (!formData.project_type) newErrors.project_type = 'Product category is required'
         break
       case 'client':
         if (!formData.client_name) newErrors.client_name = 'Client name is required'
         if (!formData.client_email) newErrors.client_email = 'Client email is required'
+        if (!formData.client_company) newErrors.client_company = 'Registered Business Name is required'
+        if (!formData.client_address) newErrors.client_address = 'Business Address is required'
+        if (!formData.client_tin) newErrors.client_tin = 'TIN is required'
         break
       case 'details':
         if (!formData.service_type && !formData.custom_service) {
@@ -489,9 +492,9 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
             </div>
 
             <div className="space-y-3">
-              <Label className="text-base font-medium">Project Type *</Label>
+              <Label className="text-base font-medium">Product Category *</Label>
               <div className="grid grid-cols-2 gap-4">
-                {PROJECT_TYPES.map(type => (
+                {PRODUCT_CATEGORIES.map(type => (
                   <button
                     key={type.value}
                     onClick={() => setFormData({...formData, project_type: type.value, service_type: ''})}
@@ -542,16 +545,17 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
               </div>
               
               <div className="space-y-2">
-                <Label className="text-base font-medium">Company</Label>
+                <Label className="text-base font-medium">Registered Business Name *</Label>
                 <div className="relative">
                   <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input 
-                    placeholder="Company Name (Optional)"
+                    placeholder="Registered Business Name"
                     value={formData.client_company}
                     onChange={(e) => setFormData({...formData, client_company: e.target.value})}
-                    className="pl-11 h-12 text-base"
+                    className={cn("pl-11 h-12 text-base", errors.client_company ? 'border-red-500' : '')}
                   />
                 </div>
+                {errors.client_company && <p className="text-sm text-red-500">{errors.client_company}</p>}
               </div>
             </div>
 
@@ -586,26 +590,28 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-medium">Address</Label>
+              <Label className="text-base font-medium">Business Address *</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Textarea 
-                  placeholder="Client address (Optional)"
+                  placeholder="Business Address"
                   value={formData.client_address}
                   onChange={(e) => setFormData({...formData, client_address: e.target.value})}
-                  className="pl-11 min-h-[100px] text-base resize-none"
+                  className={cn("pl-11 min-h-[100px] text-base resize-none", errors.client_address ? 'border-red-500' : '')}
                 />
               </div>
+              {errors.client_address && <p className="text-sm text-red-500">{errors.client_address}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-medium">TIN (Tax Identification Number)</Label>
+              <Label className="text-base font-medium">TIN (Tax Identification Number) *</Label>
               <Input 
                 placeholder="000-000-000-000"
                 value={formData.client_tin}
                 onChange={(e) => setFormData({...formData, client_tin: e.target.value})}
-                className="h-12 text-base"
+                className={cn("h-12 text-base", errors.client_tin ? 'border-red-500' : '')}
               />
+              {errors.client_tin && <p className="text-sm text-red-500">{errors.client_tin}</p>}
             </div>
           </div>
         )
@@ -880,9 +886,9 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
                   <p className="text-base font-medium">{formData.project_name || 'Not set'}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Project Type</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Product Category</span>
                   <p className="text-base font-medium">
-                    {PROJECT_TYPES.find(t => t.value === formData.project_type)?.label || 'Not set'}
+                    {PRODUCT_CATEGORIES.find(t => t.value === formData.project_type)?.label || 'Not set'}
                   </p>
                 </div>
                 <div className="space-y-1">

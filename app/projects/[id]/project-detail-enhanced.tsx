@@ -18,12 +18,8 @@ import {
   ArrowLeft,
   Edit,
   Calendar,
-  User,
   Briefcase,
   Hash,
-  Mail,
-  Phone,
-  MapPin,
   Receipt,
   FileText,
   CheckCircle2,
@@ -49,6 +45,22 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
   const isManager = userRole === 'manager' || isAdmin
   const isCreator = project.created_by === currentUserId
   const currentStep = (project.workflow_step as number) || 1
+  
+  // Parse metadata for additional fields
+  const metadata = typeof project.metadata === 'string' 
+    ? JSON.parse(project.metadata) 
+    : project.metadata || {}
+  
+  // Debug logging
+  console.log('Project data:', {
+    client_name: project.client_name,
+    client_email: project.client_email,
+    client_phone: project.client_phone,
+    client_address: project.client_address,
+    client_tin: project.client_tin,
+    metadata: metadata,
+    raw_metadata: project.metadata
+  })
 
   // Handle workflow step actions
   const handleStepAction = async (step: number) => {
@@ -339,32 +351,40 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                       <CardTitle className="text-lg">Client Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{project.client_name as string}</span>
-                      </div>
+                      {project.client_name ? (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Client Name</span>
+                          <p className="font-medium">{project.client_name as string}</p>
+                        </div>
+                      ) : null}
+                      {metadata?.client_company ? (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Registered Business Name</span>
+                          <p className="font-medium">{metadata.client_company}</p>
+                        </div>
+                      ) : null}
                       {project.client_email ? (
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-muted-foreground" />
-                          <span>{project.client_email as string}</span>
+                        <div>
+                          <span className="text-sm text-muted-foreground">Email</span>
+                          <p className="font-medium">{project.client_email as string}</p>
                         </div>
                       ) : null}
                       {project.client_phone ? (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span>{project.client_phone as string}</span>
+                        <div>
+                          <span className="text-sm text-muted-foreground">Phone</span>
+                          <p className="font-medium">{project.client_phone as string}</p>
                         </div>
                       ) : null}
                       {project.client_address ? (
-                        <div className="flex items-start gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                          <span className="text-sm">{project.client_address as string}</span>
+                        <div>
+                          <span className="text-sm text-muted-foreground">Business Address</span>
+                          <p className="font-medium">{project.client_address as string}</p>
                         </div>
                       ) : null}
-                      {project.client_tin ? (
-                        <div className="flex items-center gap-2">
-                          <Hash className="h-4 w-4 text-muted-foreground" />
-                          <span>TIN: {project.client_tin as string}</span>
+                      {(metadata?.client_tin || project.client_tin) ? (
+                        <div>
+                          <span className="text-sm text-muted-foreground">TIN (Tax Identification Number)</span>
+                          <p className="font-medium">{metadata?.client_tin || project.client_tin as string}</p>
                         </div>
                       ) : null}
                     </CardContent>
@@ -402,63 +422,87 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                           </p>
                         </div>
                       ) : null}
-                      {project.requires_invoice ? (
-                        <div>
-                          <span className="text-sm text-muted-foreground">Invoice Required</span>
-                          <p className="font-medium">Yes</p>
-                        </div>
-                      ) : null}
-                      {project.is_cash_sale !== null ? (
-                        <div>
-                          <span className="text-sm text-muted-foreground">Payment Type</span>
-                          <p className="font-medium">{project.is_cash_sale ? 'Cash Sale' : 'Charge Sale'}</p>
-                        </div>
-                      ) : null}
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Line Items */}
-                {project.project_items && (project.project_items as Array<Record<string, unknown>>).length > 0 ? (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Line Items</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="text-left py-2 text-sm font-medium text-muted-foreground">Description</th>
-                              <th className="text-center py-2 text-sm font-medium text-muted-foreground w-20">Qty</th>
-                              <th className="text-right py-2 text-sm font-medium text-muted-foreground w-28">Unit Price</th>
-                              <th className="text-right py-2 text-sm font-medium text-muted-foreground w-28">Amount</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(project.project_items as Array<Record<string, unknown>>).map((item) => (
-                              <tr key={item.id as string} className="border-b">
-                                <td className="py-2">{item.description as string}</td>
-                                <td className="py-2 text-center">{item.quantity as number}</td>
-                                <td className="py-2 text-right">{formatCurrency(item.unit_price as number || 0)}</td>
-                                <td className="py-2 text-right font-medium">{formatCurrency(item.amount as number || 0)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : null}
 
-                {/* Financial Summary */}
-                {(project.invoice_amount || project.total_amount) ? (
+                {/* Invoice Details */}
+                {(project.invoice_amount || project.total_amount || project.items || project.requires_invoice) ? (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg">Financial Summary</CardTitle>
+                      <CardTitle className="text-lg">Invoice Details</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-6">
+                      {/* Payment Information */}
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm text-muted-foreground">Payment Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          {project.is_cash_sale !== null ? (
+                            <div>
+                              <span className="text-xs text-muted-foreground">Payment Type</span>
+                              <p className="font-medium">{project.is_cash_sale ? 'Cash Sale' : 'On Account (Invoice)'}</p>
+                            </div>
+                          ) : null}
+                          {metadata.payment_terms ? (
+                            <div>
+                              <span className="text-xs text-muted-foreground">Payment Terms</span>
+                              <p className="font-medium">{metadata.payment_terms}</p>
+                            </div>
+                          ) : null}
+                          {project.requires_invoice ? (
+                            <div>
+                              <span className="text-xs text-muted-foreground">Invoice Required</span>
+                              <p className="font-medium">Yes</p>
+                            </div>
+                          ) : null}
+                          {metadata.withholding_tax_percent || project.withholding_tax_percent ? (
+                            <div>
+                              <span className="text-xs text-muted-foreground">Withholding Tax (%)</span>
+                              <p className="font-medium">{metadata.withholding_tax_percent || project.withholding_tax_percent}%</p>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {/* Invoice Items */}
+                      {project.items && Array.isArray(project.items) && (project.items as Array<Record<string, unknown>>).length > 0 ? (
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-sm text-muted-foreground">Invoice Items</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="text-left py-2 text-sm font-medium text-muted-foreground">Description</th>
+                                  <th className="text-center py-2 text-sm font-medium text-muted-foreground w-20">Qty</th>
+                                  <th className="text-right py-2 text-sm font-medium text-muted-foreground w-28">Unit Price</th>
+                                  <th className="text-right py-2 text-sm font-medium text-muted-foreground w-28">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(project.items as Array<Record<string, unknown>>).map((item, index) => {
+                                  const quantity = Number(item.quantity) || 1
+                                  const unitPrice = Number(item.unit_price) || 0
+                                  const amount = quantity * unitPrice
+                                  
+                                  return (
+                                    <tr key={index} className="border-b">
+                                      <td className="py-2">{item.description as string}</td>
+                                      <td className="py-2 text-center">{quantity}</td>
+                                      <td className="py-2 text-right">{formatCurrency(unitPrice)}</td>
+                                      <td className="py-2 text-right font-medium">{formatCurrency(amount)}</td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Financial Summary */}
                       <div className="space-y-2">
+                        <h4 className="font-semibold text-sm text-muted-foreground mb-3">Financial Summary</h4>
                         {project.invoice_amount ? (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Subtotal</span>
@@ -483,14 +527,26 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
                         ) : null}
                         {project.total_amount ? (
                           <>
-                            <div className="border-t pt-2" />
+                            <div className="border-t pt-2 mt-2" />
                             <div className="flex justify-between text-lg font-bold">
-                              <span>Total</span>
-                              <span>{formatCurrency(project.total_amount as number || 0)}</span>
+                              <span>Total Amount</span>
+                              <span className="text-green-600">{formatCurrency(project.total_amount as number || 0)}</span>
                             </div>
                           </>
                         ) : null}
                       </div>
+
+                      {/* Invoice Status */}
+                      {project.invoice_file_url ? (
+                        <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                              Invoice Document Available
+                            </span>
+                          </div>
+                        </div>
+                      ) : null}
                     </CardContent>
                   </Card>
                 ) : null}
