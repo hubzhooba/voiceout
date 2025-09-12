@@ -30,11 +30,8 @@ import {
   Search,
   Settings,
   User,
-  DollarSign,
   ChevronRight,
   Loader2,
-  ArrowUpRight,
-  ArrowDownRight,
   Filter,
   Grid3x3,
   List,
@@ -94,10 +91,13 @@ interface DashboardStats {
   totalInvoices: number
   pendingInvoices: number
   approvedInvoices: number
-  totalRevenue: number
-  revenueGrowth: number
-  invoiceGrowth: number
-  completionRate: number
+  completedRevenue: number  // Revenue from completed projects only
+  pendingRevenue: number     // Revenue from pending projects
+  totalProjects: number      // Total number of projects
+  completedProjects: number  // Completed projects
+  activeProjects: number     // Active/In Progress projects
+  completionRate: number     // Percentage of completed projects
+  successRate: number        // Success rate (approved/total)
 }
 
 // Greeting messages based on time of day
@@ -127,10 +127,13 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
     totalInvoices: 0,
     pendingInvoices: 0,
     approvedInvoices: 0,
-    totalRevenue: 0,
-    revenueGrowth: 0,
-    invoiceGrowth: 0,
+    completedRevenue: 0,
+    pendingRevenue: 0,
+    totalProjects: 0,
+    completedProjects: 0,
+    activeProjects: 0,
     completionRate: 0,
+    successRate: 0,
   })
   const [loading, setLoading] = useState(true)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
@@ -236,27 +239,47 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
       const userProjects = projectsResponse.data?.filter(proj => tentIds.has(proj.tent_id)) || []
       setInvoices(userProjects)
 
-      // Calculate enhanced stats
-      const pending = userProjects.filter(proj => proj.status === 'in_progress' || proj.status === 'review')
-      const completed = userProjects.filter(proj => proj.status === 'completed')
-      const totalRevenue = userProjects.reduce((sum, proj) => sum + (Number(proj.total_amount) || 0), 0)
+      // Calculate enhanced stats based on workflow steps
+      // Step 5 = completed, Step 4 = approved/processing, Step 1-3 = pending/active
+      const completed = userProjects.filter(proj => 
+        proj.workflow_step === 5 || proj.step5_status === 'approved' || proj.status === 'completed'
+      )
+      const approved = userProjects.filter(proj => 
+        proj.workflow_step === 4 || proj.step4_status === 'approved'
+      )
+      const active = userProjects.filter(proj => 
+        (proj.workflow_step >= 1 && proj.workflow_step < 4) || 
+        proj.status === 'in_progress' || 
+        proj.status === 'review'
+      )
+      const pending = userProjects.filter(proj => 
+        proj.workflow_step < 4 && proj.status !== 'completed'
+      )
       
-      // Calculate growth (mock data for demo)
-      const revenueGrowth = Math.random() * 30 - 10 // Random between -10% and +20%
-      const invoiceGrowth = Math.random() * 40 - 5 // Random between -5% and +35%
+      // Calculate revenue - only count completed projects for "earned" revenue
+      const completedRevenue = completed.reduce((sum, proj) => sum + (Number(proj.total_amount) || 0), 0)
+      const pendingRevenue = pending.reduce((sum, proj) => sum + (Number(proj.total_amount) || 0), 0)
+      
+      // Calculate rates for motivation
       const completionRate = userProjects.length > 0 
         ? (completed.length / userProjects.length) * 100 
+        : 0
+      const successRate = userProjects.length > 0
+        ? ((completed.length + approved.length) / userProjects.length) * 100
         : 0
 
       setStats({
         totalTents: formattedTents.length,
         totalInvoices: userProjects.length,
         pendingInvoices: pending.length,
-        approvedInvoices: completed.length,
-        totalRevenue,
-        revenueGrowth,
-        invoiceGrowth,
-        completionRate
+        approvedInvoices: approved.length,
+        completedRevenue,
+        pendingRevenue,
+        totalProjects: userProjects.length,
+        completedProjects: completed.length,
+        activeProjects: active.length,
+        completionRate,
+        successRate
       })
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -548,65 +571,88 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           )}
         </motion.div>
 
-        {/* Stats Overview */}
+        {/* Stats Overview - Motivating Metrics */}
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-4 hover-card">
+          {/* Earned Revenue - Most Important Metric */}
+          <Card className="p-4 hover-card bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <DollarSign className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                <Trophy className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
-              <Badge variant={stats.revenueGrowth > 0 ? "default" : "destructive"} className="text-xs">
-                {stats.revenueGrowth > 0 ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-                {Math.abs(stats.revenueGrowth).toFixed(1)}%
+              <Badge variant="default" className="text-xs bg-green-600 dark:bg-green-700">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Earned
               </Badge>
             </div>
-            <p className="text-2xl font-bold dark:text-gray-100">{formatCurrency(stats.totalRevenue)}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Total Revenue</p>
-            <Progress value={75} className="mt-2 h-1" />
+            <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatCurrency(stats.completedRevenue)}</p>
+            <p className="text-xs text-green-700 dark:text-green-300 font-medium">💰 Revenue Earned</p>
+            <div className="mt-2">
+              <Progress value={100} className="h-1 bg-green-200 dark:bg-green-800" />
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">Completed & Paid</p>
+            </div>
           </Card>
 
-          <Card className="p-4 hover-card">
+          {/* Pending Revenue - Opportunity */}
+          <Card className="p-4 hover-card bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <FileText className="h-5 w-5 text-purple-600" />
+              <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-lg">
+                <Rocket className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
-              <Badge variant="default" className="text-xs">
-                <ArrowUpRight className="h-3 w-3 mr-1" />
-                {stats.invoiceGrowth.toFixed(1)}%
+              <Badge variant="outline" className="text-xs border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-300">
+                Potential
               </Badge>
             </div>
-            <p className="text-2xl font-bold dark:text-gray-100">{stats.totalInvoices}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Total Projects</p>
-            <Progress value={stats.completionRate} className="mt-2 h-1" />
+            <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{formatCurrency(stats.pendingRevenue)}</p>
+            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">🚀 In Progress</p>
+            <div className="mt-2">
+              <Progress value={stats.pendingRevenue / Math.max(stats.completedRevenue + stats.pendingRevenue, 1) * 100} className="h-1 bg-amber-200 dark:bg-amber-800" />
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Coming Soon!</p>
+            </div>
           </Card>
 
-          <Card className="p-4 hover-card">
+          {/* Success Rate - Motivation */}
+          <Card className="p-4 hover-card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <Badge variant="secondary" className="text-xs">Active</Badge>
+              <Badge className="text-xs bg-blue-600 dark:bg-blue-700">
+                {stats.successRate >= 80 ? '🔥 On Fire!' : stats.successRate >= 60 ? '⭐ Great!' : '📈 Growing'}
+              </Badge>
             </div>
-            <p className="text-2xl font-bold dark:text-gray-100">{stats.approvedInvoices}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Approved</p>
-            <Progress value={(stats.approvedInvoices / Math.max(stats.totalInvoices, 1)) * 100} className="mt-2 h-1" />
+            <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+              {stats.completedProjects}/{stats.totalProjects}
+            </p>
+            <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">✅ Projects Done</p>
+            <div className="mt-2">
+              <Progress value={stats.completionRate} className="h-1 bg-blue-200 dark:bg-blue-800" />
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">{stats.completionRate.toFixed(0)}% Success Rate</p>
+            </div>
           </Card>
 
-          <Card className="p-4 hover-card">
+          {/* Active Projects - Energy */}
+          <Card className="p-4 hover-card bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="h-5 w-5 text-yellow-600" />
+              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
-              <Badge variant="outline" className="text-xs">Pending</Badge>
+              <Badge variant="secondary" className="text-xs bg-purple-600 dark:bg-purple-700 text-white">
+                Active Now
+              </Badge>
             </div>
-            <p className="text-2xl font-bold dark:text-gray-100">{stats.pendingInvoices}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Active Projects</p>
-            <Progress value={(stats.pendingInvoices / Math.max(stats.totalInvoices, 1)) * 100} className="mt-2 h-1" />
+            <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.activeProjects}</p>
+            <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">⚡ In Action</p>
+            <div className="mt-2">
+              <Progress value={(stats.activeProjects / Math.max(stats.totalProjects, 1)) * 100} className="h-1 bg-purple-200 dark:bg-purple-800" />
+              <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                {stats.activeProjects > 0 ? 'Keep going!' : 'Start new project'}
+              </p>
+            </div>
           </Card>
         </motion.div>
 
