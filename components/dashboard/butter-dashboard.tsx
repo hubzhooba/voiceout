@@ -189,29 +189,36 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
 
   const fetchDashboardData = useCallback(async () => {
     try {
-      const [tentsResponse, projectsResponse] = await Promise.all([
-        supabase
-          .from('tent_members')
-          .select(`
-            tent_id,
-            tent_role,
-            is_admin,
-            tents (
-              id,
-              name,
-              description,
-              is_locked,
-              invite_code
-            )
-          `)
-          .eq('user_id', userId),
-        supabase
-          .from('projects')
-          .select('*, tents(name), workflow_step, step1_status, step2_status, step3_status, step4_status, step5_status')
-          .order('created_at', { ascending: false })
-      ])
+      // First get user's tents
+      const tentsResponse = await supabase
+        .from('tent_members')
+        .select(`
+          tent_id,
+          tent_role,
+          is_admin,
+          tents (
+            id,
+            name,
+            description,
+            is_locked,
+            invite_code
+          )
+        `)
+        .eq('user_id', userId)
 
       if (tentsResponse.error) throw tentsResponse.error
+      
+      // Get tent IDs for filtering projects
+      const userTentIds = tentsResponse.data?.map(item => item.tents.id) || []
+      
+      // Then get projects only from user's tents
+      const projectsResponse = userTentIds.length > 0 
+        ? await supabase
+            .from('projects')
+            .select('*, tents(name), workflow_step, step1_status, step2_status, step3_status, step4_status, step5_status')
+            .in('tent_id', userTentIds)
+            .order('created_at', { ascending: false })
+        : { data: [], error: null }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const formattedTents = tentsResponse.data?.map((item: any) => ({
@@ -235,8 +242,8 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
       const hasManagerRole = tentsResponse.data && tentsResponse.data.length > 0 && tentsResponse.data.some((item: any) => item.tent_role === 'manager')
       setUserRole(hasManagerRole ? 'manager' : 'creator')
 
-      const tentIds = new Set(formattedTents.map(t => t.id))
-      const userProjects = projectsResponse.data?.filter(proj => tentIds.has(proj.tent_id)) || []
+      // Projects are already filtered by user's tents in the query
+      const userProjects = projectsResponse.data || []
       setInvoices(userProjects)
 
       // Calculate enhanced stats based on workflow steps
@@ -247,11 +254,19 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
       const approved = userProjects.filter(proj => 
         proj.workflow_step === 4 || proj.step4_status === 'approved'
       )
-      const active = userProjects.filter(proj => 
-        (proj.workflow_step >= 1 && proj.workflow_step < 4) || 
-        proj.status === 'in_progress' || 
-        proj.status === 'review'
-      )
+      const active = userProjects.filter(proj => {
+        // Check multiple conditions for active status
+        const isInWorkflowRange = proj.workflow_step >= 1 && proj.workflow_step <= 3
+        const isInProgressStatus = proj.status === 'in_progress' || proj.status === 'review'
+        const isNotCompleted = proj.status !== 'completed' && proj.workflow_step !== 5
+        
+        // Debug log
+        if (isInWorkflowRange || isInProgressStatus) {
+          console.log('Active project:', proj.project_name, 'Step:', proj.workflow_step, 'Status:', proj.status)
+        }
+        
+        return (isInWorkflowRange || isInProgressStatus) && isNotCompleted
+      })
       const pending = userProjects.filter(proj => 
         proj.workflow_step < 4 && proj.status !== 'completed'
       )
