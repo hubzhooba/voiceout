@@ -48,6 +48,7 @@ import {
   TrendingUp,
   Shield
 } from 'lucide-react'
+import { logTentActivity } from '@/lib/utils/activity-logger'
 import { cn } from '@/lib/utils'
 
 // Project type enum with enhanced visual design
@@ -404,14 +405,32 @@ export function ProjectFormModal({ tentId, tentSettings, onSuccess, onCancel }: 
         }
       }
 
-      const { error } = await supabase
+      const { data: newProject, error } = await supabase
         .from('projects')
         .insert([projectData])
         .select()
+        .single()
 
       if (error) {
         console.error('Detailed error:', error)
         throw error
+      }
+
+      // Log the activity
+      if (newProject) {
+        await logTentActivity({
+          tentId: tentId,
+          actionType: 'project_created',
+          actionDescription: `Created project: ${formData.project_name}`,
+          entityType: 'project',
+          entityId: newProject.id,
+          metadata: {
+            project_name: formData.project_name,
+            client_name: formData.client_name,
+            total_amount: subtotal,
+            project_type: formData.project_type
+          }
+        })
       }
 
       toast({

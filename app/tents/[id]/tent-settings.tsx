@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import { Settings, Save, Mail } from 'lucide-react'
+import { Settings, Save, Mail, Activity } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmailSettings } from '@/components/email/email-settings'
 import { OAuthSettings } from '@/components/settings/oauth-settings'
+import { TentActivityLogs } from '@/components/settings/tent-activity-logs'
 
 interface Tent {
   id: string
@@ -108,7 +109,7 @@ export function TentSettings({ tent }: TentSettingsProps) {
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="general">
           <Settings className="h-4 w-4 mr-2" />
           General
@@ -120,6 +121,10 @@ export function TentSettings({ tent }: TentSettingsProps) {
         <TabsTrigger value="email">
           <Mail className="h-4 w-4 mr-2" />
           Email Accounts
+        </TabsTrigger>
+        <TabsTrigger value="activity">
+          <Activity className="h-4 w-4 mr-2" />
+          Activity Logs
         </TabsTrigger>
       </TabsList>
 
@@ -175,6 +180,10 @@ export function TentSettings({ tent }: TentSettingsProps) {
 
       <TabsContent value="email" className="space-y-6">
         <EmailSettings tentId={tent.id} userRole={userRole} />
+      </TabsContent>
+
+      <TabsContent value="activity" className="space-y-6">
+        <TentActivityLogs tentId={tent.id} />
       </TabsContent>
     </Tabs>
   )

@@ -5,14 +5,14 @@ import { useToast } from '@/hooks/use-toast'
 interface UseFetchDataOptions {
   table: string
   select?: string
-  filters?: Record<string, any>
+  filters?: Record<string, unknown>
   orderBy?: { column: string; ascending?: boolean }
-  onSuccess?: (data: any) => void
+  onSuccess?: (data: unknown) => void
   onError?: (error: Error) => void
   enabled?: boolean
 }
 
-export function useFetchData<T = any>({
+export function useFetchData<T = unknown>({
   table,
   select = '*',
   filters = {},

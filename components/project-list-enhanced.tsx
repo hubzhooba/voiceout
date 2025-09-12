@@ -45,6 +45,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useRouter } from 'next/navigation'
+import { logTentActivity } from '@/lib/utils/activity-logger'
 
 interface Project {
   id: string
@@ -185,43 +186,72 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
     if (!projectToDelete) return
     
     const { id: projectId, name: projectName } = projectToDelete
-    console.log('Delete confirmed for project:', projectId, projectName)
-    console.log('Projects before delete:', projects.length, projects.map(p => p.id))
     
+    // Check if project is completed
+    const project = projects.find(p => p.id === projectId)
+    if (project && (project.status === 'completed' || project.workflow_step === 5)) {
+      toast({
+        title: 'Cannot Delete Completed Project',
+        description: 'Completed projects cannot be deleted for record keeping purposes.',
+        variant: 'destructive'
+      })
+      setDeleteModalOpen(false)
+      setProjectToDelete(null)
+      return
+    }
     try {
-      console.log('Sending delete request to Supabase...')
-      const { data: deleteData, error } = await supabase
+      const { error } = await supabase
         .from('projects')
         .delete()
         .eq('id', projectId)
         .select()
       
       if (error) {
-        console.error('Supabase delete error:', error)
         throw error
       }
       
-      console.log('Delete successful, deleted records:', deleteData)
-      
-      // Verify the project was actually deleted
-      const { data: verifyData } = await supabase
-        .from('projects')
-        .select('id')
-        .eq('id', projectId)
-        .maybeSingle()
-      
-      console.log('Verification after delete - project found?:', verifyData)
-      if (verifyData) {
-        console.error('WARNING: Project still exists after delete!', verifyData)
+      // Log the deletion activity
+      if (project?.tent_id) {
+        await logTentActivity({
+          tentId: project.tent_id,
+          actionType: 'project_deleted',
+          actionDescription: `Deleted project: ${projectName}`,
+          entityType: 'project',
+          entityId: projectId,
+          metadata: {
+            project_name: projectName,
+            client_name: project.client_name,
+            total_amount: project.total_amount
+          }
+        })
       }
       
-      console.log('Delete successful, updating state...')
+      // Create notification for tent members about deletion
+      const tentMembers = await supabase
+        .from('tent_members')
+        .select('user_id')
+        .eq('tent_id', project?.tent_id)
+      
+      if (tentMembers.data) {
+        for (const member of tentMembers.data) {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: member.user_id,
+              type: 'project_deleted',
+              title: 'Project Deleted',
+              message: `Project "${projectName}" has been deleted from your tent.`,
+              data: { 
+                project_id: projectId,
+                project_name: projectName,
+                tent_id: project?.tent_id 
+              }
+            })
+        }
+      }
+      
       // Immediately remove from state for instant feedback
-      setProjects(prevProjects => {
-        const filtered = prevProjects.filter(p => p.id !== projectId)
-        console.log('Projects after filter:', filtered.length, filtered.map(p => p.id))
-        return filtered
-      })
+      setProjects(prevProjects => prevProjects.filter(p => p.id !== projectId))
       
       toast({
         title: 'Project Deleted',
@@ -237,7 +267,6 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
       }
       
       // Also fetch fresh data to ensure sync with database
-      console.log('Scheduling data refresh...')
       setTimeout(() => {
         console.log('Fetching fresh project data...')
         fetchProjects()
@@ -250,7 +279,6 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
         variant: 'destructive'
       })
       // Refresh on error to ensure state is in sync
-      console.log('Fetching projects due to error...')
       fetchProjects()
     }
   }
@@ -555,16 +583,27 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Project
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                openDeleteModal(project.id, project.project_name)
-                              }}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Project
-                            </DropdownMenuItem>
+                            {/* Only show delete for non-completed projects */}
+                            {project.status !== 'completed' && project.workflow_step !== 5 ? (
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openDeleteModal(project.id, project.project_name)
+                                }}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Project
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem 
+                                disabled
+                                className="text-gray-400 cursor-not-allowed"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                <span>Cannot Delete (Completed)</span>
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>

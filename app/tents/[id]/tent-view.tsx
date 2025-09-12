@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProjectListEnhanced } from '@/components/project-list-enhanced'
 import { ProjectFormModal } from '@/components/project-form-modal'
-import { TentSettings } from './tent-settings'
+import { TentGeneralSettings } from '@/components/settings/tent-general-settings'
 import { TentMembers } from './tent-members'
 import { InquiryReview } from '@/components/email/inquiry-review'
 import { EmailSettings } from '@/components/email/email-settings'
+import { TentActivityLogs } from '@/components/settings/tent-activity-logs'
+import { TentChatOptimized as TentChat } from '@/components/tent/tent-chat-optimized'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -28,7 +30,9 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Activity,
+  MessageSquare
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { createClient } from '@/lib/supabase/client'
@@ -71,7 +75,8 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [userRole, setUserRole] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
-  const [settingsSubTab, setSettingsSubTab] = useState('email') // Default to email for all users
+  const [settingsSubTab, setSettingsSubTab] = useState('general') // Default to general settings
+  const mainContentRef = useRef<HTMLDivElement>(null)
   const [analytics, setAnalytics] = useState({
     totalRevenue: 0,
     pendingAmount: 0,
@@ -86,6 +91,23 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
   const router = useRouter()
   const supabase = createClient()
   
+  const handleSettingsClick = () => {
+    // Set appropriate default tab based on user role
+    if (isAdmin) {
+      setSettingsSubTab('general')
+    } else {
+      setSettingsSubTab('email') // Non-admins start with email since they can't access general
+    }
+    setActiveTab('settings')
+    // Small timeout to ensure tab change renders before scrolling
+    setTimeout(() => {
+      mainContentRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      })
+    }, 100)
+  }
+
   const fetchAnalytics = useCallback(async () => {
     try {
       const { data: projects } = await supabase
@@ -179,6 +201,12 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
     if (currentMember) {
       setUserRole(currentMember.tent_role || '')
       setIsAdmin(currentMember.is_admin || false)
+      console.log('User role settings:', {
+        userId: currentUserId,
+        role: currentMember.tent_role,
+        isAdmin: currentMember.is_admin,
+        settingsSubTab
+      })
     }
     
     // Check if we should switch to a specific tab
@@ -192,6 +220,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
     
     // Fetch analytics data
     fetchAnalytics()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tent.tent_members, currentUserId, fetchAnalytics])
 
   const handleProjectCreated = () => {
@@ -319,8 +348,9 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setActiveTab('settings')}
+                    onClick={handleSettingsClick}
                     className="hover-button-subtle"
+                    title="Settings"
                   >
                     <Settings className="h-4 w-4 hover-icon" />
                   </Button>
@@ -462,17 +492,24 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
         </div>
 
         {/* Main Content */}
-        <Card className="border-0 shadow-xl bg-white/70 dark:bg-gray-900/70 backdrop-blur min-h-[600px]">
+        <Card ref={mainContentRef} className="border-0 shadow-xl bg-white/70 dark:bg-gray-900/70 backdrop-blur min-h-[600px]">
           <CardContent className="p-6 lg:p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <div className="mb-6">
-                <TabsList className="grid grid-cols-2 w-auto bg-gray-100/50 dark:bg-gray-800/50">
+                <TabsList className="grid grid-cols-3 w-auto bg-gray-100/50 dark:bg-gray-800/50">
                   <TabsTrigger 
                     value="projects"
                     className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md px-6"
                   >
                     <FileText className="h-4 w-4 mr-2 hover-icon" />
                     Projects
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="chat" 
+                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-md px-6"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2 hover-icon" />
+                    Chat
                   </TabsTrigger>
                   <TabsTrigger 
                     value="inquiries" 
@@ -499,6 +536,23 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                   userRole={userRole}
                   userId={currentUserId}
                   onProjectsChange={fetchAnalytics}
+                />
+              </TabsContent>
+
+              {/* Chat Tab */}
+              <TabsContent value="chat" className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-semibold">Team Chat</h2>
+                    <p className="text-muted-foreground">
+                      Collaborate with your team, mention members with @, link projects with #
+                    </p>
+                  </div>
+                </div>
+                <TentChat 
+                  tentId={tent.id}
+                  currentUserId={currentUserId}
+                  tentMembers={tent.tent_members}
                 />
               </TabsContent>
 
@@ -578,6 +632,21 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                       </div>
                       <ChevronRight className="h-4 w-4" />
                     </button>
+                    
+                    <button
+                      onClick={() => setSettingsSubTab('activity')}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
+                        settingsSubTab === 'activity' 
+                          ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-medium' 
+                          : 'hover-list-item'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <Activity className="h-4 w-4 mr-3 hover-icon" />
+                        Activity Logs
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
                   </div>
 
                   {/* Content Area */}
@@ -592,7 +661,7 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                                 Configure your tent&apos;s business information and preferences
                               </p>
                             </div>
-                            <TentSettings tent={tent} />
+                            <TentGeneralSettings tent={tent} />
                           </div>
                         )}
                         
@@ -628,6 +697,18 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
                               currentUserId={currentUserId}
                               isAdmin={isOwner}
                             />
+                          </div>
+                        )}
+                        
+                        {settingsSubTab === 'activity' && (
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-1">Activity Logs</h3>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                View all activities and changes in this tent
+                              </p>
+                            </div>
+                            <TentActivityLogs tentId={tent.id} />
                           </div>
                         )}
                         
