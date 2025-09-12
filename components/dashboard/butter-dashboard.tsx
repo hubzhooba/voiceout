@@ -568,22 +568,6 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             </Button>
           </Card>
           
-          {userRole === 'manager' && stats.pendingInvoices > 0 && (
-            <Card className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 hover-glow">
-              <Clock className="h-4 w-4 text-yellow-600" />
-              <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                {stats.pendingInvoices} active projects
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-yellow-700 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-100 hover-button-subtle"
-              >
-                Review Now
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </Card>
-          )}
         </motion.div>
 
         {/* Stats Overview - Motivating Metrics */}
@@ -619,7 +603,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
                 <Rocket className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <Badge variant="outline" className="text-xs border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-300">
-                Potential
+                Pending
               </Badge>
             </div>
             <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{formatCurrency(stats.pendingRevenue)}</p>
