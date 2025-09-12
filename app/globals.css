@@ -4,48 +4,58 @@
 
 @layer base {
   :root {
+    /* Font Variables */
+    --font-roboto: var(--font-roboto);
+    --font-space-grotesk: var(--font-space-grotesk);
+    
+    /* Updated Color Palette based on Design Principles */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 314 6% 20%; /* #332B34 */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 314 6% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 314 6% 20%;
+    --primary: 314 6% 20%; /* #332B34 - Dark purple-gray */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 90%; /* rgb(230, 230, 230) */
+    --secondary-foreground: 314 6% 20%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 314 6% 40%;
+    --accent: 110 67% 40%; /* rgba(41, 204, 0, 1) - Green */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
-    --radius: 0.75rem;
+    --border: 0 0% 92%;
+    --input: 0 0% 92%;
+    --ring: 110 67% 40%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Font Variables */
+    --font-roboto: var(--font-roboto);
+    --font-space-grotesk: var(--font-space-grotesk);
+    
+    /* Dark Mode Color Palette */
+    --background: 0 0% 4%; /* #0a0a0a */
+    --foreground: 0 0% 86%; /* rgb(220, 220, 220) */
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 86%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 86%;
+    --primary: 0 0% 86%; /* rgb(220, 220, 220) */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 314 6% 20%; /* #332B34 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 314 6% 25%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 110 67% 40%; /* Green stays the same */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 110 67% 40%;
   }
 }
 
