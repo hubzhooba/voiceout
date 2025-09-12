@@ -145,7 +145,12 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
       setProjects(data || [])
       
       // Calculate stats
-      const active = data?.filter(p => p.status === 'in_progress').length || 0
+      const active = data?.filter(p => {
+        // Active = workflow steps 1-3 or status in_progress/review
+        return (p.workflow_step >= 1 && p.workflow_step <= 3) || 
+               p.status === 'in_progress' || 
+               p.status === 'review'
+      }).length || 0
       const completed = data?.filter(p => p.status === 'completed').length || 0
       const totalValue = data?.reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0
       const pendingApproval = data?.filter(p => p.workflow_step === 2 && p.step2_status === 'in_progress').length || 0
@@ -349,8 +354,17 @@ export function ProjectListEnhanced({ tentId, userRole, userId, onProjectsChange
 
   const filteredProjects = projects.filter(project => {
     if (filter === 'all') return true
-    if (filter === 'active') return project.status === 'in_progress'
-    if (filter === 'completed') return project.status === 'completed'
+    if (filter === 'active') {
+      // Active = workflow steps 1-3 or status in_progress/review
+      // Exclude completed projects
+      const isActive = ((project.workflow_step >= 1 && project.workflow_step <= 3) || 
+                       project.status === 'in_progress' || 
+                       project.status === 'review') &&
+                       project.status !== 'completed' &&
+                       project.workflow_step !== 5
+      return isActive
+    }
+    if (filter === 'completed') return project.status === 'completed' || project.workflow_step === 5
     if (filter === 'pending_approval') return project.workflow_step === 2 && project.step2_status === 'in_progress'
     if (filter === 'awaiting_invoice') return project.workflow_step === 4 && project.step4_status === 'in_progress'
     return true
