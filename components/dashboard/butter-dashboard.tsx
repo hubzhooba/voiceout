@@ -260,10 +260,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
         const isInProgressStatus = proj.status === 'in_progress' || proj.status === 'review'
         const isNotCompleted = proj.status !== 'completed' && proj.workflow_step !== 5
         
-        // Debug log
-        if (isInWorkflowRange || isInProgressStatus) {
-          console.log('Active project:', proj.project_name, 'Step:', proj.workflow_step, 'Status:', proj.status)
-        }
+        // Check for active status
         
         return (isInWorkflowRange || isInProgressStatus) && isNotCompleted
       })

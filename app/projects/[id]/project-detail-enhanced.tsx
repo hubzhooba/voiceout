@@ -51,16 +51,6 @@ export function ProjectDetailEnhanced({ project, currentUserId, userRole, isAdmi
     ? JSON.parse(project.metadata) 
     : project.metadata || {}
   
-  // Debug logging
-  console.log('Project data:', {
-    client_name: project.client_name,
-    client_email: project.client_email,
-    client_phone: project.client_phone,
-    client_address: project.client_address,
-    client_tin: project.client_tin,
-    metadata: metadata,
-    raw_metadata: project.metadata
-  })
 
   // Handle workflow step actions
   const handleStepAction = async (step: number) => {

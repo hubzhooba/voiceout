@@ -75,7 +75,6 @@ export default function SignupPage() {
         })
       }
     } else if (authData.user) {
-      console.log('User created:', authData.user.id, authData.user.email)
       
       // Try to create profile
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +89,7 @@ export default function SignupPage() {
       if (profileError) {
         if (profileError.code === '23503') {
           // Foreign key violation - this shouldn't happen but handle it
-          console.error('Critical error: User created but profile cannot be linked:', profileError)
+          // Critical error: User created but profile cannot be linked
           toast({
             title: "Account Setup Error",
             description: "There was an issue setting up your account. Please try logging in or contact support.",
@@ -98,9 +97,9 @@ export default function SignupPage() {
           })
         } else if (profileError.code === '23505') {
           // Duplicate key - profile already exists, that's fine
-          console.log('Profile already exists for user')
+          // Profile already exists for user
         } else {
-          console.error('Profile creation error:', profileError)
+          // Profile creation error
         }
       }
       
