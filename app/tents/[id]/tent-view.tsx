@@ -90,16 +90,33 @@ export function TentView({ tent, currentUserId }: TentViewProps) {
     try {
       const { data: projects } = await supabase
         .from('projects')
-        .select('total_amount, status, created_at')
+        .select('total_amount, status, created_at, workflow_step')
         .eq('tent_id', tent.id)
       
       if (projects) {
         const totalRevenue = projects.reduce((sum, p) => sum + (p.total_amount || 0), 0)
+        
+        // Pending = projects not yet completed (workflow steps 1-4)
         const pendingAmount = projects
-          .filter(p => p.status === 'in_progress' || p.status === 'pending')
+          .filter(p => {
+            const isNotCompleted = p.status !== 'completed' && p.workflow_step !== 5
+            const isInProgress = (p.workflow_step >= 1 && p.workflow_step <= 4) || 
+                                p.status === 'in_progress' || 
+                                p.status === 'pending' ||
+                                p.status === 'review'
+            return isNotCompleted && isInProgress
+          })
           .reduce((sum, p) => sum + (p.total_amount || 0), 0)
-        const completedProjects = projects.filter(p => p.status === 'completed').length
-        const activeProjects = projects.filter(p => p.status === 'in_progress').length
+        
+        // Completed = workflow step 5 or status completed
+        const completedProjects = projects.filter(p => p.status === 'completed' || p.workflow_step === 5).length
+        
+        // Active = workflow steps 1-3 or status in_progress/review
+        const activeProjects = projects.filter(p => {
+          return (p.workflow_step >= 1 && p.workflow_step <= 3) || 
+                 p.status === 'in_progress' || 
+                 p.status === 'review'
+        }).length
         const totalProjects = projects.length
         const averageProjectValue = totalProjects > 0 ? totalRevenue / totalProjects : 0
         const successRate = totalProjects > 0 ? (completedProjects / totalProjects) * 100 : 0
