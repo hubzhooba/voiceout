@@ -333,15 +333,15 @@ export function SimpleDashboard({ user }: SimpleDashboardProps) {
             <DialogHeader>
               <DialogTitle>Join a Tent</DialogTitle>
               <DialogDescription>
-                Enter the 6-character invite code to join an existing tent
+                Enter the 8-character invite code to join an existing tent
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="Enter code (e.g., ABC123)"
+                placeholder="Enter code (e.g., ABCD1234)"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                maxLength={6}
+                maxLength={8}
                 className="text-center text-2xl font-mono tracking-wider"
               />
             </div>

@@ -326,10 +326,10 @@ export function DashboardView({ userId }: { userId: string }) {
                   <Label htmlFor="invite-code">Invite Code</Label>
                   <Input
                     id="invite-code"
-                    placeholder="Enter 6-character code"
+                    placeholder="Enter 8-character code"
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    maxLength={6}
+                    maxLength={8}
                   />
                 </div>
               </div>

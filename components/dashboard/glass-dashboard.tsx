@@ -349,10 +349,10 @@ export function GlassDashboard({ userId }: { userId: string }) {
                   <Input
                     id="invite-code"
                     className="input-glass mt-2"
-                    placeholder="Enter 6-character code"
+                    placeholder="Enter 8-character code"
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    maxLength={6}
+                    maxLength={8}
                   />
                 </div>
               </div>

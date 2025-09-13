@@ -934,10 +934,10 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
               </label>
               <Input
                 id="invite-code"
-                placeholder="ABC123"
+                placeholder="ABCD1234"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                maxLength={6}
+                maxLength={8}
                 className="text-center text-2xl font-mono tracking-wider"
               />
             </div>
