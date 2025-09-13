@@ -459,19 +459,28 @@ export function TentChatOptimized({ tentId, currentUserId, tentMembers = [] }: T
   }
 
   // Format message with links
-  const formatMessage = (text: string) => {
+  const formatMessage = (text: string, isOwnMessage: boolean = false) => {
     let formatted = text
 
-    // Style @mentions
+    // Style @mentions - use different colors based on message owner
     const mentionRegex = /@(\w+(?:\s\w+)*)/g
-    formatted = formatted.replace(mentionRegex, '<span class="text-blue-600 dark:text-blue-400 font-medium">@$1</span>')
+    if (isOwnMessage) {
+      // For own messages (blue background), use white/light colors
+      formatted = formatted.replace(mentionRegex, '<span class="text-blue-100 font-semibold">@$1</span>')
+    } else {
+      // For others' messages (light background), use blue colors
+      formatted = formatted.replace(mentionRegex, '<span class="text-blue-600 dark:text-blue-400 font-semibold">@$1</span>')
+    }
 
-    // Style #projects
+    // Style #projects - similar color adjustment
     projects.forEach(project => {
       if (formatted.includes(`#${project.project_name}`)) {
+        const projectStyle = isOwnMessage 
+          ? 'text-purple-100 font-semibold cursor-pointer hover:underline'
+          : 'text-purple-600 dark:text-purple-400 font-semibold cursor-pointer hover:underline'
         formatted = formatted.replace(
           new RegExp(`#${project.project_name}`, 'g'),
-          `<span class="text-purple-600 dark:text-purple-400 font-medium cursor-pointer hover:underline" data-project-id="${project.id}">#${project.project_name}</span>`
+          `<span class="${projectStyle}" data-project-id="${project.id}">#${project.project_name}</span>`
         )
       }
     })
@@ -617,7 +626,7 @@ export function TentChatOptimized({ tentId, currentUserId, tentMembers = [] }: T
                             ? "bg-blue-600 text-white"
                             : "bg-gray-100 dark:bg-gray-800"
                         )}
-                        dangerouslySetInnerHTML={{ __html: formatMessage(message.message) }}
+                        dangerouslySetInnerHTML={{ __html: formatMessage(message.message, isOwnMessage) }}
                         onClick={(e) => {
                           const target = e.target as HTMLElement
                           const projectId = target.getAttribute('data-project-id')
