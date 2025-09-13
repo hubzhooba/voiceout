@@ -124,10 +124,10 @@ export function SimpleDashboard({ user }: SimpleDashboardProps) {
   }, [user])
 
   const handleJoinTent = async () => {
-    if (!joinCode.trim() || joinCode.length !== 6) {
+    if (!joinCode.trim() || joinCode.length !== 8) {
       toast({
         title: 'Invalid Code',
-        description: 'Please enter a valid 6-character tent code',
+        description: 'Please enter a valid 8-character tent code',
         variant: 'destructive'
       })
       return

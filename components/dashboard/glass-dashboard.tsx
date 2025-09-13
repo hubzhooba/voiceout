@@ -215,10 +215,10 @@ export function GlassDashboard({ userId }: { userId: string }) {
     
     console.log('Joining tent with code:', joinCode)
     
-    if (joinCode.length !== 6) {
+    if (joinCode.length !== 8) {
       toast({
         title: 'Invalid code',
-        description: 'Please enter a 6-character invite code',
+        description: 'Please enter an 8-character invite code',
         variant: 'destructive'
       })
       return

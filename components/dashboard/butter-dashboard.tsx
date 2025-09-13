@@ -310,10 +310,10 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
   }, [fetchDashboardData])
 
   const handleJoinTent = useCallback(async () => {
-    if (joinCode.length !== 6) {
+    if (joinCode.length !== 8) {
       toast({
         title: 'Invalid code',
-        description: 'Please enter a 6-character invite code',
+        description: 'Please enter an 8-character invite code',
         variant: 'destructive'
       })
       return
@@ -924,7 +924,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
           <DialogHeader>
             <DialogTitle>Join a Tent</DialogTitle>
             <DialogDescription>
-              Enter the 6-character invite code to join an existing tent.
+              Enter the 8-character invite code to join an existing tent.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
