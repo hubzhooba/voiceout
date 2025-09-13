@@ -74,13 +74,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create tent member entry for creator
-    const memberRole = creatorRole === 'client' ? 'client' : 'admin'
+    const isAdmin = creatorRole === 'manager'
     const { error: memberError } = await supabase
       .from('tent_members')
       .insert({
         tent_id: tent.id,
         user_id: user.id,
-        role: memberRole,
+        tent_role: creatorRole, // 'client' or 'manager'
+        is_admin: isAdmin,
         joined_at: new Date().toISOString(),
       })
 

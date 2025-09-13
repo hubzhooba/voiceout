@@ -77,9 +77,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine the role for the joining user
-    // If creator is client, joiner is manager (admin role)
+    // If creator is client, joiner is manager
     // If creator is manager, joiner is client
-    const memberRole = tent.creator_role === 'client' ? 'admin' : 'client'
+    const tentRole = tent.creator_role === 'client' ? 'manager' : 'client'
+    const isAdmin = tentRole === 'manager'
 
     // Add user as member
     const { data: newMember, error: memberError } = await supabase
@@ -87,7 +88,8 @@ export async function POST(request: NextRequest) {
       .insert({
         tent_id: tent.id,
         user_id: user.id,
-        role: memberRole,
+        tent_role: tentRole,
+        is_admin: isAdmin,
         joined_at: new Date().toISOString(),
       })
       .select()
@@ -138,7 +140,7 @@ export async function POST(request: NextRequest) {
       message: 'Successfully joined tent',
       tent,
       member: newMember,
-      role: memberRole
+      role: tentRole
     })
   } catch (error) {
     console.error('Error in join tent API:', error)
