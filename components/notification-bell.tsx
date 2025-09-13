@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,18 +11,121 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Bell, CheckCheck, FileText, UserPlus, AlertCircle, TrendingUp, Package, Clock } from 'lucide-react'
+import { Bell, CheckCheck, FileText, UserPlus, AlertCircle, TrendingUp, Package, Clock, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
 import { useNotifications } from '@/components/providers/notification-provider'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
+interface DBNotification {
+  id: string
+  user_id: string
+  type: string
+  title: string
+  message: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: Record<string, any>
+  read: boolean
+  created_at: string
+}
+
 export function NotificationBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
+  const { notifications: contextNotifications, unreadCount: contextUnreadCount, markAsRead: contextMarkAsRead, markAllAsRead: contextMarkAllAsRead } = useNotifications()
+  const [dbNotifications, setDbNotifications] = useState<DBNotification[]>([])
+  const [dbUnreadCount, setDbUnreadCount] = useState(0)
+  const supabase = createClient()
   const router = useRouter()
+  
+  // Combine both notification sources
+  const totalUnreadCount = contextUnreadCount + dbUnreadCount
+  
+  // Fetch database notifications
+  const fetchNotifications = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (!error && data) {
+      setDbNotifications(data)
+      setDbUnreadCount(data.filter(n => !n.read).length)
+    }
+  }
+  
+  // Mark database notification as read
+  const markDbNotificationAsRead = async (notificationId: string) => {
+    await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId)
+
+    setDbNotifications(prev =>
+      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    )
+    setDbUnreadCount(prev => Math.max(0, prev - 1))
+  }
+  
+  // Mark all as read (both sources)
+  const markAllAsRead = async () => {
+    // Mark context notifications as read
+    contextMarkAllAsRead()
+    
+    // Mark DB notifications as read
+    const unreadIds = dbNotifications.filter(n => !n.read).map(n => n.id)
+    if (unreadIds.length > 0) {
+      await supabase
+        .from('notifications')
+        .update({ read: true })
+        .in('id', unreadIds)
+
+      setDbNotifications(prev => prev.map(n => ({ ...n, read: true })))
+      setDbUnreadCount(0)
+    }
+  }
+  
+  useEffect(() => {
+    fetchNotifications()
+    
+    // Set up real-time subscription
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const channel = supabase
+        .channel(`notifications-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            setDbNotifications(prev => [payload.new as DBNotification, ...prev])
+            setDbUnreadCount(prev => prev + 1)
+          }
+        )
+        .subscribe()
+      
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
+    
+    setupSubscription()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
+      case 'chat_mention':
+        return <MessageSquare className="h-4 w-4 text-green-500" />
       case 'workflow_update':
         return <TrendingUp className="h-4 w-4 text-blue-500" />
       case 'project_update':
@@ -36,21 +141,26 @@ export function NotificationBell() {
     }
   }
 
-  const handleNotificationClick = async (notification: {
-    id: string
-    data?: {
-      project_id?: string
-      tent_id?: string
-    }
-  }) => {
-    // Mark as read
-    await markAsRead(notification.id)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleNotificationClick = async (notification: any) => {
+    // Check if it's a DB notification or context notification
+    const isDbNotification = dbNotifications.some(n => n.id === notification.id)
     
-    // Navigate to relevant page
-    if (notification.data?.project_id) {
-      router.push(`/projects/${notification.data.project_id}`)
-    } else if (notification.data?.tent_id) {
-      router.push(`/tents/${notification.data.tent_id}`)
+    if (isDbNotification) {
+      await markDbNotificationAsRead(notification.id)
+      // Navigate for DB notifications (chat mentions, etc)
+      if (notification.link) {
+        router.push(notification.link)
+      }
+    } else {
+      // Handle context notifications
+      await contextMarkAsRead(notification.id)
+      // Navigate to relevant page
+      if (notification.data?.project_id) {
+        router.push(`/projects/${notification.data.project_id}`)
+      } else if (notification.data?.tent_id) {
+        router.push(`/tents/${notification.data.tent_id}`)
+      }
     }
   }
 
@@ -64,13 +174,13 @@ export function NotificationBell() {
         >
           <Bell className={cn(
             "h-5 w-5 transition-colors",
-            unreadCount > 0 && "text-amber-500"
+            totalUnreadCount > 0 && "text-amber-500"
           )} />
-          {unreadCount > 0 && (
+          {totalUnreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-xs items-center justify-center font-bold">
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
               </span>
             </span>
           )}
@@ -80,7 +190,7 @@ export function NotificationBell() {
       <DropdownMenuContent align="end" className="w-96 max-h-[500px] overflow-y-auto">
         <DropdownMenuLabel className="flex items-center justify-between sticky top-0 bg-background z-10 pb-2">
           <span className="text-base font-semibold">Notifications</span>
-          {unreadCount > 0 && (
+          {totalUnreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -95,7 +205,7 @@ export function NotificationBell() {
         
         <DropdownMenuSeparator />
         
-        {notifications.length === 0 ? (
+        {contextNotifications.length === 0 && dbNotifications.length === 0 ? (
           <div className="p-8 text-center">
             <Bell className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
             <p className="text-sm text-muted-foreground">
@@ -107,7 +217,15 @@ export function NotificationBell() {
           </div>
         ) : (
           <div className="space-y-1">
-            {notifications.map((notification) => (
+            {[...contextNotifications, ...dbNotifications.map(n => ({
+              id: n.id,
+              type: n.type,
+              title: n.title,
+              message: n.message || '',
+              created_at: n.created_at,
+              read: n.read,
+              data: n.metadata
+            }))].map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
                 className={cn(
