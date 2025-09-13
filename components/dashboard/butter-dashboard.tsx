@@ -951,7 +951,7 @@ export function ButterDashboard({ userId, userEmail }: { userId: string, userEma
             </Button>
             <Button
               onClick={handleJoinTent}
-              disabled={joining || joinCode.length !== 6}
+              disabled={joining || joinCode.length !== 8}
             >
               {joining ? (
                 <>

@@ -336,7 +336,7 @@ export function DashboardView({ userId }: { userId: string }) {
               <DialogFooter>
                 <Button
                   onClick={handleJoinTent}
-                  disabled={joining || joinCode.length !== 6}
+                  disabled={joining || joinCode.length !== 8}
                 >
                   {joining ? 'Joining...' : 'Join Tent'}
                 </Button>

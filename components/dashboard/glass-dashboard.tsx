@@ -359,7 +359,7 @@ export function GlassDashboard({ userId }: { userId: string }) {
               <DialogFooter>
                 <Button
                   onClick={handleJoinTent}
-                  disabled={joining || joinCode.length !== 6}
+                  disabled={joining || joinCode.length !== 8}
                   className="btn-primary"
                   type="button"
                 >
